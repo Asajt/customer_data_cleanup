@@ -10,7 +10,7 @@ np.random.seed(SEED)
 random.seed(SEED)
 
 # GURS data
-file_path = '/Users/tjasagrabnar/Desktop/magistrska/python_code/src/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
+file_path = '/Users/tjasagrabnar/Desktop/magistrska/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
 addresses = pd.read_csv(file_path)
 
 addresses = addresses[addresses['ULICA_NAZIV'].notna() & addresses['ULICA_NAZIV'].str.strip().ne('')]
@@ -183,5 +183,5 @@ customer_df['EMAIL'] = [generate_random_email(name, surname) for name, surname i
 print(customer_df)
 
 #customer_df.to_excel("customer_data.xlsx", index=False, engine='openpyxl')
-customer_df.to_csv("customer_data.csv")
+customer_df.to_excel("customer_data.xlsx", index=False)
 
