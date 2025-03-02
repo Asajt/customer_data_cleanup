@@ -1,32 +1,38 @@
-# Byte-compiled Python files
+# Python virtual environment
+.venv/
+
+# Byte-compiled / cached files
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
 
-# Virtual environment
-venv/
-.env
+# Jupyter Notebook checkpoints (if using Jupyter)
+.ipynb_checkpoints/
 
-# Logs and debug files
-logs/
-*.log
-
-# OS-specific files
+# System files (Mac & Windows)
 .DS_Store
 Thumbs.db
 
-# Dependency files
-requirements.txt
-poetry.lock
-Pipfile.lock
+# Logs and debugging files
+logs/
+*.log
+debug.log
 
-# Environment variables
+# Data files (prevent committing large datasets, modify as needed)
+data/raw/
+data/processed/
+data/*.csv
+data/*.xlsx
+
+# Configuration files (customize as needed)
 .env
-config/secrets.yaml
+config.json
 
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints/
+# Dependencies (can be regenerated)
+pip-log.txt
+pip-delete-this-directory.txt
 
-# Ignore compiled and temporary files
-*.bak
-*.swp
+# IDE/editor-specific files
+.vscode/
+.idea/
+*.sublime-workspace
