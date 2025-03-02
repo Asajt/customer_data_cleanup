@@ -1,0 +1,32 @@
+# Byte-compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+.env
+
+# Logs and debug files
+logs/
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Dependency files
+requirements.txt
+poetry.lock
+Pipfile.lock
+
+# Environment variables
+.env
+config/secrets.yaml
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore compiled and temporary files
+*.bak
+*.swp
