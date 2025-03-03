@@ -1,3 +1,6 @@
+# ignore GURS data, since file too large
+src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv
+
 # Python virtual environment
 .venv/
 
