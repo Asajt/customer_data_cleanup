@@ -39,3 +39,6 @@ pip-delete-this-directory.txt
 .vscode/
 .idea/
 *.sublime-workspace
+
+# macOS system files
+.DS_Store

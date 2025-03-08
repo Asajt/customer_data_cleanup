@@ -56,7 +56,49 @@ def process_address_parts(street, street_number, zipcode, city):
         '406': 'City error: no space after full stop',
         '407': 'City error: consecutive duplicates detected'
     }
-
+    
+    '''
+    error_messages2 = {
+        '4101': 'STREET_NAME: Missing Data',
+        '4102': 'STREET_NAME: Unnecessary Spaces',
+        '4103': 'STREET_NAME: Invalid characters',
+        '4104': 'STREET_NAME: Contains house number',
+        '4105': 'STREET_NAME: Contains variation of BŠ',
+        '4106': 'STREET_NAME: Invalid abbreviations',
+        '4107': 'STREET_NAME: No space after full stop',
+        '4108': 'STREET_NAME: Only numbers',
+        '4109': 'STREET_NAME: Duplicates',
+        '4110': 'STREET_NAME: Starts with number',
+        '4111': 'STREET_NAME: More than 2 commas',
+        '4112': 'STREET_NAME: Cannot contain digit at the end',
+        
+        '4201': 'HOUSE_NUMBER: Missing Data',
+        '4202': 'HOUSE_NUMBER: Unnecessary spaces',
+        '4203': 'HOUSE_NUMBER: Contains variation of BŠ',
+        '4203': 'HOUSE_NUMBER: Contains variation of BŠ',
+        '4204': 'HOUSE_NUMBER: No house number',
+        '4205': 'HOUSE_NUMBER: invalid combination',
+        '4206': 'HOUSE_NUMBER: Leading 0',
+        '4207': 'HOUSE_NUMBER: Spacing between components',
+        '4208': 'HOUSE_NUMBER: Contains roman numerals',
+        
+        '4301': 'ZIPCODE: Missing Data',
+        '4302': 'ZIPCODE: Unnecessary Spaces',
+        '4303': 'ZIPCODE: invalid characters',
+        '4304': 'ZIPCODE: Less than 4',
+        '4305': 'ZIPCODE: More than 4',
+        '4306': 'ZIPCODE: Contains Letters',
+        '4307': 'ZIPCODE: Invalid Value',
+        
+        '4401': 'POSTAL_CITY: Missing Data',
+        '4402': 'POSTAL_CITY: Unnecessary Spaces',
+        '4403': 'POSTAL_CITY: Invalid characters',
+        '4404': 'POSTAL_CITY: Contains digits',
+        '4405': 'POSTAL_CITY: Invalid abbreviations',
+        '4406': 'POSTAL_CITY: Duplicates'
+    }
+    '''
+    
     # values to compare with in checks and corrections
     roman_numbers = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'
                                 , 'XI', 'XII', 'XIII', 'XIV','XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'
@@ -66,7 +108,6 @@ def process_address_parts(street, street_number, zipcode, city):
     allowed_abbreviations_street = ['dr', 'Sv', 'Vel']
     allowed_abbreviations_street.extend(roman_numbers)
 
-    
     allowed_abbreviations_city = ['Sv', 'Slov']
     
     hn_patterns = ['BŠ', 'B.Š.', 'B. ŠT.', 'B.ŠT.', 'B$', 'BREZ ŠT.', 'BS', 'B.S.', 'NH', 'N.H.', 'BH', 'B.H.']
@@ -355,3 +396,12 @@ def process_address_parts(street, street_number, zipcode, city):
         city = None
 
     return original_street, street, original_street_number, street_number, original_zipcode, zipcode, original_city, city, ','.join(sorted(distinct_detected_errors)), ','.join(sorted(uncorrected_errors))
+
+customer_data = "src/processed_data/customer_data_with_errors.xlsx"
+
+df = pd.read_excel(customer_data)
+
+
+df = df.apply(lambda row: process_address_parts(row['STREET'], row['HOUSE_NUMBER'], row['POSTAL_CODE'], row['POSTAL_CITY']), axis=1)
+
+df.to_excel()
