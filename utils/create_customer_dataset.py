@@ -10,7 +10,7 @@ np.random.seed(SEED)
 random.seed(SEED)
 
 # GURS data
-file_path = '/Users/tjasagrabnar/Desktop/magistrska/customer_data_cleanup/src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
+file_path = 'src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
 
 addresses = pd.read_csv(file_path)
 

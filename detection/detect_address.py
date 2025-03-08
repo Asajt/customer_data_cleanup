@@ -401,7 +401,11 @@ customer_data = "src/processed_data/customer_data_with_errors.xlsx"
 
 df = pd.read_excel(customer_data)
 
+df_new = df.apply(lambda row: pd.Series(process_address_parts(row['STREET'], row['HOUSE_NUMBER'], row['POSTAL_CODE'], row['POSTAL_CITY'])), axis=1)
 
-df = df.apply(lambda row: process_address_parts(row['STREET'], row['HOUSE_NUMBER'], row['POSTAL_CODE'], row['POSTAL_CITY']), axis=1)
+df[['ORIGINAL_STREET', 'CORRECTED_STREET', 'ORIGINAL_HOUSE_NUMBER', 'CORRECTED_HOUSE_NUMBER',
+    'ORIGINAL_POSTAL_CODE', 'CORRECTED_POSTAL_CODE', 'ORIGINAL_CITY', 'CORRECTED_CITY', 
+    'DETECTED_ERRORS', 'UNCORRECTED_ERRORS']] = df_new
 
-df.to_excel()
+df.to_excel("src/processed_data/customer_data_detected.xlsx", index=False)
+print("Detection done.")
