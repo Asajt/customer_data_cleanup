@@ -543,9 +543,22 @@ def apply_errors(df):
             
             # ERROR 4405 - Invalid Abbreviations
             # shorten the postal city to only leading two characters
-            if random.random() < 0.01:
-                if bool(re.fullmatch(r"\w+", current_value)):
-                    new_value = current_value[:2]
+            city_abbreviations = {
+                'Ljubljana': 'LJ',
+                'Celje': 'CE',
+                'Nova Gorica': 'GO',
+                'Krško': 'KK',
+                'Koper': 'KP',
+                'Kranj': 'KR',
+                'Maribor': 'MB',
+                'Murska Sobota': 'MS',
+                'Novo mesto': 'NM',
+                'Postojna': 'PO',
+                'Slovenj Gradec': 'SG'
+            }
+            if random.random() < 0.10:
+                if current_value in city_abbreviations:
+                    new_value = city_abbreviations[current_value]
                     log_error(df, index, "4405")
             
             # ERROR 4406 - Duplicates
@@ -574,5 +587,5 @@ customer_df["introduced_errors"] = ""
 apply_errors(customer_df)
 
 # Save the final dataset
-customer_df.to_excel("src/processed_data/customer_data_with_errors2.xlsx", index=False)
+customer_df.to_excel("src/processed_data/customer_data_with_errors.xlsx", index=False)
 print("Corrupted dataset saved successfully.")
