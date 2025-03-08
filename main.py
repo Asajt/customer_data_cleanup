@@ -1,30 +1,21 @@
 import pandas as pd
-#from utils.data_loader import load_data, save_data
-from detection.detect_names import detect_name_errors
+from utils.create_customer_dataset import load_data, save_data
 from detection.detect_address import detect_address_errors
-from detection.detect_phone import detect_phone_errors
-from detection.detect_email import detect_email_errors
-from correction.correct_names import correct_name_errors
 from correction.correct_address import correct_address_errors
-from correction.correct_phone import correct_phone_errors
-from correction.correct_email import correct_email_errors
 
-# Load data
-df = load_data("raw_data/dataset.csv")
+# Load dataset
+df = load_data("raw_data/customer_data_with_errors.xlsx")
 
-# Detection
-df = detect_name_errors(df)
-df = detect_address_errors(df)
-df = detect_phone_errors(df)
-df = detect_email_errors(df)
+# Address Error Detection
+df_detected = detect_address_errors(df)
 
-# Correction
-df = correct_name_errors(df)
-df = correct_address_errors(df)
-df = correct_phone_errors(df)
-df = correct_email_errors(df)
+# Save detected errors
+save_data(df_detected, "processed_data/customer_data_detected.xlsx")
 
-# Save cleaned data
-save_data(df, "cleaned_data/cleaned_dataset.csv")
+# Address Error Correction
+df_corrected = correct_address_errors(df_detected)
 
-print("Data Cleaning Complete! Cleaned dataset saved.")
+# Save corrected dataset
+save_data(df_corrected, "processed_data/customer_data_corrected.xlsx")
+
+print("Detection and Correction process completed successfully.")
