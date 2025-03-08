@@ -355,4 +355,3 @@ def process_address_parts(street, street_number, zipcode, city):
         city = None
 
     return original_street, street, original_street_number, street_number, original_zipcode, zipcode, original_city, city, ','.join(sorted(distinct_detected_errors)), ','.join(sorted(uncorrected_errors))
-'''

@@ -10,7 +10,8 @@ np.random.seed(SEED)
 random.seed(SEED)
 
 # GURS data
-file_path = '/Users/tjasagrabnar/Desktop/magistrska/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
+file_path = '/Users/tjasagrabnar/Desktop/magistrska/customer_data_cleanup/src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
+
 addresses = pd.read_csv(file_path)
 
 addresses = addresses[addresses['ULICA_NAZIV'].notna() & addresses['ULICA_NAZIV'].str.strip().ne('')]
@@ -170,18 +171,25 @@ customer_df = pd.DataFrame({
     ,'FIRST_NAME': random_names
     ,'LAST_NAME': random_surnames
     ,'STREET': random_addresses['ULICA_NAZIV']
-    ,'HOUSE_NUMBER': random_addresses['HS_STEVILKA']
-    ,'HOUSE_NUMBER_ADDITION': random_addresses['HS_DODATEK']
+    ,'HN': random_addresses['HS_STEVILKA']
+    ,'HN_ADDITION': random_addresses['HS_DODATEK'].apply(lambda x: str(x).upper() if pd.notna(x) else "")
     ,'APARTMENT_NUMBER': random_addresses['ST_STANOVANJA']
     ,'POSTAL_CODE': random_addresses['POSTNI_OKOLIS_SIFRA']
     ,'POSTAL_CITY': random_addresses['POSTNI_OKOLIS_NAZIV']
+    ,'COUNTRY': 'Slovenia'
     ,'PHONE_NUMBER': [generate_slo_phone_number() for i in range(dataset_size)]
 })
 
 customer_df['EMAIL'] = [generate_random_email(name, surname) for name, surname in zip(random_names, random_surnames)]
 
-print(customer_df)
+# Combine 'HOUSE_NUMBER' and 'HOUSE_NUMBER_ADDITION' into 'HOUSE_NUMBER_FULL' without spaces
+customer_df['HOUSE_NUMBER'] = customer_df['HN'].astype(str) + customer_df['HN_ADDITION']
+customer_df.drop(columns=['HN', 'HN_ADDITION'], inplace=True)
 
-#customer_df.to_excel("customer_data.xlsx", index=False, engine='openpyxl')
-customer_df.to_excel("customer_data.xlsx", index=False)
+columns_order = ['CUSTOMER_ID', 'FIRST_NAME', 'LAST_NAME', 'STREET', 'HOUSE_NUMBER', 
+                 'APARTMENT_NUMBER', 'POSTAL_CODE', 'POSTAL_CITY', 'COUNTRY', 'PHONE_NUMBER', 'EMAIL']
+customer_df = customer_df[columns_order]
 
+customer_df.to_excel("src/processed_data/customer_data.xlsx", index=False)
+
+print('Synthetic customer dataset created successfully!')
