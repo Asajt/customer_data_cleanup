@@ -118,7 +118,7 @@ def generate_slo_phone_number():
         A valid Slovenian phone number in the format '+386XXXXXXXX'.
     """
     
-    country_code = "+386"
+    country_code = "00386"
     mobile_prefixes = ['1', '30', '31', '40', '41', '51', '64', '65', '68', '70']
     # Randomly choose a mobile prefix
     prefix = np.random.choice(mobile_prefixes)
