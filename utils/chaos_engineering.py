@@ -567,25 +567,3 @@ def apply_errors(df):
                 log_error(df, index, "4406")
 
             df.at[index, "POSTAL_CITY"] = new_value  # Apply error to the column
-
-
-
-# ============================
-# **EXECUTION**
-# ============================
-
-# Load the dataset (replace with your file path)
-customer_data_path = "src/processed_data/customer_data.xlsx"
-customer_df = pd.read_excel(customer_data_path, dtype=str)
-# Ensure all columns are handled as strings
-customer_df = customer_df.astype(str)
-
-# Add a column to track introduced errors
-customer_df["introduced_errors"] = ""
-
-# Apply errors
-apply_errors(customer_df)
-
-# Save the final dataset
-customer_df.to_excel("src/processed_data/customer_data_with_errors.xlsx", index=False)
-print("Corrupted dataset saved successfully.")
