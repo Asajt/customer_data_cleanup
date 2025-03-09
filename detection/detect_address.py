@@ -3,12 +3,6 @@ import pandas as pd
 import re
 
 def detect_address(street, street_number, zipcode, city):
-    
-    # Store the original address components for comparison purposes
-    original_street = street
-    original_street_number = street_number
-    original_zipcode = zipcode
-    original_city = city
 
     # Check for NaN values and convert them to empty strings
     street = "" if pd.isna(street) else str(street)
@@ -16,10 +10,7 @@ def detect_address(street, street_number, zipcode, city):
     zipcode = "" if pd.isna(zipcode) else str(zipcode)
     city = "" if pd.isna(city) else str(city)
 
-    all_errors = []  # List to accumulate all errros (over all iterations)
     distinct_detected_errors = set()  # Set to store distinct detected errors
-    corrected_errors = set()  # Set to store errors corrected during processing
-    uncorrected_errors = set()  # Set to store errors that remain uncorrected
 
     error_messages = {
         '101': 'Street error: no information given',
@@ -116,9 +107,6 @@ def detect_address(street, street_number, zipcode, city):
     n = 3
     for i in range(n):
         errors = []  # List to store errors for this iteration
-    
-        ## 01 DETECTION OF ERRORS
-
         # Street errors
         if pd.isna(street) or street is None or street.strip() == "" or street.strip() == "/" :
             errors.append('101')  # Street error: no information given
