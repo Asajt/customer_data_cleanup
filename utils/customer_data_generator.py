@@ -168,13 +168,13 @@ def generate_random_email(first_name, last_name):
     
     return f"{email_base}@{domain}"
 
-def generate_synthetic_customer_data(gurs_file, dataset_size, output_file_path, seed = 42):
+def generate_synthetic_customer_data(gurs_file_path, dataset_size = 10000, output_file_path = None, seed = 42):
     """
     Generate a synthetic customer dataset using GURS and SURS data.
 
     Parameters:
     -----------
-    gurs_file : str
+    gurs_file_path : str
         Path to the GURS address data CSV file.
     dataset_size : int
         Number of synthetic customer records to generate.
@@ -193,7 +193,7 @@ def generate_synthetic_customer_data(gurs_file, dataset_size, output_file_path, 
     np.random.seed(seed)
     random.seed(seed)
 
-    addresses = fetch_GURS_data(gurs_file)
+    addresses = fetch_GURS_data(gurs_file_path)
     all_names, all_surnames = fetch_SURS_data()
     
     
