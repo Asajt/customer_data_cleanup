@@ -15,12 +15,12 @@ def detect_name_errors(name, surname):
         '1104': 'NAME: Formatting Issue',
         '1105': 'NAME: Duplicates',
         '1106': 'NAME: Two names in one field',
-        
+
         '1201': 'SURNAME: Missing Data',
         '1202': 'SURNAME: Unnecessary Spaces',
         '1203': 'SURNAME: Invalid Characters',
         '1204': 'SURNAME: Formatting Issue',
-        '1205': 'SURNAME: Duplicates'
+        '1205': 'SURNAME: Duplicates',
     }
 
     # NAME errors detection
@@ -44,6 +44,11 @@ def detect_name_errors(name, surname):
         if name not in counts:
             counts[name] = 0
         counts[name] += 1
+    if any(count > 1 for count in counts.values()):
+        errors.add('1105')
+    # 1106 Check for two names in one field
+    if len(names) > 1:
+        errors.add('1106')
     
     # SURNAME errors detection
     # 1201 Missing Data
