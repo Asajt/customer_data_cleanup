@@ -1,6 +1,5 @@
 import re
 import pandas as pd
-import string
 
 def detect_name_errors(name, surname):
     # Check for NaN values and convert them to empty strings
@@ -36,7 +35,7 @@ def detect_name_errors(name, surname):
     if not re.search(r'^[a-ž\s]+$', name, re.IGNORECASE):
         errors.add('1103')
     # 1104 Check for formatting issues
-    if not string.istitle(name): 
+    if not name.istitle(): 
         errors.add('1104')
     # 1105 Check for duplicates
     names = name.split()
@@ -54,7 +53,7 @@ def detect_name_errors(name, surname):
     if surname.startswith(' ') or surname.endswith(' ') or "  " in surname:
         errors.add('1202')
     # 1204 Formatting Issue
-    if not string.istitle(surname):
+    if not name.istitle():
         errors.add('1204')
     # 1205 Duplicates    
     surnames = surname.split()
@@ -68,3 +67,20 @@ def detect_name_errors(name, surname):
                 
             
     return ','.join(sorted(errors))
+
+
+# # TESTING
+
+customer_data = "src/processed_data/customer_data_with_errors.xlsx"
+
+df = pd.read_excel(customer_data)
+
+# Apply the name error detection
+df["DETECTED_ERRORS"] = df.apply(lambda row: detect_name_errors(row["FIRST_NAME"], row["LAST_NAME"]), axis=1)
+
+
+print(df.head())
+# # # Save the result to a new file
+df.to_excel("src/processed_data/customer_data_with_detected_name_errors.xlsx", index=False)
+
+print("Detection of name errors completed!")

@@ -1,7 +1,7 @@
 import re
 import pandas as pd
 
-def detect_phone_errors(email):
+def detect_phone_errors(phone):
     # Check for NaN values and convert them to empty strings
     phone = "" if pd.isna(phone) else str(phone)
 
@@ -45,15 +45,31 @@ def detect_phone_errors(email):
             
         # 3107 Check for two phone numbers
         if (
-            len(phone) > 1
-            or phone.count('+') > 1
+            phone.count('+') > 1
             or phone.count(',') > 1
             or phone.count(' ') > 1
             or phone.count(';') > 1
         ):
             errors.add('3107')
         # 3108 Check for different country format
-        if phone.startswith('00'):
+        if not phone.startswith('00386'):
             errors.add('3108')
         
     return ','.join(sorted(errors))
+
+
+# # TESTING
+
+# customer_data = "src/processed_data/customer_data_with_errors.xlsx"
+
+# df = pd.read_excel(customer_data)
+
+# # Apply the phone error detection
+# df["DETECTED_ERRORS"] = df.apply(lambda row: detect_phone_errors(row["PHONE_NUMBER"]), axis=1)
+
+
+# print(df.head())
+# # # Save the result to a new file
+# df.to_excel("src/processed_data/customer_data_with_detected_phone_errors.xlsx", index=False)
+
+# print("Detection of address errors completed!")

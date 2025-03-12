@@ -2,7 +2,7 @@
 import pandas as pd
 import re
 
-def detect_address(street, street_number, zipcode, city):
+def detect_address_errors(street, street_number, zipcode, city):
 
     # Check for NaN values and convert them to empty strings
     street = "" if pd.isna(street) else str(street)
@@ -204,15 +204,15 @@ def detect_address(street, street_number, zipcode, city):
 
 # TESTING
 
-customer_data = "src/processed_data/customer_data_with_errors.xlsx"
+# customer_data = "src/processed_data/customer_data_with_errors.xlsx"
 
-df = pd.read_excel(customer_data)
+# df = pd.read_excel(customer_data)
 
-df["DETECTED_ERRORS"] = df.apply(lambda row: detect_address(
-    row["STREET"], row["HOUSE_NUMBER"], row["POSTAL_CODE"], row["POSTAL_CITY"]
-), axis=1)
+# df["DETECTED_ERRORS"] = df.apply(lambda row: detect_address(
+#     row["STREET"], row["HOUSE_NUMBER"], row["POSTAL_CODE"], row["POSTAL_CITY"]
+# ), axis=1)
 
-# print(df.head())
+# # print(df.head())
 
-df.to_excel("src/processed_data/01_customer_data_with_detected_errors.xlsx", index=False)
-print("Detection of address errors completed!")
+# df.to_excel("src/processed_data/01_customer_data_with_detected_errors.xlsx", index=False)
+# print("Detection of address errors completed!")

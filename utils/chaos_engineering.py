@@ -9,7 +9,7 @@ import regex as re
 def log_error(df, row_id, error_id):
     """ Append error ID to INTRODUCED_ERRORS column """
     if df.at[row_id, "INTRODUCED_ERRORS"]:
-        df.at[row_id, "INTRODUCED_ERRORS"] += f" | {error_id}"
+        df.at[row_id, "INTRODUCED_ERRORS"] += f", {error_id}"
     else:
         df.at[row_id, "INTRODUCED_ERRORS"] = str(error_id)
 

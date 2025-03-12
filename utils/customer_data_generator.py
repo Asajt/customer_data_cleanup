@@ -115,7 +115,7 @@ def generate_slo_phone_number():
     Returns:
     --------
     str
-        A valid Slovenian phone number in the format '+386XXXXXXXX'.
+        A valid Slovenian phone number in the format '00386XXXXXXXX'.
     """
     
     country_code = "00386"
