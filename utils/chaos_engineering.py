@@ -75,7 +75,11 @@ def apply_errors(df):
             
             # ERROR 1104 - Formatting Issues
             if random.random() < 0.03:
-                new_value = random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
+                if np.random.rand() < 0.5:
+                    new_value = random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
+                else:
+                    # Randomly change the upper/lower case of letters
+                    new_value = ''.join(random.choice([char.upper(), char.lower()]) for char in new_value)
                 log_error(df, index, "1104")
                             
             # ERROR 1105 - Duplicates
@@ -88,6 +92,18 @@ def apply_errors(df):
                 second_name = random.choice(["Marija", "Janez", "Ana", "Marko"])
                 new_value = f"{current_value} in {second_name}"  # Two names in one field error
                 log_error(df, index, "1106")
+
+            # ERROR 1107 - Only Initials
+            if random.random() < 0.01:
+                initials = ''.join([name[0].upper() + '.' for name in current_value.split()])
+                new_value = initials if len(current_value.split()) == 1 else current_value
+                log_error(df, index, "1107")
+
+            # ERROR 1108 - Replace š, č, ž, ć with s, c, z, c
+            if random.random() < 0.02:
+                replacement_map = {"š": "s", "č": "c", "ž": "z", "ć": "c", "Š": "S", "Č": "C", "Ž": "Z", "Ć": "C"}
+                new_value = ''.join(replacement_map.get(char, char) for char in current_value)
+                log_error(df, index, "1108")
                 
             df.at[index, "FIRST_NAME"] = new_value  # Apply error to the column
 
@@ -129,7 +145,11 @@ def apply_errors(df):
                 
             # ERROR 1204 - Formatting Issues
             if random.random() < 0.03:
-                new_value = random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
+                if np.random.rand() < 0.5:
+                    new_value = random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
+                else:
+                    # Randomly change the upper/lower case of letters
+                    new_value = ''.join(random.choice([char.upper(), char.lower()]) for char in new_value)
                 log_error(df, index, "1204")                
                 
             # ERROR 1205 - Duplicates
@@ -137,6 +157,11 @@ def apply_errors(df):
                 new_value = f"{current_value} {current_value}"  # Duplicates error
                 log_error(df, index, "1205")        
                 
+            # ERROR 1206 - Replace š, č, ž, ć with s, c, z, c
+            if random.random() < 0.02:
+                replacement_map = {"š": "s", "č": "c", "ž": "z", "ć": "c", "Š": "S", "Č": "C", "Ž": "Z", "Ć": "C"}
+                new_value = ''.join(replacement_map.get(char, char) for char in current_value)
+                log_error(df, index, "1208")
                 
             df.at[index, "LAST_NAME"] = new_value  # Apply error to the column
             
@@ -298,8 +323,18 @@ def apply_errors(df):
             # ERROR 4103 - Invalid Characters
             if np.random.rand() < 0.01:
                 invalid_chars = ["◊", "�", "ß", "ø", "ç", "@", "#", "%", "&", "*", "~", "^", "!", "?", "_", "|", "/", "\\", "="]
-                random_char = random.choice(invalid_chars)
+                eligible_chars = ["č", "š", "ž", "ć", "Č", "Š", "Ž", "Ć"]
+                new_value = ''.join(random.choice(invalid_chars) if char in eligible_chars else char for char in current_value)
                 log_error(df, index, "4103")
+
+           # ERROR 4104 - Formatting Issues
+            if random.random() < 0.03:
+                if np.random.rand() < 0.5:
+                    new_value = random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
+                else:
+                    # Randomly change the upper/lower case of letters
+                    new_value = ''.join(random.choice([char.upper(), char.lower()]) for char in new_value)
+                log_error(df, index, "4104")
 
            # ERROR 4104 - Contains House Number
             if np.random.rand() < 0.01:
@@ -361,6 +396,17 @@ def apply_errors(df):
                 if current_value[-1].isdigit():
                     new_value = current_value[:-1]
                 log_error(df, index, "4112")
+
+            # ERROR 4114 - Invalid Digit in Street
+            if re.search(r'\d+\.', current_value):
+                new_value = re.sub(r'(\d+)\.', r'\1', current_value)
+                log_error(df, index, "4114")
+
+            # ERROR 4115 - Replace š, č, ž, ć with s, c, z, c
+            if np.random.rand() < 0.02:
+                replacement_map = {"š": "s", "č": "c", "ž": "z", "ć": "c", "Š": "S", "Č": "C", "Ž": "Z", "Ć": "C"}
+                new_value = ''.join(replacement_map.get(char, char) for char in current_value)
+                log_error(df, index, "4115")
      
             df.at[index, "STREET"] = new_value  # Apply error to the column
 
@@ -442,6 +488,27 @@ def apply_errors(df):
                 else:
                     new_value = roman_choice  # E.g., "IV"
                 log_error(df, index, "4208")
+
+            # ERROR 4209 - Ends with full stop
+            if np.random.rand() < 0.01:
+                new_value = current_value + '.'
+                log_error(df, index, "4209")
+
+            # ERROR 4210 - More than one number present
+            if np.random.rand() < 0.01:
+                new_value = current_value + f" {random.randint(1, 99)}"
+                log_error(df, index, "4210")
+
+            # ERROR 4211 - Does not start with digit
+            if np.random.rand() < 0.01:
+                prefixes = ["St.", "HS", "HŠ", "A", "B", "H", "št.", "Stanovanje", "st."]
+                new_value = random.choice(prefixes) + " " + current_value
+                log_error(df, index, "4211")
+
+            # ERROR 4212 - More than 4 digits
+            if np.random.rand() < 0.01 and current_value.isdigit() and 2 <= len(current_value) <= 3:
+                new_value = current_value + str(random.randint(10, 99)) 
+                log_error(df, index, "4212")
 
             df.at[index, "HOUSE_NUMBER"] = new_value  # Apply error to the column
 
@@ -534,11 +601,10 @@ def apply_errors(df):
             # ERROR 4403 - Invalid Characters (anything other than letters, BUT check for numbers is in contains digits)
             # anything other than letters contained in the GURS postal city field or anything other than numbers (since containning digits is a seperate error)
             if np.random.rand() < 0.01:
-                special_chars = "!@#$%^&*()-_=+[]{}|;:'\",.<>?/\\`~"
-                random_char = random.choice(special_chars)
-                position = random.randint(0, len(current_value))
-                new_value = current_value[:position] + random_char + current_value[position:]
-                log_error(df, index, "4403")            
+                invalid_chars = ["◊", "�", "ß", "ø", "ç", "@", "#", "%", "&", "*", "~", "^", "!", "?", "_", "|", "/", "\\", "="]
+                eligible_chars = ["č", "š", "ž", "ć", "Č", "Š", "Ž", "Ć"]
+                new_value = ''.join(random.choice(invalid_chars) if char in eligible_chars else char for char in current_value)
+                log_error(df, index, "4403") 
 
             # ERROR 4404 - Contains digits ()
             # copy the postal_code and paste it here 
@@ -570,6 +636,12 @@ def apply_errors(df):
             if random.random() < 0.01:
                 new_value = f"{current_value} {current_value}"  # Duplicates error
                 log_error(df, index, "4406")
+
+            # ERROR 4407 - Replace š, č, ž, ć with s, c, z, c
+            if np.random.rand() < 0.02:
+                replacement_map = {"š": "s", "č": "c", "ž": "z", "ć": "c", "Š": "S", "Č": "C", "Ž": "Z", "Ć": "C"}
+                new_value = ''.join(replacement_map.get(char, char) for char in current_value)
+                log_error(df, index, "4407")
 
             df.at[index, "POSTAL_CITY"] = new_value  # Apply error to the column
 
