@@ -236,3 +236,11 @@ def generate_synthetic_customer_data(gurs_file_path, dataset_size = 10000, outpu
         print(f'Synthetic customer dataset saved to: {output_file_path}')
         
     return customer_df
+
+
+
+# GURS_file_path = 'src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
+# customer_df = generate_synthetic_customer_data(GURS_file_path, dataset_size=10000, seed=42)
+# # customer_df = pd.read_excel("src/processed_data/customer_data.xlsx")
+# print("Sy““nthetic customer dataset generated")
+# customer_df.to_excel("src/processed_data/customer_data.xlsx", index=False)
