@@ -3,6 +3,11 @@ import numpy as np
 import random
 import regex as re
 
+# Set seed for reproducibility
+SEED = 42
+np.random.seed(SEED)
+random.seed(SEED)
+
 # ============================
 # **HELPER FUNCTION: LOG ERRORS**
 # ============================
@@ -660,14 +665,20 @@ def apply_errors(df):
                         log_error(df, index, "4305")
                         current_value = new_value
 
-            # ERROR 4306 - Contains Letters 
+                # ERROR 4306 - Contains Letters 
                 if np.random.rand() < 0.01:
                     postal_city = df.at[index, "POSTAL_CITY"] if "POSTAL_CITY" in df.columns else "Ljubljana"
-                    new_value = f"{postal_city} {current_value}" if random.random() < 0.5 else f"{random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ')}{current_value}"
-                    new_value = f"Ljubljana {current_value}"  # Fallback if city is missing
+                    if random.random() < 0.9:
+                        new_value = f"{current_value} {postal_city}"
+                    elif random.random() < 0.2:
+                        new_value = f"{random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ')}{current_value}"
+                    # Fallback if postal_city is missing or empty
+                    elif random.random() < 0.3:
+                        new_value = f"Ljubljana {current_value}"
                     if new_value != current_value:
                         log_error(df, index, "4306")
-                        current_value = new_value   
+                        current_value = new_value
+
                 
                 
                 # ERROR 4307 - Invalid Value
@@ -712,7 +723,7 @@ def apply_errors(df):
 
                 # ERROR 4403 - Invalid Characters (anything other than letters, BUT check for numbers is in contains digits)
                 # anything other than letters contained in the GURS postal city field or anything other than numbers (since containning digits is a seperate error)
-                if np.random.rand() < 0.01:
+                if np.random.rand() < 0.04:
                     invalid_chars = ["◊", "�", "ß", "ø", "ç", "@", "#", "%", "&", "*", "~", "^", "!", "?", "_", "|", "/", "\\", "="]
                     eligible_chars = ["č", "š", "ž", "ć", "Č", "Š", "Ž", "Ć"]
                     new_value = ''.join(random.choice(invalid_chars) if char in eligible_chars else char for char in current_value)
@@ -733,7 +744,7 @@ def apply_errors(df):
 
                 # ERROR 4405 - Contains digits ()
                 # copy the postal_code and paste it here 
-                if np.random.rand() < 0.01:
+                if np.random.rand() < 0.03:
                     new_value = f"{str(df.at[index, "POSTAL_CODE"])} {current_value}"
                     if new_value != current_value:
                         log_error(df, index, "4405")          
@@ -754,7 +765,7 @@ def apply_errors(df):
                     'Postojna': 'PO',
                     'Slovenj Gradec': 'SG'
                 }
-                if random.random() < 0.10:
+                if random.random() < 0.07:
                     if current_value in city_abbreviations:
                         new_value = city_abbreviations[current_value]
                         if new_value != current_value:
@@ -762,14 +773,14 @@ def apply_errors(df):
                             current_value = new_value
                 
                 # ERROR 4407 - Duplicates
-                if random.random() < 0.01:
+                if random.random() < 0.03:
                     new_value = f"{current_value} {current_value}"  # Duplicates error
                     if new_value != current_value:
                         log_error(df, index, "4407")
                         current_value = new_value
 
                 # ERROR 4408 - Replace š, č, ž, ć with s, c, z, c
-                if np.random.rand() < 0.02:
+                if np.random.rand() < 0.06:
                     replacement_map = {"š": "s", "č": "c", "ž": "z", "ć": "c", "Š": "S", "Č": "C", "Ž": "Z", "Ć": "C"}
                     new_value = ''.join(replacement_map.get(char, char) for char in current_value)
                     if new_value != current_value:

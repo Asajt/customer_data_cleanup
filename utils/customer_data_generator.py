@@ -227,6 +227,10 @@ def generate_synthetic_customer_data(gurs_file_path, dataset_size = 10000, outpu
     customer_df['HOUSE_NUMBER'] = customer_df['HN'].astype(str) + customer_df['HN_ADDITION']
     customer_df.drop(columns=['HN', 'HN_ADDITION'], inplace=True)
 
+    # Clean up POSTAL_CITY by removing anything after "-"
+    customer_df['POSTAL_CITY'] = customer_df['POSTAL_CITY'].str.split('-').str[0].str.strip()
+
+
     columns_order = ['CUSTOMER_ID', 'FIRST_NAME', 'LAST_NAME', 'STREET', 'HOUSE_NUMBER', 
                     'APARTMENT_NUMBER', 'POSTAL_CODE', 'POSTAL_CITY', 'COUNTRY', 'PHONE_NUMBER', 'EMAIL']
     customer_df = customer_df[columns_order]
@@ -238,9 +242,12 @@ def generate_synthetic_customer_data(gurs_file_path, dataset_size = 10000, outpu
     return customer_df
 
 
+# # ============================
+# # **EXECUTION**
+# # ============================
 
 # GURS_file_path = 'src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
 # customer_df = generate_synthetic_customer_data(GURS_file_path, dataset_size=10000, seed=42)
 # # customer_df = pd.read_excel("src/processed_data/customer_data.xlsx")
-# print("Sy““nthetic customer dataset generated")
+# print("Synthetic customer dataset generated")
 # customer_df.to_excel("src/processed_data/customer_data.xlsx", index=False)
