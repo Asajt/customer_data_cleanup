@@ -79,6 +79,41 @@ def apply_errors(df):
                     if new_value != current_value:
                         log_error(df, index, "1103")
                         current_value = new_value
+
+                # ERROR 1107 - Initials
+                if random.random() < 0.01:
+                    initials = ''.join([name[0].upper() + '.' for name in current_value.split()])
+                    new_value = initials if len(current_value.split()) == 1 else current_value
+                    if new_value != current_value:
+                        log_error(df, index, "1107")
+                        current_value = new_value
+                        
+                # ERROR 1107 - Convert One Name to Initials
+                name_parts = current_value.split()
+                if len(name_parts) == 2:
+                    if np.random.rand() < 0.4:
+                        if random.random() < 0.5:
+                            new_value = f"{name_parts[0][0].upper()}." + f" {name_parts[1]}"
+                        else:
+                            # Convert the second name to an initial
+                            new_value = f"{name_parts[0]} " + f"{name_parts[1][0].upper()}."
+                if new_value != current_value:
+                    log_error(df, index, "1107")
+                    current_value = new_value
+                    
+                
+                # ERROR 1105 - Duplicates
+                if np.random.rand() < 0.01:
+                    duplicate_type = random.choice(["full", "partial"])
+                    if duplicate_type == "full":
+                        new_value = f"{current_value} {current_value}"
+                    else:
+                        words = current_value.split()
+                        if len(words) > 1:
+                            new_value = " ".join(words + [words[-1]])
+                    if new_value != current_value:
+                        log_error(df, index, "1105")
+                        current_value = new_value
                 
                 # ERROR 1104 - Formatting Issues
                 if random.random() < 0.03:
@@ -90,13 +125,6 @@ def apply_errors(df):
                     if new_value != current_value:
                         log_error(df, index, "1104")
                         current_value = new_value
-                                
-                # ERROR 1105 - Duplicates
-                if random.random() < 0.01:
-                    new_value = f"{current_value} {current_value}"  # Duplicates error
-                    if new_value != current_value:
-                        log_error(df, index, "1105")
-                        current_value = new_value
                     
                 # ERROR 1106 - Two names in one field
                 if random.random() < 0.01:
@@ -106,13 +134,6 @@ def apply_errors(df):
                         log_error(df, index, "1106")
                         current_value = new_value
 
-                # ERROR 1107 - Initials
-                if random.random() < 0.01:
-                    initials = ''.join([name[0].upper() + '.' for name in current_value.split()])
-                    new_value = initials if len(current_value.split()) == 1 else current_value
-                    if new_value != current_value:
-                        log_error(df, index, "1107")
-                        current_value = new_value
 
                 # ERROR 1108 - Replace š, č, ž, ć with s, c, z, c
                 if random.random() < 0.02:
@@ -166,6 +187,21 @@ def apply_errors(df):
                     if new_value != current_value:
                         log_error(df, index, "1203")
                         current_value = new_value
+                
+                # ERROR 1205 - Duplicates
+                if np.random.rand() < 0.01:
+                    duplicate_type = random.choice(["full", "partial"])
+                    if duplicate_type == "full":
+                        new_value = f"{current_value} {current_value}"
+                    else:
+                        words = current_value.split()
+                        if len(words) > 1:
+                            new_value = " ".join(words + [words[-1]])
+                    if new_value != current_value:
+                        log_error(df, index, "1205")
+                        current_value = new_value
+                        
+                
                     
                 # ERROR 1204 - Formatting Issues
                 if random.random() < 0.03:
@@ -178,12 +214,6 @@ def apply_errors(df):
                         log_error(df, index, "1204")
                         current_value = new_value
                     
-                # ERROR 1205 - Duplicates
-                if random.random() < 0.01:
-                    new_value = f"{current_value} {current_value}"  # Duplicates error
-                    if new_value != current_value:
-                        log_error(df, index, "1205")
-                        current_value = new_value
                     
                 # ERROR 1206 - Replace š, č, ž, ć with s, c, z, c
                 if random.random() < 0.02:
@@ -229,25 +259,42 @@ def apply_errors(df):
                         log_error(df, index, "2102")
                         current_value = new_value
 
-                # ERROR 2103 - Invalid Characters & Encoding Issues
-                if random.random() < 0.03:
-                    encoding_map = {"č": "c", "š": "s", "ž": "z"}
-                    modified_email = "".join(encoding_map.get(char, char) for char in current_value)
-                    new_value = modified_email.replace(".", ",").replace("@", "#")
+                # ERROR 2103 - Invalid Characters
+                if random.random() < 0.10:
+                    if random.random() < 0.3:
+                        encoding_map = {"č": "/", "š": "∆", "ž": "?*"}
+                        new_value = "".join(encoding_map.get(char, char) for char in current_value)
+                    elif random.random() < 0.5:
+                        if random.random() < 0.5:
+                            new_value = current_value.replace(".", ",", 1) if random.random() < 0.5 else current_value.replace(".", ",", 2) 
+                        else:
+                            new_value = current_value.replace("@", "#")
                     if new_value != current_value:
                         log_error(df, index, "2103")
                         current_value = new_value
-                
+                                
                 # ERROR 2104 - Formatting Issue
                 if np.random.rand() < 0.03:
-                    new_value = current_value.replace("@", "#").replace(".", "..")
+                    new_value = current_value  # Start with the original value
+                    issue_type = random.choice(["missing_at", "double_dot", "missing_part"])
+                    if issue_type == "missing_at":
+                        new_value = current_value.replace("@", "")
+                    elif issue_type == "double_dot":
+                        if "." in current_value.split("@")[-1]:  # Ensure there's a domain part
+                            new_value = current_value.replace(".", "..", 1) if random.random() < 0.5 else current_value.replace(".", "", 1)
+                    elif issue_type == "missing_part":
+                        if random.random() < 0.5:
+                            new_value = "@" + current_value.split("@")[-1]  # Remove username
+                        else:
+                            new_value = current_value.split("@")[0] + "@"  # Remove domain
                     if new_value != current_value:
                         log_error(df, index, "2104")
                         current_value = new_value
                     
                 # ERROR 2105 - Possibly Two Emails
                 if np.random.rand() < 0.01:
-                    extra_email = f"user{random.randint(1, 100)}@example.com"
+                    usernames = random.choice(["tom", "majči", "novak.ana", "tclient", "admin"])
+                    extra_email = f"{usernames}{random.randint(1, 100)}@gmail.com"
                     new_value = f"{current_value}, {extra_email}"    
                     if new_value != current_value:
                         log_error(df, index, "2105")
@@ -295,22 +342,36 @@ def apply_errors(df):
 
                 # ERROR 3103 - Invalid Characters
                 if np.random.rand() < 0.04:
-                    new_value = current_value.replace("0", "O").replace("1", "I")  # Replace digits with letters
+                    if np.random.rand() < 0.5:
+                        new_value = current_value.replace("0", "O").replace("1", "I")  # Replace digits with letters
+                    else:
+                        for _ in range(random.randint(1, 2)):  # Replace 1 or 2 occurrences
+                            new_value = re.sub("0", "O", new_value, count=1) if "0" in new_value and random.random() < 0.5 else new_value
+                            new_value = re.sub("1", "I", new_value, count=1) if "1" in new_value and random.random() < 0.5 else new_value
                     if new_value != current_value:
                         log_error(df, index, "3103")
                         current_value = new_value
 
                 # ERROR 3104 - Formatting Issues
                 if np.random.rand() < 0.30:
-                    new_value = random.choice([
-                        current_value.replace("00386", "+386"),  
-                        current_value.replace("00386", ""), 
-                        current_value.replace("00386", "0"),
-                        current_value.replace("00386", "+00386")
-                    ])
+                    if np.random.random() < 0.5:
+                        new_value = random.choice([
+                            current_value.replace("00386", "+386"),  
+                            current_value.replace("00386", ""), 
+                            current_value.replace("00386", "0"),
+                            current_value.replace("00386", "+00386")
+                        ])
+                    elif current_value.startswith("00386"):
+                        new_value = current_value.replace("00386", "0")
+                        pos1 = 3
+                        pos2 = 6
+                        separator = random.choice(["-", " ", "/"])
+                        new_value = new_value[:pos1] + separator + new_value[pos1:pos2] + separator + new_value[pos2:]
+
                     if new_value != current_value:
                         log_error(df, index, "3104")
                         current_value = new_value
+
                     
                 # ERROR 3105 - Too Many Digits
                 if random.random() < 0.01:
@@ -391,7 +452,20 @@ def apply_errors(df):
                         if new_value != current_value:
                             log_error(df, index, "4108")
                             current_value = new_value
-                            
+                
+                # ERROR 4110 - Duplicates
+                if np.random.rand() < 0.01:
+                    duplicate_type = random.choice(["full", "partial"])
+                    if duplicate_type == "full":
+                        new_value = f"{current_value} {current_value}"
+                    else:
+                        words = current_value.split()
+                        if len(words) > 1:
+                            new_value = " ".join(words + [words[-1]])
+                    if new_value != current_value:
+                        log_error(df, index, "4110")
+                        current_value = new_value
+            
                 # ERROR 4104 - Formatting Issues
                 if random.random() < 0.03:
                     if np.random.rand() < 0.5:
@@ -459,19 +533,6 @@ def apply_errors(df):
                     new_value = "".join([str(random.randint(1, 9)) for _ in range(3)])
                     if new_value != current_value:
                         log_error(df, index, "4109")
-                        current_value = new_value
-
-                # ERROR 4110 - Duplicates
-                if np.random.rand() < 0.01:
-                    duplicate_type = random.choice(["full", "partial"])
-                    if duplicate_type == "full":
-                        new_value = f"{current_value} {current_value}"
-                    else:
-                        words = current_value.split()
-                        if len(words) > 1:
-                            new_value = " ".join(words + [words[-1]])
-                    if new_value != current_value:
-                        log_error(df, index, "4110")
                         current_value = new_value
 
                 # ERROR 4113 - Invalid Digit in Street
@@ -731,6 +792,19 @@ def apply_errors(df):
                         log_error(df, index, "4403") 
                         current_value = new_value
 
+                # ERROR 4407 - Duplicates
+                if np.random.rand() < 0.01:
+                    duplicate_type = random.choice(["full", "partial"])
+                    if duplicate_type == "full":
+                        new_value = f"{current_value} {current_value}"
+                    else:
+                        words = current_value.split()
+                        if len(words) > 1:
+                            new_value = " ".join(words + [words[-1]])
+                    if new_value != current_value:
+                        log_error(df, index, "4407")
+                        current_value = new_value
+
                 # ERROR 4404 - Formatting Issues
                 if random.random() < 0.03:
                     if np.random.rand() < 0.5:
@@ -771,13 +845,6 @@ def apply_errors(df):
                         if new_value != current_value:
                             log_error(df, index, "4406")
                             current_value = new_value
-                
-                # ERROR 4407 - Duplicates
-                if random.random() < 0.03:
-                    new_value = f"{current_value} {current_value}"  # Duplicates error
-                    if new_value != current_value:
-                        log_error(df, index, "4407")
-                        current_value = new_value
 
                 # ERROR 4408 - Replace š, č, ž, ć with s, c, z, c
                 if np.random.rand() < 0.06:
