@@ -11,44 +11,7 @@ def detect_address_errors(street, street_number, zipcode, city):
     city = "" if pd.isna(city) else str(city)
 
     errors = set()
-
-    error_messages = {
-        '101': 'Street error: no information given',
-        '102': 'Street error: unnecessary spaces',
-        '103': 'Street error: contains \'BŠ\' or \'NH\'',
-        '104': 'Street error: contains house number',
-        '105': 'Street error: invalid characters',
-        '106': 'Street error: invalid abbreviations',
-        '107': 'Street error: no space after full stop',
-        '44108': 'Street error: only numbers',
-        '109': 'Street error: consecutive duplicates detected',
-        '110': 'Street error: street name beginning with a digit',
-        '111': 'Street error: invalid digit in Street',
-
-        '201': 'Street number error: no information given',
-        '202': 'Street number error: unnecessary spaces',
-        '203': 'Street number error: contains \'BŠ\' or \'NH\'',
-        '204': 'Street number error: no house number',
-        '205': 'Street number error: invalid combination',
-        '44206': 'Street number error: house number with leading 0',
-        '4207': 'Street number error: spacing between house number components',
-
-        '301': 'Zipcode error: no information given',
-        '302': 'Zipcode error: unnecessary spaces',
-        '303': 'Zipcode error: invalid characters',
-        '304': 'Zipcode error: more than 4 digits',
-        '305': 'Zipcode error: less than 4 digits',
-
-        '401': 'City error: no information given',
-        '402': 'City error: unnecessary spaces',
-        '403': 'City error: contains digits',
-        '404': 'City error: invalid characters',
-        '405': 'City error: invalid abbreviations',
-        '406': 'City error: no space after full stop',
-        '407': 'City error: consecutive duplicates detected'
-    }
     
-    '''
     error_messages2 = {
         '4101': 'STREET_NAME: Missing Data',
         '4102': 'STREET_NAME: Unnecessary Spaces',
@@ -87,14 +50,14 @@ def detect_address_errors(street, street_number, zipcode, city):
         '4405': 'POSTAL_CITY: Invalid abbreviations',
         '4406': 'POSTAL_CITY: Duplicates'
     }
-    '''
+    
     
     # values to compare with in checks and corrections
     roman_numbers = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'
-                                , 'XI', 'XII', 'XIII', 'XIV','XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'
-                                , 'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII', 'XXVIII', 'XXIX', 'XXX'
-                                , 'XXXI'
-                                , 'XL']
+                    , 'XI', 'XII', 'XIII', 'XIV','XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'
+                    , 'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII', 'XXVIII', 'XXIX', 'XXX'
+                    , 'XXXI'
+                    , 'XL']
     allowed_abbreviations_street = ['dr', 'Sv', 'Vel']
     allowed_abbreviations_street.extend(roman_numbers)
 
@@ -202,15 +165,16 @@ def detect_address_errors(street, street_number, zipcode, city):
 
     return ','.join(sorted(errors))
 
-# TESTING
+# # ============================
+# # **EXECUTION**
+# # ============================
 
 # customer_data = "src/processed_data/customer_data_with_errors.xlsx"
 
 # df = pd.read_excel(customer_data)
 
 # df["DETECTED_ERRORS"] = df.apply(lambda row: detect_address(
-#     row["STREET"], row["HOUSE_NUMBER"], row["POSTAL_CODE"], row["POSTAL_CITY"]
-# ), axis=1)
+#     row["STREET"], row["HOUSE_NUMBER"], row["POSTAL_CODE"], row["POSTAL_CITY"]), axis=1)
 
 # # print(df.head())
 
