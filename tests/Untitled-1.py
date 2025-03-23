@@ -1,13 +1,13 @@
 import pandas as pd
 
 # Load the CSV file
-df = pd.read_csv("src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv")
+# df = pd.read_csv("src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv")
 
 # Find rows in ULICA_NAZIV which contain a dot (.)
-rows_with_dots = df[df['ULICA_NAZIV'].str.contains(r'\.', na=False, regex=True)]
+# rows_with_dots = df[df['ULICA_NAZIV'].str.contains(r'\.', na=False, regex=True)]
 
-# Save the filtered data to an Excel file
-rows_with_dots.to_excel("src/processed_data/rows_with_dots.xlsx", index=False)
+# # Save the filtered data to an Excel file
+# rows_with_dots.to_excel("src/processed_data/rows_with_dots.xlsx", index=False)
 
 
 
@@ -54,3 +54,4 @@ if re.search(r'\d+', current_value) and not re.search(r'\d+\.', current_value):
             current_value = new_value
             
 '''
+

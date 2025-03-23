@@ -201,8 +201,6 @@ def apply_errors(df):
                         log_error(df, index, "1205")
                         current_value = new_value
                         
-                
-                    
                 # ERROR 1204 - Formatting Issues
                 if random.random() < 0.03:
                     if np.random.rand() < 0.5:
@@ -213,7 +211,6 @@ def apply_errors(df):
                     if new_value != current_value:
                         log_error(df, index, "1204")
                         current_value = new_value
-                    
                     
                 # ERROR 1206 - Replace š, č, ž, ć with s, c, z, c
                 if random.random() < 0.02:
@@ -498,9 +495,7 @@ def apply_errors(df):
                 if np.random.rand() < 0.1:
                     house_number_options = [
                         str(df.at[index, "HOUSE_NUMBER"]),  # Actual house number
-                        str(random.randint(1, 999)),  # Random number
-                        random.choice(["BŠ", "NH", "B$", "BS", "N.H.", "B.Š."]),  # Slovene indicator
-                    ]
+                        str(random.randint(1, 999))]
                     new_value = f"{current_value} {random.choice(house_number_options)}"
                     if new_value != current_value:
                         log_error(df, index, "4105")
