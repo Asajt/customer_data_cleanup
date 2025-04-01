@@ -36,6 +36,12 @@ def apply_errors(df):
     df = df.astype(str)
     
     df['INTRODUCED_ERRORS'] = ""  # Initialize the error tracking column
+
+    roman_numbers = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'
+                , 'XI', 'XII', 'XIII', 'XIV','XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'
+                , 'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII', 'XXVIII', 'XXIX', 'XXX'
+                , 'XXXI'
+                , 'XL']
     
     for index in df.index:
         # ============================
@@ -52,7 +58,7 @@ def apply_errors(df):
 
             else:          
                 # ERROR 1102 - Unnecessary Spaces
-                if random.random() < 0.03:
+                if random.random() < 0.05:
                     random_choice = random.choice(["leading", "trailing", "double"])  # Choose space type
                     if random_choice == "leading":
                         new_value = " " + current_value  # Add 1 leading space
@@ -91,7 +97,7 @@ def apply_errors(df):
                 # ERROR 1107 - Convert One Name to Initials
                 name_parts = current_value.split()
                 if len(name_parts) == 2:
-                    if np.random.rand() < 0.4:
+                    if np.random.rand() < 0.3:
                         if random.random() < 0.5:
                             new_value = f"{name_parts[0][0].upper()}." + f" {name_parts[1]}"
                         else:
@@ -103,7 +109,7 @@ def apply_errors(df):
                     
                 
                 # ERROR 1105 - Duplicates
-                if np.random.rand() < 0.01:
+                if np.random.rand() < 0.02:
                     duplicate_type = random.choice(["full", "partial"])
                     if duplicate_type == "full":
                         new_value = f"{current_value} {current_value}"
@@ -150,7 +156,7 @@ def apply_errors(df):
         # ============================
         current_value = df.at[index, "LAST_NAME"]
         
-        if np.random.rand() < 0.10:  
+        if np.random.rand() < 0.20:  
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 1201 - Missing Data
             if random.random() < 0.05:
@@ -161,7 +167,7 @@ def apply_errors(df):
             else:
 
                 # ERROR 1202 - Unnecessary Spaces
-                if random.random() < 0.03:
+                if random.random() < 0.04:
                     random_choice = random.choice(["leading", "trailing", "double"])
                     if random_choice == "leading":
                         new_value = " " + current_value
@@ -234,10 +240,10 @@ def apply_errors(df):
         ]
         
         
-        if np.random.rand() < 0.20:  # 5% chance for errors
+        if np.random.rand() < 0.40:  # 5% chance for errors
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 2101 - Missing Data
-            if np.random.rand() < 0.05:
+            if np.random.rand() < 0.08:
                 new_value = np.nan if random.random() < 0.5 else ""
                 if new_value != current_value:
                     log_error(df, index, "2101")
@@ -298,7 +304,7 @@ def apply_errors(df):
                         current_value = new_value
                     
                 # ERROR 2106 - Possibly Invalid Domain
-                if random.random() < 0.02:
+                if random.random() < 0.05:
                     local_part = current_value.split("@")[0]
                     new_value = f"{local_part}@{random.choice(invalid_domains)}"
                     if new_value != current_value:
@@ -314,10 +320,10 @@ def apply_errors(df):
         # ============================
         current_value = df.at[index, "PHONE_NUMBER"]
         
-        if np.random.rand() < 0.30:  # 5% chance for errors
+        if np.random.rand() < 0.40:  # 5% chance for errors
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 3101 - Missing Data
-            if np.random.rand() < 0.05:
+            if np.random.rand() < 0.07:
                 new_value = np.nan if random.random() < 0.5 else ""
                 if new_value != current_value:
                     log_error(df, index, "3101")
@@ -350,7 +356,7 @@ def apply_errors(df):
                         current_value = new_value
 
                 # ERROR 3104 - Formatting Issues
-                if np.random.rand() < 0.30:
+                if np.random.rand() < 0.50:
                     if np.random.random() < 0.5:
                         new_value = random.choice([
                             current_value.replace("00386", "+386"),  
@@ -371,7 +377,7 @@ def apply_errors(df):
 
                     
                 # ERROR 3105 - Too Many Digits
-                if random.random() < 0.01:
+                if random.random() < 0.02:
                     new_value = current_value + str(random.randint(0, 9))  # Append a random digit
                     if new_value != current_value:
                         log_error(df, index, "3105")
@@ -394,7 +400,7 @@ def apply_errors(df):
                         current_value = new_value
 
                 # ERROR 3108 - Different country format
-                if np.random.rand() < 0.05:
+                if np.random.rand() < 0.03:
                     alternative_country_codes = ["+385", "+49", "+33", "+44", "+30", "00385", "0049", "0033", "0044", "0030"]  # Croatia, Germany, France, UK, Greece
                     new_country_code = random.choice(alternative_country_codes)
                     new_value = current_value.replace("00386", new_country_code)
@@ -410,7 +416,7 @@ def apply_errors(df):
         current_value = df.at[index, "STREET"]
         
         # 5% chance for errors
-        if np.random.rand() < 0.10:
+        if np.random.rand() < 0.20:
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 4101 - Missing Data
             if random.random() < 0.05:
@@ -492,7 +498,7 @@ def apply_errors(df):
                             current_value = new_value
 
                 # ERROR 4105 - Contains House Number
-                if np.random.rand() < 0.1:
+                if np.random.rand() < 0.2:
                     house_number_options = [
                         str(df.at[index, "HOUSE_NUMBER"]),  # Actual house number
                         str(random.randint(1, 999))]
@@ -502,7 +508,7 @@ def apply_errors(df):
                         current_value = new_value
 
                 # ERROR 4106 - Contains Variation of BŠ
-                if np.random.rand() < 0.01:
+                if np.random.rand() < 0.1:
                     terms = ("BŠ", "NH", "B$", "BS", "N.H.", "B.Š.")
                     new_value = current_value + f" {random.choice(terms)}"
                     if new_value != current_value:
@@ -510,10 +516,10 @@ def apply_errors(df):
                         current_value = new_value
 
                 # ERROR 4107 - Invalid Abbreviations
-                if np.random.rand() < 0.25:
+                if np.random.rand() < 0.3:
                     abbreviation_map = {
                         "ulica": ["ul.", "u."],
-                        "cesta": ["ce.", "c."]}
+                        "cesta": ["c.", "ce."]}
 
                     for full, abbrs in abbreviation_map.items():
                         if full in current_value:  # If 'ulica' or 'cesta' exists
@@ -524,7 +530,7 @@ def apply_errors(df):
                         current_value = new_value
 
                 # ERROR 4109 - Only Numbers
-                if np.random.rand() < 0.01:
+                if np.random.rand() < 0.04:
                     new_value = "".join([str(random.randint(1, 9)) for _ in range(3)])
                     if new_value != current_value:
                         log_error(df, index, "4109")
@@ -553,7 +559,7 @@ def apply_errors(df):
         current_value = df.at[index, "HOUSE_NUMBER"]
         
         # 5% chance for errors
-        if np.random.rand() < 0.15:
+        if np.random.rand() < 0.20:
             new_value = current_value  # Keep the original value until an error is applied
 
             # ERROR 4201 - Missing Data
@@ -580,14 +586,14 @@ def apply_errors(df):
                         current_value = new_value
                         
                 # ERROR 4203 - Contains Variation of BŠ
-                if np.random.rand() < 0.01:
+                if np.random.rand() < 0.08:
                     new_value = random.choice(["BŠ", "NH", f"BŠ {current_value}", f"NH {current_value}"])
                     if new_value != current_value:
                         log_error(df, index, "4203")
                         current_value = new_value
 
                 # ERROR 4204 - No House Number
-                if np.random.rand() < 0.01:
+                if np.random.rand() < 0.04:
                     new_value = random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
                     if new_value != current_value:
                         log_error(df, index, "4204")
@@ -595,7 +601,7 @@ def apply_errors(df):
 
 
                 # ERROR 4205 - Invalid Combination
-                if np.random.rand() < 0.01:
+                if np.random.rand() < 0.20:
                     # Identify number and letter parts using regex
                     match = re.match(r"(\d+)([A-Za-z]?)", current_value)  # Extract number and optional letter
                     if match:
@@ -610,7 +616,7 @@ def apply_errors(df):
                         current_value = new_value
 
                 # ERROR 4206 - Leading 0
-                if np.random.rand() < 0.01:
+                if np.random.rand() < 0.05:
                     if not current_value.startswith("0"):  # Avoid adding if already has leading zero
                         zeros_to_add = random.choice(["0", "00"])  # Randomly choose 1 or 2 zeros
                         new_value = zeros_to_add + current_value
@@ -619,25 +625,26 @@ def apply_errors(df):
                         current_value = new_value
 
                 # ERROR 4207 - Spacing Between Components
-                if np.random.rand() < 0.01:
+                if np.random.rand() < 0.20:
                     new_value = current_value.replace(" ", "").replace(".", "").replace("/", "")
                     if new_value != current_value:
                         log_error(df, index, "4207")
                         current_value = new_value
 
                 # ERROR 4208 - Contains Roman Numerals (1%)
-                if np.random.rand() < 0.01:
-                    roman_numerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"]
-                    roman_choice = random.choice(roman_numerals)
-
-                    # Randomly decide whether to replace or prepend the house number
-                    if random.random() < 0.5:
-                        new_value = f"{roman_choice} {current_value}"  # E.g., "IV 5"
-                    else:
-                        new_value = roman_choice  # E.g., "IV"
-                    if new_value != current_value:
-                        log_error(df, index, "4208")
-                        current_value = new_value
+                if str(df.at[index, "STREET"]).__contains__(roman_numbers):
+                    if np.random.rand() < 0.4:
+                        roman_numerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"]
+                        roman_choice = random.choice(roman_numerals)
+                        
+                        # Randomly decide whether to replace or prepend the house number
+                        if random.random() < 0.5:
+                            new_value = f"{roman_choice} {current_value}"  # E.g., "IV 5"
+                        else:
+                            new_value = roman_choice  # E.g., "IV"
+                        if new_value != current_value:
+                            log_error(df, index, "4208")
+                            current_value = new_value
 
                 # ERROR 4209 - Ends with full stop
                 if np.random.rand() < 0.01:

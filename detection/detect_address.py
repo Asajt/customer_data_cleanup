@@ -1,4 +1,3 @@
-
 import pandas as pd
 import re
 
@@ -119,20 +118,20 @@ def detect_address_errors(street, street_number, zipcode, city):
         if street_number.startswith(' ') or street_number.endswith(' ') or "  " in street_number:
             errors.add('4202')  # Unnecessary spaces
         if any(pattern in street_number for pattern in hn_patterns) and re.search(r'\d', street_number):
-            errors.add('213') # Street number error: contains BŠ as well as a number
-        if not '213' in errors and any(pattern in street_number for pattern in hn_patterns):
+            errors.add('4213') # Street number error: contains BŠ as well as a number
+        if not '4213' in errors and any(pattern in street_number for pattern in hn_patterns):
             errors.add('4203')  # Contains variation of BŠ
         if not '4203' in errors  and street_number.endswith('.') and re.search(r'\d', street_number):
-            errors.add('205') # Street number error: ends with full stop
+            errors.add('4205') # Street number error: ends with full stop
         if len(re.findall(r'\d+', street_number)) > 1:
             errors.add('210')  # Street number error: more than one number present
-        if not ('4202' in errors or '4203' in errors or '4208' in errors or '208' in errors) and not re.search(r'\d', street_number) or re.search(r'^[^1-9]*0[^1-9]*$', street_number):
+        if not ('4202' in errors or '4203' in errors or '4208' in errors or '4208' in errors) and not re.search(r'\d', street_number) or re.search(r'^[^1-9]*0[^1-9]*$', street_number):
             errors.add('4204')  # No house number
         if not ('4202' in errors or '4203' in errors or '4208' in errors or '4204' in errors) and re.search(r'^[^0-9]',street_number):
-            errors.add('208')  # Street number error: does not start with digit
+            errors.add('4208')  # Street number error: does not start with digit
         if not '4204' in errors and re.findall(r'\d{4,}', street_number):
-            errors.add('211')  #Street number error: 4 digits
-        if not ('4203' in errors or '210' in errors or '4208' in errors or '208' in errors or '211' in errors) and re.search(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', street_number):
+            errors.add('4211')  #Street number error: 4 digits
+        if not ('4203' in errors or '210' in errors or '4208' in errors or '4208' in errors or '4211' in errors) and re.search(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', street_number):
             errors.add('4207')  # Spacing / invalid characters between components 
         if not '4204' in errors and re.search(r'\b0\s*\d+', street_number): 
             errors.add('4206')  # Leading 0
