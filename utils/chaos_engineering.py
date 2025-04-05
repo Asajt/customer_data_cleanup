@@ -52,7 +52,8 @@ def apply_errors(df):
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 1101 - Missing Data
             if random.random() < 0.05:
-                new_value = np.nan if random.random() < 0.5 else ""
+                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                new_value = random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "1101")
 
@@ -160,7 +161,8 @@ def apply_errors(df):
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 1201 - Missing Data
             if random.random() < 0.05:
-                new_value = np.nan if random.random() < 0.5 else ""  # Missing data error
+                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                new_value = random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "1201")
                 
@@ -240,11 +242,12 @@ def apply_errors(df):
         ]
         
         
-        if np.random.rand() < 0.40:  # 5% chance for errors
+        if np.random.rand() < 0.40:
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 2101 - Missing Data
-            if np.random.rand() < 0.08:
-                new_value = np.nan if random.random() < 0.5 else ""
+            if random.random() < 0.05:
+                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                new_value = random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "2101")
             else:
@@ -320,11 +323,12 @@ def apply_errors(df):
         # ============================
         current_value = df.at[index, "PHONE_NUMBER"]
         
-        if np.random.rand() < 0.40:  # 5% chance for errors
+        if np.random.rand() < 0.40: 
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 3101 - Missing Data
-            if np.random.rand() < 0.07:
-                new_value = np.nan if random.random() < 0.5 else ""
+            if random.random() < 0.07:
+                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                new_value = random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "3101")
                 
@@ -420,10 +424,11 @@ def apply_errors(df):
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 4101 - Missing Data
             if random.random() < 0.05:
-                new_value = np.nan if random.random() < 0.5 else ""  # Missing Data error
+                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                new_value = random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "4101")
-            
+
             else:
                     
                 # ERROR 4102 - Unnecessary Spaces
@@ -506,6 +511,9 @@ def apply_errors(df):
                     if new_value != current_value:
                         log_error(df, index, "4105")
                         current_value = new_value
+                    # Randomly decide whether to wipe out the actual HOUSE_NUMBER
+                    if np.random.rand() < 0.5:  # 50% chance to also wipe out the actual HOUSE_NUMBER
+                        df.at[index, "HOUSE_NUMBER"] = ""
 
                 # ERROR 4106 - Contains Variation of BŠ
                 if np.random.rand() < 0.1:
@@ -563,10 +571,11 @@ def apply_errors(df):
             new_value = current_value  # Keep the original value until an error is applied
 
             # ERROR 4201 - Missing Data
-            if np.random.rand() < 0.05:
-                new_value = np.nan if random.random() < 0.5 else ""
+            if random.random() < 0.05:
+                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                new_value = random.choice(missing_variants)
                 if new_value != current_value:
-                    log_error(df, index, "4201")
+                    log_error(df, index, "4201") 
 
             else:
 
@@ -632,19 +641,20 @@ def apply_errors(df):
                         current_value = new_value
 
                 # ERROR 4208 - Contains Roman Numerals (1%)
-                if str(df.at[index, "STREET"]).__contains__(roman_numbers):
+                roman_numerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"]
+                if any(roman in str(df.at[index, "STREET"]) for roman in roman_numerals):
                     if np.random.rand() < 0.4:
-                        roman_numerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"]
                         roman_choice = random.choice(roman_numerals)
-                        
-                        # Randomly decide whether to replace or prepend the house number
+
                         if random.random() < 0.5:
-                            new_value = f"{roman_choice} {current_value}"  # E.g., "IV 5"
+                            new_value = f"{roman_choice} {current_value}"
                         else:
-                            new_value = roman_choice  # E.g., "IV"
+                            new_value = roman_choice
+
                         if new_value != current_value:
                             log_error(df, index, "4208")
                             current_value = new_value
+
 
                 # ERROR 4209 - Ends with full stop
                 if np.random.rand() < 0.01:
@@ -686,9 +696,10 @@ def apply_errors(df):
         if np.random.rand() < 0.08:
             new_value = current_value  # Keep the original value until an error is applied
             
-            # ERROR 4301 - Missing Data (5%)
-            if np.random.rand() < 0.05:
-                new_value = np.nan if random.random() < 0.5 else ""
+            # ERROR 4301 - Missing Data
+            if random.random() < 0.05:
+                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                new_value = random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "4301")
 
@@ -762,10 +773,10 @@ def apply_errors(df):
         # 5% chance for errors
         if np.random.rand() < 0.08:
             new_value = current_value  # Keep the original value until an error is applied
-
-            # ERROR 4401 - Missing Data (5%)
-            if np.random.rand() < 0.05:
-                new_value = np.nan if random.random() < 0.5 else ""
+            # ERROR 4401 - Missing Data
+            if random.random() < 0.05:
+                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                new_value = random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "4401")
 

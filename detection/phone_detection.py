@@ -24,7 +24,7 @@ def detect_phone_errors(phone):
     phone_errors = set()
     
     # 3101 Check for missing data
-    rule_condition = (pd.isna(phone)) or (phone is None) or (phone.strip() == "") or (phone.strip() == "/") 
+    rule_condition = phone.strip() == ""
     if should_detect('3101', error_config):
         if rule_condition:
             phone_errors.add('3101')

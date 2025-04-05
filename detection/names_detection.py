@@ -31,7 +31,7 @@ def detect_name_errors(name, surname):
     
     # NAME errors detection
     # 1101 Check for missing data
-    rule_condition = (pd.isna(name) or name is None or name.strip() == "" or name.strip() == "/") 
+    rule_condition = name.strip() == ""
     if should_detect('1101', error_config):
         if rule_condition:
             name_errors.add('1101') 
@@ -76,7 +76,7 @@ def detect_name_errors(name, surname):
     
     # SURNAME errors detection
     # 1201 Missing Data
-    rule_condition = (pd.isna(surname) or surname is None or surname.strip() == "" or surname.strip() == "/")
+    rule_condition = surname.strip() == ""
     if should_detect('1201', error_config):
         if rule_condition:
             surname_errors.add('1201')

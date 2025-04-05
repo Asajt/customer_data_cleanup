@@ -26,7 +26,7 @@ def detect_email_errors(email):
     email_errors = set()
 
     # Check for missing data (2101)
-    rule_condition = (email.strip() == "" or email.strip() == "/" )
+    rule_condition = email.strip() == ""
     if should_detect('2101', error_config):
         if rule_condition:
             email_errors.add('2101')
