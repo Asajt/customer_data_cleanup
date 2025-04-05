@@ -24,20 +24,21 @@ def detect_name_errors(name, surname):
     name_errors = set()
     surname_errors = set()
     
-    error_messages = {
-        '1101': 'NAME: Missing Data',
-        '1102': 'NAME: Unnecessary Spaces',
-        '1103': 'NAME: Invalid Characters',
-        '1104': 'NAME: Formatting Issue',
-        '1105': 'NAME: Duplicates',
-        '1106': 'NAME: Two names in one field',
+    name_error_config = {
+        '1101': {'message': 'NAME: Missing Data', 'detect': True, 'correct': False},
+        '1102': {'message': 'NAME: Unnecessary Spaces', 'detect': True, 'correct': True},
+        '1103': {'message': 'NAME: Invalid Characters', 'detect': True, 'correct': True},
+        '1104': {'message': 'NAME: Formatting Issue', 'detect': True, 'correct': True},
+        '1105': {'message': 'NAME: Duplicates', 'detect': True, 'correct': False},
+        '1106': {'message': 'NAME: Two names in one field', 'detect': True, 'correct': False},
 
-        '1201': 'SURNAME: Missing Data',
-        '1202': 'SURNAME: Unnecessary Spaces',
-        '1203': 'SURNAME: Invalid Characters',
-        '1204': 'SURNAME: Formatting Issue',
-        '1205': 'SURNAME: Duplicates',
+        '1201': {'message': 'SURNAME: Missing Data', 'detect': True, 'correct': False},
+        '1202': {'message': 'SURNAME: Unnecessary Spaces', 'detect': True, 'correct': True},
+        '1203': {'message': 'SURNAME: Invalid Characters', 'detect': True, 'correct': True},
+        '1204': {'message': 'SURNAME: Formatting Issue', 'detect': True, 'correct': True},
+        '1205': {'message': 'SURNAME: Duplicates', 'detect': True, 'correct': False},
     }
+
 
     # NAME errors detection
     
