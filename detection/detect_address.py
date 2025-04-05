@@ -58,7 +58,6 @@ def detect_address_errors(street, street_number, zipcode, city):
         '4408': 'POSTAL_CITY: replacing šćčž to scz'
     }
     
-    
     # values to compare with in checks and corrections
     roman_numbers = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'
                     , 'XI', 'XII', 'XIII', 'XIV','XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'

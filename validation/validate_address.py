@@ -9,10 +9,10 @@ def validate_full_address(customer_full_address, path_to_gurs_RN_csv):
     """
     Validate customer addresses against GURS data.
     Args:
-        customer_df (pd.DataFrame): DataFrame containing full customer addresses.
-        gurs_df (pd.DataFrame): DataFrame containing full GURS addresses.
-    Returns:
-        pd.DataFrame: DataFrame with validated addresses.
+        customer_full_address (pd.Series): Series of customer full addresses.
+        path_to_gurs_RN_csv (str): Path to the GURS CSV file.
+        Returns:   
+        pd.DataFrame: DataFrame with customer addresses and validation results.
     """
 
     # Load and prepare GURS data
@@ -59,10 +59,8 @@ customer_df["FULL_ADDRESS"] = (
     customer_df["POSTAL_CITY"].str.strip()
 )
 
-
 df = validate_full_address(
     customer_full_address=customer_df["FULL_ADDRESS"],
-    path_to_gurs_RN_csv="src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv"
-)
+    path_to_gurs_RN_csv="src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv")
 
 print(df.head())
