@@ -2,6 +2,21 @@ import re
 import pandas as pd
 
 def detect_name_errors(name, surname):
+    """Detects errors in names and surnames based on various criteria.
+
+    This function checks for missing data, unnecessary spaces, invalid characters,
+    formatting issues, duplicates, and the presence of multiple names in a single field.
+
+    Args:
+        name (str): The name to be checked
+        surname (str): The surname to be checked.
+
+    Returns:
+        dict: A dictionary containing detected errors for both name and surname.
+        The keys are:
+            - "name_detected_errors": A list of error codes for the name.
+            - "surname_detected_errors": A list of error codes for the surname.
+    """
     # Check for NaN values and convert them to empty strings
     name = "" if pd.isna(name) else str(name)
     surname = "" if pd.isna(surname) else str(surname)

@@ -2,6 +2,17 @@ import re
 import pandas as pd
 
 def detect_phone_errors(phone):
+    """Detects errors in phone numbers based on various criteria.
+
+    This function checks for missing data, unnecessary spaces, invalid characters,
+    formatting issues, duplicates, and the presence of multiple phone numbers in a single field.
+
+    Args:
+        phone (str): The phone number to be checked.
+
+    Returns:
+        set: A set containing detected error codes for the phone number.
+    """
     # Check for NaN values and convert them to empty strings
     phone = "" if pd.isna(phone) else str(phone)
 

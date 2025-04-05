@@ -2,6 +2,25 @@ import pandas as pd
 import re
 
 def detect_address_errors(street, street_number, zipcode, city):
+    """Detects errors in several address components based on various criteria.
+
+    This function checks for missing data, unnecessary spaces, invalid characters,
+    formatting issues, duplicates, and the presence of multiple components in a single field.
+
+    Args:
+        street (str): The street name to be checked.
+        street_number (str): The street number to be checked.
+        zipcode (str): The postal code to be checked.
+        city (str): The city name to be checked.
+
+    Returns:
+        dict: A dictionary containing detected errors for each address component.
+        The keys are:
+            - "street_detected_errors": A list of error codes for the street.
+            - "street_number_detected_errors": A list of error codes for the street number.
+            - "zipcode_detected_errors": A list of error codes for the zipcode.
+            - "city_detected_errors": A list of error codes for the city.
+    """
 
     # Check for NaN values and convert them to empty strings
     street = "" if pd.isna(street) else str(street)

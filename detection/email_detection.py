@@ -3,6 +3,18 @@ import pandas as pd
 from email_validator import validate_email, EmailNotValidError
 
 def detect_email_errors(email):
+    """Detects errors in email addresses based on various criteria.
+
+    This function checks for missing data, unnecessary spaces, invalid characters,
+    formatting issues, duplicates, and the presence of multiple emails in a single field.
+
+    Args:
+        email (str): The email address to be checked.
+
+    Returns:
+        set: A set containing detected error codes for the email address.
+    """
+    
     # Ensure it's a valid string
     email = "" if pd.isna(email) else str(email)
 
