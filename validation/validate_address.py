@@ -1,14 +1,16 @@
 import pandas as pd
 
-def validate_full_address(customer_df: pd.DataFrame, path_to_gurs_RN_csv: str) -> pd.DataFrame:
-    """
-    Validate customer addresses against GURS data.
+def validate_full_address(customer_df: pd.DataFrame, full_address_column: str, path_to_gurs_RN_csv: str) -> pd.DataFrame:
+    """_summary_
+
     Args:
-        customer_df (pd.DataFrame): DataFrame containing customer addresses.
-        path_to_gurs_RN_csv (str): Path to the GURS CSV file.
-        Returns:   
-        pd.DataFrame: DataFrame with customer addresses and validation results.
-    """
+        customer_df (pd.DataFrame): DataFrame containing customer data.
+        full_address_column (str): Name of the column containing the full address in format "street house_number, postal_code postal_city"
+        path_to_gurs_RN_csv (str): Path to the GURS RN CSV file.
+
+    Returns:
+        pd.DataFrame: DataFrame with additional columns for full address validation.
+    """    
 
     # Load and prepare GURS data
     gurs_df = pd.read_csv(path_to_gurs_RN_csv, usecols = ['ULICA_NAZIV','HS_STEVILKA','HS_DODATEK','POSTNI_OKOLIS_SIFRA','POSTNI_OKOLIS_NAZIV'])
@@ -31,7 +33,7 @@ def validate_full_address(customer_df: pd.DataFrame, path_to_gurs_RN_csv: str) -
     merged_df = customer_df.merge(
         gurs_df,
         how="left",
-        left_on="FULL_ADDRESS",
+        left_on=full_address_column,
         right_on="GURS_FULL_ADDRESS",
     )
 
@@ -51,10 +53,7 @@ if __name__ == "__main__":
         df["POSTAL_CITY"].str.strip()
     )
 
-    df = validate_full_address(
-        df,
+    df = validate_full_address(df,"FULL_ADDRESS",
         path_to_gurs_RN_csv="src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv")
-
-    print(df.head())
     
     df.to_excel("src/processed_data/customer_data_with_address_validation.xlsx", index=False)

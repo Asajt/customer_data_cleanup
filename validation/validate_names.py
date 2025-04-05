@@ -72,21 +72,20 @@ def fetch_SURS_data():
     return all_names, all_surnames
 
 
-def validate_names(customer_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Validate names and surnames in the customer DataFrame against SURS data.
+def validate_names(customer_df: pd.DataFrame, first_name_column: str, last_name_column: str) -> pd.DataFrame:
+    """_summary_
+    Args:
+        customer_df (pd.DataFrame): DataFrame containing customer data.
+        first_name_column (str): Name of the column containing first names.
+        last_name_column (str): Name of the column containing last names.
 
-    Parameters:
-    -----------
-    customer_df : pd.DataFrame
-        DataFrame containing customer data with 'FIRST_NAME' and 'LAST_NAME' columns.
+    Raises:
+        ValueError: If SURS data fetching fails.
 
     Returns:
-    --------
-    pd.DataFrame
-        Original DataFrame with added 'NAME_VALID' and 'SURNAME_VALID' boolean columns.
-    """
-
+        pd.DataFrame: DataFrame with additional columns for name validation.
+    """   
+     
     # Fetch SURS name and surname datasets
     all_names, all_surnames = fetch_SURS_data()
 
@@ -104,7 +103,7 @@ def validate_names(customer_df: pd.DataFrame) -> pd.DataFrame:
     merged_df = customer_df.merge(
         first_names_df,
         how="left",
-        left_on="FIRST_NAME",
+        left_on=first_name_column,
         right_on="SURS_FIRST_NAME",
     )
     merged_df["FIRST_NAME_VALID"] = merged_df["SURS_FIRST_NAME"].notnull()
@@ -113,7 +112,7 @@ def validate_names(customer_df: pd.DataFrame) -> pd.DataFrame:
     merged_df = merged_df.merge(
         last_names_df,
         how="left",
-        left_on="LAST_NAME",
+        left_on=last_name_column,
         right_on="SURS_LAST_NAME",
     )
     merged_df["LAST_NAME_VALID"] = merged_df["SURS_LAST_NAME"].notnull()
@@ -126,7 +125,7 @@ if __name__ == "__main__":
     df = pd.read_excel(customer_data)
 
     # Run name validation
-    df = validate_names(df)
+    df = validate_names(df, "FIRST_NAME", "LAST_NAME")
 
   # choose the columns to keep
     columns_to_keep = [
