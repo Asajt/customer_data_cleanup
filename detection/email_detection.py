@@ -79,16 +79,18 @@ def detect_email_errors(email):
 
     return ','.join(sorted(errors))
 
-# TESTING
 
-# customer_data = "src/processed_data/customer_data_with_errors.xlsx"
+if __name__ == "__main__":
+    # TESTING
 
-# df = pd.read_excel(customer_data)
+    customer_data = "src/processed_data/customer_data_with_errors.xlsx"
 
-# # Apply the email error detection
-# df["DETECTED_ERRORS"] = df.apply(lambda row: detect_email_errors(row["EMAIL"]), axis=1)
+    df = pd.read_excel(customer_data)
 
-# # Save the result to a new file
-# df.to_excel("src/processed_data/01_customer_data_with_detected_errors.xlsx", index=False)
+    # Apply the email error detection
+    df["DETECTED_ERRORS"] = df.apply(lambda row: detect_email_errors(row["EMAIL"]), axis=1)
 
-# print("Detection of address errors completed!")
+    # Save the result to a new file
+    df.to_excel("src/processed_data/01_customer_data_with_detected_errors.xlsx", index=False)
+
+    print("Detection of address errors completed!")

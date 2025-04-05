@@ -176,15 +176,13 @@ def detect_address_errors(street, street_number, zipcode, city):
 
     return ','.join(sorted(errors))
 
-# # ============================
-# # **EXECUTION**
-# # ============================
+if __name__ == "__main__":
+    # Load the customer data
+    customer_data = "src/processed_data/customer_data_with_errors.xlsx"
+    df = pd.read_excel(customer_data)
 
-customer_data = "src/processed_data/customer_data_with_errors.xlsx"
-df = pd.read_excel(customer_data)
+    df["DETECTED_ERRORS"] = df.apply(lambda row: detect_address_errors(
+        row["STREET"], row["HOUSE_NUMBER"], row["POSTAL_CODE"], row["POSTAL_CITY"]), axis=1)
 
-df["DETECTED_ERRORS"] = df.apply(lambda row: detect_address_errors(
-    row["STREET"], row["HOUSE_NUMBER"], row["POSTAL_CODE"], row["POSTAL_CITY"]), axis=1)
-
-df.to_excel("src/processed_data/01_customer_data_with_detected_errors.xlsx", index=False)
-print("Detection of address errors completed!")
+    df.to_excel("src/processed_data/01_customer_data_with_detected_errors.xlsx", index=False)
+    print("Detection of address errors completed!")

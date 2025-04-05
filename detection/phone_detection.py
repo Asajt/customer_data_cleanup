@@ -57,19 +57,18 @@ def detect_phone_errors(phone):
         
     return ','.join(sorted(errors))
 
+if __name__ == "__main__":
 
-# # TESTING
+    customer_data = "src/processed_data/customer_data_with_errors.xlsx"
 
-# customer_data = "src/processed_data/customer_data_with_errors.xlsx"
+    df = pd.read_excel(customer_data)
 
-# df = pd.read_excel(customer_data)
-
-# # Apply the phone error detection
-# df["DETECTED_ERRORS"] = df.apply(lambda row: detect_phone_errors(row["PHONE_NUMBER"]), axis=1)
+    # Apply the phone error detection
+    df["DETECTED_ERRORS"] = df.apply(lambda row: detect_phone_errors(row["PHONE_NUMBER"]), axis=1)
 
 
-# print(df.head())
-# # # Save the result to a new file
-# df.to_excel("src/processed_data/customer_data_with_detected_phone_errors.xlsx", index=False)
+    print(df.head())
+    # # Save the result to a new file
+    df.to_excel("src/processed_data/customer_data_with_detected_phone_errors.xlsx", index=False)
 
-# print("Detection of address errors completed!")
+    print("Detection of address errors completed!")
