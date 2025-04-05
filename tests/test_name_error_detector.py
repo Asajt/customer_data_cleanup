@@ -1,6 +1,6 @@
 import pytest
 import pandas as pd
-from detection.detect_names import detect_name_errors  # Import your function
+from detection.names_detection import detect_name_errors  # Import your function
 
 @pytest.mark.parametrize("name, surname, expected_errors", [
     # ✅ Missing Name Tests

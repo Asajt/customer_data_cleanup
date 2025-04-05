@@ -6,7 +6,8 @@ def detect_name_errors(name, surname):
     name = "" if pd.isna(name) else str(name)
     surname = "" if pd.isna(surname) else str(surname)
 
-    errors = set()
+    name_errors = set()
+    surname_errors = set()
     
     error_messages = {
         '1101': 'NAME: Missing Data',
@@ -27,16 +28,16 @@ def detect_name_errors(name, surname):
     
     # 1101 Check for missing data
     if pd.isna(name) or name is None or name.strip() == "" or name.strip() == "/" :
-        errors.add('1101') 
+        name_errors.add('1101') 
     # 1102 Check for unnecessary spaces
     if name.startswith(' ') or name.endswith(' ') or "  " in name:
-        errors.add('1102')
+        name_errors.add('1102')
     # 1103 Check for invalid characters
     if not re.search(r'^[a-ž\s]+$', name, re.IGNORECASE):
-        errors.add('1103')
+        name_errors.add('1103')
     # 1104 Check for formatting issues
     if not name.istitle(): 
-        errors.add('1104')
+        name_errors.add('1104')
     # 1105 Check for duplicates
     names = name.split()
     counts = {}
@@ -45,21 +46,21 @@ def detect_name_errors(name, surname):
             counts[name] = 0
         counts[name] += 1
     if any(count > 1 for count in counts.values()):
-        errors.add('1105')
+        name_errors.add('1105')
     # 1106 Check for two names in one field
     if len(names) > 1:
-        errors.add('1106')
+        name_errors.add('1106')
     
     # SURNAME errors detection
     # 1201 Missing Data
     if pd.isna(surname) or surname is None or surname.strip() == "" or surname.strip() == "/":
-        errors.add('1201')
+        surname_errors.add('1201')
     # 1202 Unnecessary Spaces
     if surname.startswith(' ') or surname.endswith(' ') or "  " in surname:
-        errors.add('1202')
+        surname_errors.add('1202')
     # 1204 Formatting Issue
-    if not name.istitle():
-        errors.add('1204')
+    if not surname.istitle():
+        surname_errors.add('1204')
     # 1205 Duplicates    
     surnames = surname.split()
     counts = {}
@@ -68,10 +69,13 @@ def detect_name_errors(name, surname):
             counts[word] = 0
         counts[word] += 1
     if any(count > 1 for count in counts.values()):
-        errors.add('1205')
-                
-            
-    return ','.join(sorted(errors))
+        surname_errors.add('1205')
+                   
+    # return ','.join(sorted(errors))
+    return {
+        "name_detected_errors": sorted(name_errors),
+        "surname_detected_errors": sorted(surname_errors)
+    }
 
 
 # # TESTING

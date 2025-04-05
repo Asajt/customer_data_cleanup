@@ -1,6 +1,6 @@
 import pytest
 import pandas as pd
-from detection.detect_address import detect_address_errors
+from detection.address_detection import detect_address_errors
 
 @pytest.fixture
 def sample_data():

@@ -1,6 +1,6 @@
 import pytest
 import pandas as pd
-from correction.correct_address import correct_address_errors
+from correction.address_correction import correct_address_errors
 
 @pytest.fixture
 def sample_data():

@@ -1,4 +1,4 @@
-from utils.orchestration import DataQualityPipeline
+from pipelines.names_pipeline import DataQualityPipeline
 
 GURS_file_path = 'src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
 
