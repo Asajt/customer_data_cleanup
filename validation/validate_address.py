@@ -37,7 +37,7 @@ def validate_full_address(customer_df: pd.DataFrame, full_address_column: str, p
         right_on="GURS_FULL_ADDRESS",
     )
 
-    merged_df["VALIDATED"] = merged_df["GURS_FULL_ADDRESS"].notnull()
+    merged_df[f"{full_address_column}_VALID"] = merged_df["GURS_FULL_ADDRESS"].notnull()
 
     return merged_df
 
@@ -56,4 +56,11 @@ if __name__ == "__main__":
     df = validate_full_address(df,"FULL_ADDRESS",
         path_to_gurs_RN_csv="src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv")
     
+    # choose the columns to keep
+    columns_to_keep = [
+        "CUSTOMER_ID", "FULL_ADDRESS", "GURS_FULL_ADDRESS", "FULL_ADDRESS_VALID"
+    ]
+    df = df[columns_to_keep]
+    
     df.to_excel("src/processed_data/customer_data_with_address_validation.xlsx", index=False)
+    print("Address validation complete.")

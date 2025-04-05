@@ -19,7 +19,7 @@ def validate_email(customer_df: pd.DataFrame, email_column: str) -> pd.DataFrame
     Returns:
         pd.DataFrame: DataFrame with additional columns for email validation.
     """
-    customer_df["EMAIL_VALID"] = customer_df[email_column].apply(is_valid_email)
+    customer_df[f"{email_column}_VALID"] = customer_df[email_column].apply(is_valid_email)
     return customer_df
 
 
@@ -31,5 +31,12 @@ if __name__ == "__main__":
     # Run email validation
     df = validate_email(df, "EMAIL")
 
+  # choose the columns to keep
+    columns_to_keep = [
+        "CUSTOMER_ID", "EMAIL", "EMAIL_VALID"
+    ]
+    df = df[columns_to_keep]
+    
     # Save updated file
     df.to_excel("src/processed_data/customer_data_with_email_validation.xlsx", index=False)
+    print("Email validation complete.")

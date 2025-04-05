@@ -106,7 +106,7 @@ def validate_names(customer_df: pd.DataFrame, first_name_column: str, last_name_
         left_on=first_name_column,
         right_on="SURS_FIRST_NAME",
     )
-    merged_df["FIRST_NAME_VALID"] = merged_df["SURS_FIRST_NAME"].notnull()
+    merged_df[f"{first_name_column}_VALID"] = merged_df["SURS_FIRST_NAME"].notnull()
     
     # Merge LAST_NAME
     merged_df = merged_df.merge(
@@ -115,7 +115,7 @@ def validate_names(customer_df: pd.DataFrame, first_name_column: str, last_name_
         left_on=last_name_column,
         right_on="SURS_LAST_NAME",
     )
-    merged_df["LAST_NAME_VALID"] = merged_df["SURS_LAST_NAME"].notnull()
+    merged_df[f"{last_name_column}_VALID"] = merged_df["SURS_LAST_NAME"].notnull()
 
     return merged_df
 
