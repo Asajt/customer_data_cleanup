@@ -1,0 +1,347 @@
+{
+    "1101": {
+        "error_message": "NAME: Missing Data",
+        "detect": true,
+        "correct": true
+    },
+    "1102": {
+        "error_message": "NAME: Unnecessary Spaces",
+        "detect": true,
+        "correct": true
+    },
+    "1103": {
+        "error_message": "NAME: Invalid Characters",
+        "detect": true,
+        "correct": true
+    },
+    "1104": {
+        "error_message": "NAME: Formatting Issue",
+        "detect": true,
+        "correct": true
+    },
+    "1105": {
+        "error_message": "NAME: Duplicates",
+        "detect": true,
+        "correct": true
+    },
+    "1106": {
+        "error_message": "NAME: Two names in one field",
+        "detect": true,
+        "correct": true
+    },
+    "1107": {
+        "error_message": "NAME: Initials present",
+        "detect": true,
+        "correct": true
+    },
+    "1108": {
+        "error_message": "NAME: replacing šćčž to scz",
+        "detect": true,
+        "correct": true
+    },
+    "1201": {
+        "error_message": "SURNAME: Missing Data",
+        "detect": true,
+        "correct": true
+    },
+    "1202": {
+        "error_message": "SURNAME: Unnecessary Spaces",
+        "detect": true,
+        "correct": true
+    },
+    "1203": {
+        "error_message": "SURNAME: Invalid Characters",
+        "detect": true,
+        "correct": true
+    },
+    "1204": {
+        "error_message": "SURNAME: Formatting Issue",
+        "detect": true,
+        "correct": true
+    },
+    "1205": {
+        "error_message": "SURNAME: Duplicates",
+        "detect": true,
+        "correct": true
+    },
+    "1206": {
+        "error_message": "SURNAME: replacing šćčž to scz",
+        "detect": true,
+        "correct": true
+    },
+    "2101": {
+        "error_message": "EMAIL: Missing Data",
+        "detect": true,
+        "correct": true
+    },
+    "2102": {
+        "error_message": "EMAIL: Unnecessary Spaces",
+        "detect": true,
+        "correct": true
+    },
+    "2103": {
+        "error_message": "EMAIL: Invalid Characters",
+        "detect": true,
+        "correct": true
+    },
+    "2104": {
+        "error_message": "EMAIL: Formatting Issue",
+        "detect": true,
+        "correct": true
+    },
+    "2105": {
+        "error_message": "EMAIL: Possibly Two Emails",
+        "detect": true,
+        "correct": true
+    },
+    "2106": {
+        "error_message": "EMAIL: Possibly Invalid domain",
+        "detect": true,
+        "correct": true
+    },
+    "3101": {
+        "error_message": "PHONE: Missing Data",
+        "detect": true,
+        "correct": true
+    },
+    "3102": {
+        "error_message": "PHONE: Unnecessary Spaces",
+        "detect": true,
+        "correct": true
+    },
+    "3103": {
+        "error_message": "PHONE: Invalid characters",
+        "detect": true,
+        "correct": true
+    },
+    "3104": {
+        "error_message": "PHONE: Formatting Issue",
+        "detect": true,
+        "correct": true
+    },
+    "3105": {
+        "error_message": "PHONE: Too many digits",
+        "detect": true,
+        "correct": true
+    },
+    "3106": {
+        "error_message": "PHONE: Too little digits",
+        "detect": true,
+        "correct": true
+    },
+    "3107": {
+        "error_message": "PHONE: Two phone numbers",
+        "detect": true,
+        "correct": true
+    },
+    "3108": {
+        "error_message": "PHONE: Different country format",
+        "detect": true,
+        "correct": true
+    },
+    "4101": {
+        "error_message": "STREET_NAME: Missing Data",
+        "detect": true,
+        "correct": true
+    },
+    "4102": {
+        "error_message": "STREET_NAME: Unnecessary Spaces",
+        "detect": true,
+        "correct": true
+    },
+    "4103": {
+        "error_message": "STREET_NAME: Invalid characters",
+        "detect": true,
+        "correct": true
+    },
+    "4104": {
+        "error_message": "STREET_NAME: Formatting Issue",
+        "detect": true,
+        "correct": true
+    },
+    "4105": {
+        "error_message": "STREET_NAME: Contains house number",
+        "detect": true,
+        "correct": true
+    },
+    "4106": {
+        "error_message": "STREET_NAME: Contains variation of BŠ",
+        "detect": true,
+        "correct": true
+    },
+    "4107": {
+        "error_message": "STREET_NAME: Invalid abbreviations",
+        "detect": true,
+        "correct": true
+    },
+    "4108": {
+        "error_message": "STREET_NAME: No space after full stop",
+        "detect": true,
+        "correct": true
+    },
+    "4109": {
+        "error_message": "STREET_NAME: Only numbers",
+        "detect": true,
+        "correct": true
+    },
+    "4110": {
+        "error_message": "STREET_NAME: Duplicates",
+        "detect": true,
+        "correct": true
+    },
+    "4111": {
+        "error_message": "STREET_NAME: Starts with number",
+        "detect": true,
+        "correct": true
+    },
+    "4112": {
+        "error_message": "STREET_NAME: Cannot contain digit at the end",
+        "detect": true,
+        "correct": true
+    },
+    "4113": {
+        "error_message": "STREET_NAME: Invalid digit in Street",
+        "detect": true,
+        "correct": true
+    },
+    "4114": {
+        "error_message": "STREET_NAME: replacing šćčž to scz",
+        "detect": true,
+        "correct": true
+    },
+    "4201": {
+        "error_message": "HOUSE_NUMBER: Missing Data",
+        "detect": true,
+        "correct": true
+    },
+    "4202": {
+        "error_message": "HOUSE_NUMBER: Unnecessary spaces",
+        "detect": true,
+        "correct": true
+    },
+    "4203": {
+        "error_message": "HOUSE_NUMBER: Contains variation of BŠ",
+        "detect": true,
+        "correct": true
+    },
+    "4204": {
+        "error_message": "HOUSE_NUMBER: No house number",
+        "detect": true,
+        "correct": true
+    },
+    "4205": {
+        "error_message": "HOUSE_NUMBER: invalid combination",
+        "detect": true,
+        "correct": true
+    },
+    "4206": {
+        "error_message": "HOUSE_NUMBER: Leading 0",
+        "detect": true,
+        "correct": true
+    },
+    "4207": {
+        "error_message": "HOUSE_NUMBER: Spacing between components",
+        "detect": true,
+        "correct": true
+    },
+    "4208": {
+        "error_message": "HOUSE_NUMBER: Contains roman numerals",
+        "detect": true,
+        "correct": true
+    },
+    "4209": {
+        "error_message": "HOUSE_NUMBER: Ends with full stop",
+        "detect": true,
+        "correct": true
+    },
+    "4210": {
+        "error_message": "HOUSE_NUMBER: More than one number present",
+        "detect": true,
+        "correct": true
+    },
+    "4211": {
+        "error_message": "HOUSE_NUMBER: Does not start with digit",
+        "detect": true,
+        "correct": true
+    },
+    "4212": {
+        "error_message": "HOUSE_NUMBER: More than 4 digits",
+        "detect": true,
+        "correct": true
+    },
+    "4301": {
+        "error_message": "ZIPCODE: Missing Data",
+        "detect": true,
+        "correct": true
+    },
+    "4302": {
+        "error_message": "ZIPCODE: Unnecessary Spaces",
+        "detect": true,
+        "correct": true
+    },
+    "4303": {
+        "error_message": "ZIPCODE: invalid characters",
+        "detect": true,
+        "correct": true
+    },
+    "4304": {
+        "error_message": "ZIPCODE: Less than 4",
+        "detect": true,
+        "correct": true
+    },
+    "4305": {
+        "error_message": "ZIPCODE: More than 4",
+        "detect": true,
+        "correct": true
+    },
+    "4306": {
+        "error_message": "ZIPCODE: Contains Letters",
+        "detect": true,
+        "correct": true
+    },
+    "4307": {
+        "error_message": "ZIPCODE: Invalid Value",
+        "detect": true,
+        "correct": true
+    },
+    "4401": {
+        "error_message": "POSTAL_CITY: Missing Data",
+        "detect": true,
+        "correct": true
+    },
+    "4402": {
+        "error_message": "POSTAL_CITY: Unnecessary Spaces",
+        "detect": true,
+        "correct": true
+    },
+    "4403": {
+        "error_message": "POSTAL_CITY: Invalid characters",
+        "detect": true,
+        "correct": true
+    },
+    "4404": {
+        "error_message": "POSTAL_CITY: Formatting Issue",
+        "detect": true,
+        "correct": true
+    },
+    "4405": {
+        "error_message": "POSTAL_CITY: Contains digits",
+        "detect": true,
+        "correct": true
+    },
+    "4406": {
+        "error_message": "POSTAL_CITY: Invalid abbreviations",
+        "detect": true,
+        "correct": true
+    },
+    "4407": {
+        "error_message": "POSTAL_CITY: Duplicates",
+        "detect": true,
+        "correct": true
+    },
+    "4408": {
+        "error_message": "POSTAL_CITY: replacing šćčž to scz",
+        "detect": true,
+        "correct": true
+    }
+}
