@@ -118,6 +118,8 @@ def apply_errors(df):
                         words = current_value.split()
                         if len(words) > 1:
                             new_value = " ".join(words + [words[-1]])
+                        else:
+                            new_value = f"{current_value} {current_value}"
                     if new_value != current_value:
                         log_error(df, index, "1105")
                         current_value = new_value
@@ -205,6 +207,8 @@ def apply_errors(df):
                         words = current_value.split()
                         if len(words) > 1:
                             new_value = " ".join(words + [words[-1]])
+                        else:
+                            new_value = f"{current_value} {current_value}"
                     if new_value != current_value:
                         log_error(df, index, "1205")
                         current_value = new_value
@@ -470,6 +474,8 @@ def apply_errors(df):
                         words = current_value.split()
                         if len(words) > 1:
                             new_value = " ".join(words + [words[-1]])
+                        else:
+                            new_value = f"{current_value} {current_value}"
                     if new_value != current_value:
                         log_error(df, index, "4110")
                         current_value = new_value
@@ -514,6 +520,7 @@ def apply_errors(df):
                     # Randomly decide whether to wipe out the actual HOUSE_NUMBER
                     if np.random.rand() < 0.5:  # 50% chance to also wipe out the actual HOUSE_NUMBER
                         df.at[index, "HOUSE_NUMBER"] = ""
+                        log_error(df, index, "4201")  # Log the error for HOUSE_NUMBER as well
 
                 # ERROR 4106 - Contains Variation of BŠ
                 if np.random.rand() < 0.1:
@@ -594,7 +601,7 @@ def apply_errors(df):
                         log_error(df, index, "4202")
                         current_value = new_value
                         
-                # ERROR 4203 - Contains Variation of BŠ
+                # ERROR 4203 - Contains Variation of BŠ & ERROR 4213 Contains BŠ as well as house number
                 if np.random.rand() < 0.08:
                     new_value = random.choice(["BŠ", "NH", f"BŠ {current_value}", f"NH {current_value}"])
                     if new_value != current_value:
@@ -684,6 +691,7 @@ def apply_errors(df):
                     if new_value != current_value:
                         log_error(df, index, "4212")
                         current_value = new_value
+            
 
             df.at[index, "HOUSE_NUMBER"] = new_value  # Apply error to the column
 
@@ -806,14 +814,17 @@ def apply_errors(df):
                         current_value = new_value
 
                 # ERROR 4407 - Duplicates
-                if np.random.rand() < 0.01:
+                if np.random.rand() < 0.02:
                     duplicate_type = random.choice(["full", "partial"])
+                    new_value = current_value 
                     if duplicate_type == "full":
                         new_value = f"{current_value} {current_value}"
                     else:
                         words = current_value.split()
                         if len(words) > 1:
                             new_value = " ".join(words + [words[-1]])
+                        else:
+                            new_value = f"{current_value} {current_value}"
                     if new_value != current_value:
                         log_error(df, index, "4407")
                         current_value = new_value
@@ -852,9 +863,11 @@ def apply_errors(df):
                     'Postojna': 'PO',
                     'Slovenj Gradec': 'SG'
                 }
-                if random.random() < 0.07:
+                if random.random() < 0.07:  # 7% chance to apply
                     if current_value in city_abbreviations:
-                        new_value = city_abbreviations[current_value]
+                        abbr = city_abbreviations[current_value]
+                        use_dot = random.random() < 0.5  # 50% chance to add a dot
+                        new_value = f"{abbr}." if use_dot else abbr
                         if new_value != current_value:
                             log_error(df, index, "4406")
                             current_value = new_value

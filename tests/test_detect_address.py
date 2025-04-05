@@ -66,3 +66,17 @@ def test_error_403_city_contains_digits(sample_data):
     """Test if error '403' is detected for city names with digits"""
     df = detect_address_errors(sample_data)
     assert "403" in df["DETECTED_CITY_ERRORS"][2]  # Contains numbers
+
+######### moji testi ##########
+
+import re 
+
+hn_patterns = ['BŠ', 'B.Š.', 'B. ŠT.', 'B.ŠT.', 'B$', 'BREZ ŠT.', 'BS', 'B.S.', 'NH', 'N.H.', 'BH', 'B.H.']
+
+street = 'Barletova ce.  B$'
+# 4106 Contains variation of BŠ
+rule_condition = any(re.search(re.escape(pattern), street, re.IGNORECASE) for pattern in hn_patterns)
+if rule_condition:
+    print("error")
+else:
+    print("ok")

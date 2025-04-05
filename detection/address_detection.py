@@ -59,11 +59,19 @@ def detect_address_errors(street, street_number, zipcode, city):
             street_errors.add('4101') 
     
         else:
+            # 4109 Only numbers
+            rule_condition = str(street).strip().isdigit()
+            if should_detect('4109', error_config):
+                if rule_condition:
+                    street_errors.add('4109')
+            
             # 4111 Starts with number
+            skip_if_condition = not '4109' in street_errors
             rule_condition = re.search(r'^\d',street)
             if should_detect('4111', error_config):
-                if rule_condition:
-                    street_errors.add('4111')
+                if skip_if_condition:
+                    if rule_condition:
+                        street_errors.add('4111')
             
             # 4102 Check for unnecessary spaces
             rule_condition = street.startswith(' ') or street.endswith(' ') or "  " in street
@@ -72,31 +80,33 @@ def detect_address_errors(street, street_number, zipcode, city):
                     street_errors.add('4102')
             
             # 4106 Contains variation of BŠ
-            rule_condition = any(re.search(r'\b' + re.escape(pattern) + r'\b', street) for pattern in hn_patterns)
+            rule_condition = any(
+                re.search(r'(?<!\w)' + re.escape(pattern) + r'(?!\w)', street, re.IGNORECASE)
+                for pattern in hn_patterns)
             if should_detect('4106', error_config):
                 if rule_condition:
                     street_errors.add('4106')
             
             # 4103 Check for invalid characters
-            rule_condition = not re.search(r'^[a-zA-ZčćšžČĆŠŽ\d\s\.,-/]+$', street) or '//' in street
+            rule_condition = not re.search(r'^[a-zA-ZčćšžČĆŠŽ\d\s\.,-/]+$', street) or \
+                '//' in street or \
+                not re.search(r"[a-zA-ZčćšžČĆŠŽ0-9]", street) #cannot have only special characters
+            rule_condition_4106 = any(
+                re.search(r'(?<!\w)' + re.escape(pattern) + r'(?!\w)', street, re.IGNORECASE)
+                for pattern in hn_patterns)
             if should_detect('4103', error_config):
-                if rule_condition:
+                if rule_condition and not rule_condition_4106:
                     street_errors.add('4103')
-            
+        
             # 4104  Formatting issues (check whether the case of letters is correct) 
             
             # 4107 Check for invalid abbreviations
             rule_condition = re.search(r'(?<!\d)\.',street) and \
                 re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_street) + r')\.)\w+\.', street, flags=re.IGNORECASE)
+            rule_condition_4106 = any(re.search(re.escape(pattern), street, re.IGNORECASE) for pattern in hn_patterns)
             if should_detect('4107', error_config):
-                if rule_condition:
+                if rule_condition and not rule_condition_4106:
                     street_errors.add('4107') 
-            
-            # 4109 Only numbers
-            rule_condition = not any(char.isalpha() for char in street)
-            if should_detect('4109', error_config):
-                if rule_condition:
-                    street_errors.add('4109')
             
             # 4110 Check for (consecutive) duplicates
             if street:
@@ -112,27 +122,38 @@ def detect_address_errors(street, street_number, zipcode, city):
                     prev_comp = comp
             
             # 4105 Contains house number
+            skip_if_condition = not '4109' in street_errors
             rule_condition = re.search(r'\d+[A-Za-zČčŠšŽž]{0,3}(\/?|\.?|\s?)[A-Za-zČčŠšŽž]{0,3}$', street)
             if should_detect('4105', error_config):
-                if rule_condition:
-                    street_errors.add('4105')
-                    
-            # !!! cannot contain digit at the end
+                if skip_if_condition:
+                    if rule_condition:
+                        street_errors.add('4105')
             
-            # 4112 Check for invalid digit in street
-            skip_if_condition = not '4105' in street_errors
+            # 4112 Cannot contain digit at the end 
+            skip_if_condition = not (any (code in street_errors for code in ["4105", "4109"]))
             rule_condition = re.search(r'\d+$', street)
             if should_detect('4112', error_config):
                 if skip_if_condition:
                     if rule_condition:
                         street_errors.add('4112')
-                    
-            # 4108 Check for no space after full stop
-            skip_if_condition = not any(code in street_errors for code in ["4105", "4107"])
-            rule_condition = street and re.search(r'\.(?![\s\W])',street)
-            if should_detect('4108', error_config):
+                        
+            # 4113 Check for invalid digit in street
+            skip_if_condition = not (any (code in street_errors for code in ["4105", "4109", "4111", "4112"]))
+            rule_condition = (re.search(r'\d+(?![.\d])', street)) and not \
+                (re.search(r'25\s+TALCEV',street)) #edina ulica, ki nima pike po številki 2024/03/12
+            if should_detect('4113', error_config):
                 if skip_if_condition:
                     if rule_condition:
+                        street_errors.add('4113')
+                    
+            # 4108 Check for no space after full stop
+            skip_if_condition = not '4103' in street_errors
+            rule_condition = street and re.search(r'\.(?![\s\W])',street)
+            rule_condition_4107 = re.search(r'(?<!\d)\.',street) and \
+                re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_street) + r')\.)\w+\.', street, flags=re.IGNORECASE)
+            if should_detect('4108', error_config):
+                if skip_if_condition:
+                    if rule_condition and not rule_condition_4107:
                         street_errors.add('4108') 
         
             # 4113 Check for invalid digit in street
@@ -154,12 +175,6 @@ def detect_address_errors(street, street_number, zipcode, city):
             street_number_errors.add('4201') 
         else:
             
-            # 4208 Check for roman numerals
-            rule_condition = re.search(r'\b(?:' + '|'.join(roman_numbers) + r')\d*\b', street_number, flags=re.IGNORECASE)
-            if should_detect('4208', error_config):
-                if rule_condition:
-                    street_number_errors.add('4208')  
-            
             # 4202 Check for unnecessary spaces
             rule_condition = street_number.startswith(' ') or street_number.endswith(' ') or "  " in street_number
             if should_detect('4202', error_config):
@@ -167,7 +182,9 @@ def detect_address_errors(street, street_number, zipcode, city):
                     street_number_errors.add('4202')
             
             # 4213 contains BŠ as well as a number
-            rule_condition = any(pattern in street_number for pattern in hn_patterns) and re.search(r'\d', street_number)
+            rule_condition = any(pattern in street_number for pattern in hn_patterns) and \
+                re.search(r'\d', street_number) and \
+                not re.search(r'^\b0\s*', street_number)
             if should_detect('4213', error_config):
                 if rule_condition:
                     street_number_errors.add('4213') 
@@ -180,67 +197,76 @@ def detect_address_errors(street, street_number, zipcode, city):
                     if rule_condition:
                         street_number_errors.add('4203')  
             
-            # 4205 ends with full stop
-            skip_if_condition = not '4203' in street_number_errors
-            rule_condition = street_number.endswith('.') and re.search(r'\d', street_number)
-            if should_detect('4205', error_config):
-                if skip_if_condition:
-                    if rule_condition:
-                        street_number_errors.add('4205') 
-            
-            # 4210 More than one number present
-            rule_condition = len(re.findall(r'\d+', street_number)) > 1
-            if should_detect('4210', error_config):
-                if rule_condition:
-                    street_number_errors.add('4210')
-            
-            # 4204 Check for no house number
-            skip_if_condition = not any(code in street_number_errors for code in ["4202", "4203", "4208"])
+            # 4204 no house number 
+            skip_if_condition = not any(code in street_number_errors for code in ["4203"])
             rule_condition = not (re.search(r'\d', street_number)) or (re.search(r'^[^1-9]*0[^1-9]*$', street_number))
             if should_detect('4204', error_config):
                 if skip_if_condition:
                     if rule_condition:
                         street_number_errors.add('4204') 
-            
-            # 4208 Does not start with digit
-            skip_if_condition = not any(code in street_number_errors for code in ["4202", "4203", "4204", "4208"])
-            rule_condition = re.search(r'^[^0-9]',street_number)
+
+            # 4208 Check for roman numerals
+            skip_if_condition = not '4204' in street_number_errors
+            rule_condition = re.search(r'\b(?:' + '|'.join(roman_numbers) + r')\d*\b', street_number, flags=re.IGNORECASE)
             if should_detect('4208', error_config):
                 if skip_if_condition:
                     if rule_condition:
-                        street_number_errors.add('4208')  # Street number error: does not start with digit
+                        street_number_errors.add('4208')  
+                                            
+            # 4209 ends with full stop
+            rule_condition = street_number.endswith('.') and re.search(r'\d', street_number)
+            if should_detect('4209', error_config):
+                if rule_condition:
+                    street_number_errors.add('4209') 
             
-            # 4211 CHeck for 4 digits
-            skip_if_condition = not '4204' in street_number_errors
-            rule_condition = re.findall(r'\d{4,}', street_number)
+            # 4211 Does not start with digit
+            rule_condition = re.search(r'^[^0-9]', street_number) and \
+                not re.search(r'^\s', street_number) and \
+                not any(re.match(rf"^{re.escape(p)}", street_number) for p in roman_numbers + hn_patterns)
             if should_detect('4211', error_config):
                 if skip_if_condition:
                     if rule_condition:
-                        street_number_errors.add('4211') 
+                        street_number_errors.add('4211')  # Street number error: does not start with digit
             
-            # 4207 Spacing / invalid characters between components
-            skip_if_condition = not any(code in street_number_errors for code in ["4203", "4210", "4208", "4211"])
-            rule_condition = re.search(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', street_number)
-            if should_detect('4207', error_config):
-                if skip_if_condition:
-                    if rule_condition:
-                        street_number_errors.add('4207')
-            
-            # 4206 Leading 0
+           # 4206 Leading 0
             skip_if_condition = not '4204' in street_number_errors
-            rule_condition = re.search(r'\b0\s*\d+', street_number)
+            rule_condition = re.search(r'\b0\s*\d*', street_number)
             if should_detect('4206', error_config):
                 if skip_if_condition:
                     if rule_condition:
                         street_number_errors.add('4206') 
+                        
+            # 4210 More than one number present
+            skip_if_condition = not '4206' in street_number_errors
+            rule_condition = len(re.findall(r'\d+', street_number)) > 1
+            if should_detect('4210', error_config):
+                if skip_if_condition:
+                    if rule_condition:
+                        street_number_errors.add('4210')
             
+            # 4207 Spacing / invalid characters between components
+            # skip_if_condition = not any(code in street_number_errors for code in ["4203", "4210", "4208", "4211"])
+            rule_condition = re.search(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', street_number)
+            if should_detect('4207', error_config):
+                # if skip_if_condition:
+                    if rule_condition:
+                        street_number_errors.add('4207')
+                        
+            # 4212 More than 4 digits
+            skip_if_condition = not '4206' in street_number_errors
+            rule_condition = re.findall(r'\d{4,}', street_number)
+            if should_detect('4212', error_config):
+                if skip_if_condition:
+                    if rule_condition:
+                        street_number_errors.add('4212') 
+                        
             # 4205 Invalid combination
             skip_if_condition = not street_number_errors
             rule_condition = not re.search(r'^\d{1,3}[A-Za-zČčŠšŽž]{0,2}$', street_number)
             if should_detect('4205', error_config):
                 if skip_if_condition:
                     if rule_condition:
-                        street_number_errors.add('4205')  # Invalid combination
+                        street_number_errors.add('4205') 
 
     # Zipcode errors     
     # 4301 Check for missing data
@@ -249,24 +275,12 @@ def detect_address_errors(street, street_number, zipcode, city):
         if rule_condition:
             zipcode_errors.add('4301')
         else:
-            # 4305 Check for more than 4 digits
-            rule_condition = len(re.findall(r'\d', zipcode)) > 4
-            if should_detect('4305', error_config):
-                if rule_condition:
-                    zipcode_errors.add('4305')
-                
-            # 4304 Check for less than 4 digits
-            rule_condition = len(re.findall(r'\d', zipcode)) < 4
-            if should_detect('4304', error_config):
-                if rule_condition:
-                    zipcode_errors.add('4304')
-                
             # 4302 Check for unnecessary spaces
             rule_condition = zipcode.startswith(' ') or zipcode.endswith(' ') or "  " in zipcode
             if should_detect('4302', error_config):
                 if rule_condition:
                     zipcode_errors.add('4302') 
-                
+                    
             # 4303 Check for invalid characters
             skip_if_condition = not '4302' in zipcode_errors
             rule_condition = not re.search(r'^\d+$',zipcode)
@@ -274,14 +288,30 @@ def detect_address_errors(street, street_number, zipcode, city):
                 if skip_if_condition:
                     if rule_condition:
                         zipcode_errors.add('4303') 
+                        
+            # 4305 Check for more than 4 digits
+            skip_if_condition = not '4303' in zipcode_errors
+            rule_condition = re.search(r"^\d{5,}$", zipcode)
+            if should_detect('4305', error_config):
+                if skip_if_condition:
+                    if rule_condition:
+                        zipcode_errors.add('4305')
+                
+            # 4304 Check for less than 4 digits
+            skip_if_condition = not '4303' in zipcode_errors
+            rule_condition = re.search(r"^\d{1,3}$", zipcode)
+            if should_detect('4304', error_config):
+                if skip_if_condition:
+                    if rule_condition:
+                        zipcode_errors.add('4304')
                 
             # 4306 Check for invalid value
-            elif should_detect('4307', error_config):
+            elif should_detect('4306', error_config):
                 skip_if_condition = not zipcode_errors
                 rule_condition = not (999 < int(zipcode) <= 9265) and '4305' not in zipcode_errors and '4304' not in zipcode_errors
                 if skip_if_condition:
                     if rule_condition:
-                        zipcode_errors.add('4307') 
+                        zipcode_errors.add('4306') 
 
     # City errors
     # 4401 Check for missing data
@@ -290,23 +320,29 @@ def detect_address_errors(street, street_number, zipcode, city):
         if rule_condition:
             city_errors.add('4401')
         else:
-            # 4404 Check for unnecessary spaces
+            # 4402 Check for unnecessary spaces
             rule_condition = city.startswith(' ') or city.endswith(' ') or "  " in city
             if should_detect('4402', error_config):
                 if rule_condition:
                     city_errors.add('4402')  
-                
-            # 4402 Check for invalid characters
-            rule_condition = re.search(r'[^a-zA-ZčČšŠžŽ\s]', city)
-            if should_detect('4403', error_config):
-                if rule_condition:
-                    city_errors.add('4403')  
             
             # 4405 Check for digits
             rule_condition = re.search(r'\d', city)
             if should_detect('4405', error_config):
                 if rule_condition:
                     city_errors.add('4405')
+                      
+            # 4403 Check for invalid characters
+            skip_if_condition = not '4405' in city_errors
+            city_str = str(city).strip()
+            cleaned_city = re.sub("|".join(map(re.escape, allowed_abbreviations_city)), "", city_str)
+            rule_condition = re.search(r'[^a-zA-ZčČšŠžŽ\s\.\-]', cleaned_city)
+            if should_detect('4403', error_config):
+                if skip_if_condition:
+                    if rule_condition:
+                        city_errors.add('4403')  
+            
+            #!!! 4404 formatting issues
                 
             # 4406 Check for invalid abbreviations
             rule_condition = re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_city) + r')\.)\w+\.', city, flags=re.IGNORECASE)
@@ -326,6 +362,8 @@ def detect_address_errors(street, street_number, zipcode, city):
                             city_errors.add('4407')
                             break 
                         prev_comp = comp
+            
+            # 4408 replacing ščž with scz
 
     # return ','.join(sorted(errors))
     return {
