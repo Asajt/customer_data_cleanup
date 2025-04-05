@@ -50,6 +50,3 @@ def should_correct(code, config):
 
 def get_message(code, config):
     return config.get(code, {}).get("error_message", "Unknown Error")
-
-if __name__ == "__main__":
-    ensure_config()

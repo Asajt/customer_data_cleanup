@@ -1,5 +1,6 @@
 import re
 import pandas as pd
+import sys, os
 
 def detect_name_errors(name, surname):
     """Detects errors in names and surnames based on various criteria.
@@ -24,22 +25,6 @@ def detect_name_errors(name, surname):
     name_errors = set()
     surname_errors = set()
     
-    name_error_config = {
-        '1101': {'message': 'NAME: Missing Data', 'detect': True, 'correct': False},
-        '1102': {'message': 'NAME: Unnecessary Spaces', 'detect': True, 'correct': True},
-        '1103': {'message': 'NAME: Invalid Characters', 'detect': True, 'correct': True},
-        '1104': {'message': 'NAME: Formatting Issue', 'detect': True, 'correct': True},
-        '1105': {'message': 'NAME: Duplicates', 'detect': True, 'correct': False},
-        '1106': {'message': 'NAME: Two names in one field', 'detect': True, 'correct': False},
-
-        '1201': {'message': 'SURNAME: Missing Data', 'detect': True, 'correct': False},
-        '1202': {'message': 'SURNAME: Unnecessary Spaces', 'detect': True, 'correct': True},
-        '1203': {'message': 'SURNAME: Invalid Characters', 'detect': True, 'correct': True},
-        '1204': {'message': 'SURNAME: Formatting Issue', 'detect': True, 'correct': True},
-        '1205': {'message': 'SURNAME: Duplicates', 'detect': True, 'correct': False},
-    }
-
-
     # NAME errors detection
     
     # 1101 Check for missing data
