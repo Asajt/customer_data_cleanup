@@ -42,11 +42,18 @@ def ensure_config():
     else:
         print(f"✅ Config already exists: {JSON_PATH}")
 
+def load_error_config(path: str = JSON_PATH) -> dict:
+    """Loads the final error config from a generated JSON file."""
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"❌ JSON config not found at: {path}")
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
 def should_detect(code, config):
-    return config.get(code, {}).get("detect", False)
+    return config.get(code, {}).get("detect", True)
 
 def should_correct(code, config):
-    return config.get(code, {}).get("correct", False)
+    return config.get(code, {}).get("correct", True)
 
 def get_message(code, config):
     return config.get(code, {}).get("error_message", "Unknown Error")

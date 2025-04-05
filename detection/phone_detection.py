@@ -1,5 +1,10 @@
 import re
 import pandas as pd
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from utils.errors_utils import should_detect, load_error_config
+
+error_config = load_error_config()
 
 def detect_phone_errors(phone):
     """Detects errors in phone numbers based on various criteria.
@@ -18,52 +23,52 @@ def detect_phone_errors(phone):
 
     phone_errors = set()
     
-    error_messages = {
-        '3101': 'PHONE: Missing Data',
-        '3102': 'PHONE: Unnecessary Spaces',
-        '3103': 'PHONE: Invalid characters',
-        '3104': 'PHONE: Formatting Issue',
-        '3105': 'PHONE: Too many digits',
-        '3106': 'PHONE: Too little digits',
-        '3107': 'PHONE: Two phone numbers',
-        '3108': 'PHONE: Different country format'
-    }
-        
     # 3101 Check for missing data
-    if pd.isna(phone) or phone is None or phone.strip() == "" or phone.strip() == "/" :
-        phone_errors.add('3101') 
+    rule_condition = (pd.isna(phone)) or (phone is None) or (phone.strip() == "") or (phone.strip() == "/") 
+    if should_detect('3101', error_config) and rule_condition:
+        phone_errors.add('3101')
     else:
         # 3102 Check for unnecessary spaces
-        if phone.startswith(' ') or phone.endswith(' ') or "  " in phone:
+        rule_condition = (phone.startswith(' ') or phone.endswith(' ') or "  " in phone)
+        if should_detect('3102', error_config) and rule_condition:
             phone_errors.add('3102')
+        
         # 3105 Check for too many digits
-        if len(phone) > 13:
+        rule_condition = (len(phone) > 13)
+        if should_detect('3105', error_config) and rule_condition:
             phone_errors.add('3105')
+        
         # 3106 Check for too little digits
-        if len(phone) < 13:
+        rule_condition = (len(phone) < 13)
+        if should_detect('3106', error_config) and rule_condition:
             phone_errors.add('3106')
+        
         # 3104 Check for formatting issues
-        if (
-            phone.count('+') > 1  # Only one "+" symbol is allowed
-            or phone.startswith('+')  # "+" has to be at the start
-            or any(char.isspace() for char in phone)  # No spaces allowed
-        ):
+        rule_condition = (
+                not phone.isascii()  # Ensure only ASCII characters are used
+                or phone.count('+') != 1  # Only one "+" symbol is allowed
+                or phone.startswith('+')  # "+" has to be at the start
+                or any(char.isspace() for char in phone))  # No spaces allowed
+        if should_detect('3104', error_config) and rule_condition:
             phone_errors.add('3104')
         
         # 3103 Check for invalid characters
-        if not re.search(r'^[0-9]+$', phone):
+        rule_condition = not re.search(r'^[0-9]+$', phone)
+        if should_detect('3103', error_config) and rule_condition:  
             phone_errors.add('3103')
             
         # 3107 Check for two phone numbers
-        if (
-            phone.count('+') > 1
-            or phone.count(',') > 1
-            or phone.count(' ') > 1
-            or phone.count(';') > 1
-        ):
+        rule_condition = (
+                phone.count('+') > 1
+                or phone.count(',') > 1
+                or phone.count(' ') > 1
+                or phone.count(';') > 1)
+        if should_detect('3107', error_config) and rule_condition:
             phone_errors.add('3107')
+        
         # 3108 Check for different country format
-        if not phone.startswith('00386'):
+        rule_condition = not phone.startswith('00386')
+        if should_detect('3108', error_config) and rule_condition:
             phone_errors.add('3108')
         
     return phone_errors

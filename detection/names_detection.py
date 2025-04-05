@@ -1,6 +1,10 @@
 import re
 import pandas as pd
 import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from utils.errors_utils import should_detect, load_error_config
+
+error_config = load_error_config()
 
 def detect_name_errors(name, surname):
     """Detects errors in names and surnames based on various criteria.
@@ -28,18 +32,27 @@ def detect_name_errors(name, surname):
     # NAME errors detection
     
     # 1101 Check for missing data
-    if pd.isna(name) or name is None or name.strip() == "" or name.strip() == "/" :
+    rule_condition = (pd.isna(name) or name is None or name.strip() == "" or name.strip() == "/") 
+    if should_detect('1101', error_config) and rule_condition:
         name_errors.add('1101') 
+    
     else:
+    
         # 1102 Check for unnecessary spaces
-        if name.startswith(' ') or name.endswith(' ') or "  " in name:
+        rule_condition = (name.startswith(' ') or name.endswith(' ') or "  " in name)
+        if should_detect('1102', error_config) and rule_condition:
             name_errors.add('1102')
+    
         # 1103 Check for invalid characters
-        if not re.search(r'^[a-ž\s]+$', name, re.IGNORECASE):
+        rule_condition = (not re.search(r'^[a-ž\s]+$', name, re.IGNORECASE))
+        if should_detect('1103', error_config) and rule_condition:
             name_errors.add('1103')
+    
         # 1104 Check for formatting issues
-        if not name.istitle(): 
+        rule_condition = (not name.istitle())
+        if should_detect('1104', error_config) and rule_condition:
             name_errors.add('1104')
+    
         # 1105 Check for duplicates
         names = name.split()
         counts = {}
@@ -47,23 +60,33 @@ def detect_name_errors(name, surname):
             if name not in counts:
                 counts[name] = 0
             counts[name] += 1
-        if any(count > 1 for count in counts.values()):
+        rule_condition = (any(count > 1 for count in counts.values()))
+        if should_detect('1105', error_config) and rule_condition:
             name_errors.add('1105')
+    
         # 1106 Check for two names in one field
-        if len(names) > 1:
+        rule_condition = (len(names) > 1)
+        if should_detect('1106', error_config) and rule_condition:
             name_errors.add('1106')
     
     # SURNAME errors detection
     # 1201 Missing Data
-    if pd.isna(surname) or surname is None or surname.strip() == "" or surname.strip() == "/":
+    rule_condition = (pd.isna(surname) or surname is None or surname.strip() == "" or surname.strip() == "/")
+    if should_detect('1201', error_config) and rule_condition:
         surname_errors.add('1201')
+    
     else:
+    
         # 1202 Unnecessary Spaces
-        if surname.startswith(' ') or surname.endswith(' ') or "  " in surname:
+        rule_condition = (surname.startswith(' ') or surname.endswith(' ') or "  " in surname)
+        if should_detect('1202', error_config) and rule_condition:
             surname_errors.add('1202')
+    
         # 1204 Formatting Issue
-        if not surname.istitle():
+        rule_condition = (not surname.istitle())
+        if should_detect('1204', error_config) and rule_condition:
             surname_errors.add('1204')
+    
         # 1205 Duplicates    
         surnames = surname.split()
         counts = {}
@@ -71,7 +94,8 @@ def detect_name_errors(name, surname):
             if word not in counts:
                 counts[word] = 0
             counts[word] += 1
-        if any(count > 1 for count in counts.values()):
+        rule_condition = (any(count > 1 for count in counts.values()))
+        if should_detect('1205', error_config) and rule_condition:
             surname_errors.add('1205')
                    
     # return ','.join(sorted(errors))
