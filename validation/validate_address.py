@@ -1,15 +1,11 @@
 import pandas as pd
 import unidecode
 
-# Function to normalize addresses
-def normalize_address(address):
-    return unidecode.unidecode(str(address)).strip().lower()
-
-def validate_full_address(customer_full_address, path_to_gurs_RN_csv):
+def validate_full_address(customer_df: pd.DataFrame, path_to_gurs_RN_csv: str) -> pd.DataFrame:
     """
     Validate customer addresses against GURS data.
     Args:
-        customer_full_address (pd.Series): Series of customer full addresses.
+        customer_df (pd.DataFrame): DataFrame containing customer addresses.
         path_to_gurs_RN_csv (str): Path to the GURS CSV file.
         Returns:   
         pd.DataFrame: DataFrame with customer addresses and validation results.
@@ -28,39 +24,38 @@ def validate_full_address(customer_full_address, path_to_gurs_RN_csv):
         gurs_df["POSTNI_OKOLIS_NAZIV"].str.strip()
     )
     
-    # Normalize GURS addresses
-    gurs_df["GURS_normalized_address"] = gurs_df["GURS_FULL_ADDRESS"].apply(normalize_address)
-    # keep only relevant columns
-    gurs_df = gurs_df[["GURS_normalized_address"]]
+    gurs_df = gurs_df[["GURS_FULL_ADDRESS"]]
     # Remove duplicates
-    gurs_df = gurs_df.drop_duplicates(subset=["GURS_normalized_address"])
+    gurs_df = gurs_df.drop_duplicates(subset=["GURS_FULL_ADDRESS"])
 
-    # Load customer data    
-    customer_df["customer_normalized_address"] = customer_full_address.apply(normalize_address)
-    
     # Merge to get GURS match
     merged_df = customer_df.merge(
         gurs_df,
         how="left",
-        left_on="customer_normalized_address",
-        right_on="GURS_normalized_address",
+        left_on="FULL_ADDRESS",
+        right_on="GURS_FULL_ADDRESS",
     )
 
-    merged_df["VALIDATED"] = merged_df["GURS_normalized_address"].notnull()
+    merged_df["VALIDATED"] = merged_df["GURS_FULL_ADDRESS"].notnull()
 
     return merged_df
 
-# Load customer data
-customer_df = pd.read_excel("src/processed_data/customer_data_with_errors.xlsx")
-customer_df["FULL_ADDRESS"] = (
-    customer_df["STREET"].str.strip() + " " +
-    customer_df["HOUSE_NUMBER"].str.strip() + ", " +
-    customer_df["POSTAL_CODE"].str.strip() + " " +
-    customer_df["POSTAL_CITY"].str.strip()
-)
+if __name__ == "__main__":
+    customer_data = "src/processed_data/customer_data_with_errors.xlsx"
+    df = pd.read_excel(customer_data)
 
-df = validate_full_address(
-    customer_full_address=customer_df["FULL_ADDRESS"],
-    path_to_gurs_RN_csv="src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv")
+    # Apply the address validation
+    df["FULL_ADDRESS"] = (
+        df["STREET"].str.strip() + " " +
+        df["HOUSE_NUMBER"].str.strip() + ", " +
+        df["POSTAL_CODE"].str.strip() + " " +
+        df["POSTAL_CITY"].str.strip()
+    )
 
-print(df.head())
+    df = validate_full_address(
+        df,
+        path_to_gurs_RN_csv="src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv")
+
+    print(df.head())
+    
+    df.to_excel("src/processed_data/customer_data_with_address_validation.xlsx", index=False)
