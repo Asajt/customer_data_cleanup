@@ -7,3 +7,4 @@ pipeline.run()
 
 df = pipeline.get_data()
 print(df.head())
+    

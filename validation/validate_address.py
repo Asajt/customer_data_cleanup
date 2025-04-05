@@ -1,5 +1,4 @@
 import pandas as pd
-import unidecode
 
 def validate_full_address(customer_df: pd.DataFrame, path_to_gurs_RN_csv: str) -> pd.DataFrame:
     """

@@ -1,7 +1,7 @@
 import pandas as pd
 from detection.names_detection import detect_name_errors
 from correction.names_correction import correct_name_errors
-from validation.validate_name import validate_name
+from validation.validate_names import validate_name
 
 def run_name_pipeline(df: pd.DataFrame) -> pd.DataFrame:
     # Step 1: Detect name + surname errors
