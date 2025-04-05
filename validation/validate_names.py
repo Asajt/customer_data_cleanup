@@ -134,6 +134,6 @@ if __name__ == "__main__":
     df = df[columns_to_keep]
     
     # Save updated file
-    df.to_excel("src/processed_data/customer_data_with_name_validation.xlsx", index=False)
+    df.to_excel("src/processed_data/01_validated_namess.xlsx", index=False)
     print("Name validation complete.")
 

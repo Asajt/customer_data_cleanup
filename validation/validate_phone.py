@@ -33,5 +33,5 @@ if __name__ == "__main__":
     ]
     df = df[columns_to_keep]
 
-    df.to_excel("src/processed_data/customer_data_with_phone_validation.xlsx", index=False)
+    df.to_excel("src/processed_data/01_validated_phone.xlsx", index=False)
     print("Phone number validation complete.")
