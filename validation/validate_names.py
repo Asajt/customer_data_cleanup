@@ -92,16 +92,6 @@ def validate_names(customer_df: pd.DataFrame) -> pd.DataFrame:
 
     if all_names is None or all_surnames is None:
         raise ValueError("Failed to fetch SURS data.")
-
-    # # Validate first names
-    # customer_df["FIRST_NAME_VALID"] = customer_df["FIRST_NAME"].apply(
-    #     lambda name: name in all_names.values
-    # )
-
-    # # Validate surnames
-    # customer_df["LAST_NAME_VALID"] = customer_df["LAST_NAME"].apply(
-    #     lambda surname: surname in all_surnames.values
-    # )
     
     # dataframe of FIRST_NAME 
     first_names_df = pd.DataFrame(all_names["value"])
@@ -146,5 +136,5 @@ if __name__ == "__main__":
     
     # Save updated file
     df.to_excel("src/processed_data/customer_data_with_name_validation.xlsx", index=False)
-    print("✅ Name validation complete.")
+    print("Name validation complete.")
 
