@@ -89,13 +89,9 @@ if __name__ == "__main__":
         axis=1
     )
 
-    # Add error columns
-    df["name_detected_errors"] = errors_df["name_detected_errors"]
-    df["surname_detected_errors"] = errors_df["surname_detected_errors"]
-
     # Convert lists to comma-separated strings just for saving
-    df["name_detected_errors"] = df["name_detected_errors"].apply(lambda x: ", ".join(x))
-    df["surname_detected_errors"] = df["surname_detected_errors"].apply(lambda x: ", ".join(x))
+    df["name_detected_errors"] = errors_df["name_detected_errors"].apply(lambda x: ", ".join(x))
+    df["surname_detected_errors"] = errors_df["surname_detected_errors"].apply(lambda x: ", ".join(x))
 
     # choose the columns to keep
     columns_to_keep = [
@@ -104,5 +100,5 @@ if __name__ == "__main__":
     df = df[columns_to_keep]
     
     # Save the result
-    df.to_excel("src/processed_data/customer_data_with_detected_name_errors.xlsx", index=False)
-    print("✅ Detection of name/surname errors completed and saved!")
+    df.to_excel("src/processed_data/02_detected_name_errors.xlsx", index=False)
+    print("Detection of name/surname errors completed and saved!")

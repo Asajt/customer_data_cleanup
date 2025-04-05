@@ -9,7 +9,10 @@ def detect_address_errors(street, street_number, zipcode, city):
     zipcode = "" if pd.isna(zipcode) else str(zipcode)
     city = "" if pd.isna(city) else str(city)
 
-    errors = set()
+    street_errors = set()
+    street_number_errors = set()
+    zipcode_errors = set()
+    city_errors = set()
     
     error_messages = {
         '4101': 'STREET_NAME: Missing Data',
@@ -73,116 +76,140 @@ def detect_address_errors(street, street_number, zipcode, city):
 
     # Street errors
     if pd.isna(street) or street is None or street.strip() == "" or street.strip() == "/" :
-        errors.add('4101')  # Missing Data OK
+        street_errors.add('4101')  # Missing Data OK
     else:
         if re.search(r'^\d',street):
-            errors.add('4111')  # Starts with number OK
+            street_errors.add('4111')  # Starts with number OK
         if street.startswith(' ') or street.endswith(' ') or "  " in street:
-            errors.add('4102')  # Unnecessary Spaces OK
+            street_errors.add('4102')  # Unnecessary Spaces OK
         if any(re.search(r'\b' + re.escape(pattern) + r'\b', street) for pattern in hn_patterns):
-            errors.add('4106')  # Contains variation of BŠ OK
+            street_errors.add('4106')  # Contains variation of BŠ OK
         if not re.search(r'^[a-zA-ZčćšžČĆŠŽ\d\s\.,-/]+$', street) or '//' in street:
-            errors.add('4103')  # Invalid characters OK
+            street_errors.add('4103')  # Invalid characters OK
         # !!!  Formatting issues (check whether the case of letters is correct) 
         if re.search(r'(?<!\d)\.',street) and re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_street) + r')\.)\w+\.', street, flags=re.IGNORECASE): 
-            errors.add('4107')  # Invalid abbreviations OK
+            street_errors.add('4107')  # Invalid abbreviations OK
         if not any(char.isalpha() for char in street):
-            errors.add('4109')  # Only numbers OK
+            street_errors.add('4109')  # Only numbers OK
         if street:
             components = [comp.replace(',', '').upper() 
                         for comp in re.split(r'\s+', street) if comp]
             prev_comp = None
             for comp in components:
                 if prev_comp and prev_comp == comp:
-                    errors.add('4110')    # (consecutive) Duplicates OK
+                    street_errors.add('4110')    # (consecutive) Duplicates OK
                     break 
                 prev_comp = comp
         if re.search(r'\d+[A-Za-zČčŠšŽž]{0,3}(\/?|\.?|\s?)[A-Za-zČčŠšŽž]{0,3}$', street):
-            errors.add('4105') # Contains house number OK
+            street_errors.add('4105') # Contains house number OK
         # !!! cannot contain digit at the end
-        if not '4105' in errors and re.search(r'\d+$', street):
-            errors.add('4112')
-        if not '4105' in errors and not '4107' in errors and street and re.search(r'\.(?![\s\W])',street):
-            errors.add('4108')  # No space after full stop OK
-        if not '4105' in errors and re.search(r'\d+(?![.\d])', street) and not re.search(r'25\s+TALCEV',street): #edina ulica, ki nima pike po številki 2024/03/12
-                errors.add('4113')  #Street error: invalid digit in Street OK
+        if not '4105' in street_errors and re.search(r'\d+$', street):
+            street_errors.add('4112')
+        if not '4105' in street_errors and not '4107' in street_errors and street and re.search(r'\.(?![\s\W])',street):
+            street_errors.add('4108')  # No space after full stop OK
+        if not '4105' in street_errors and re.search(r'\d+(?![.\d])', street) and not re.search(r'25\s+TALCEV',street): #edina ulica, ki nima pike po številki 2024/03/12
+                street_errors.add('4113')  #Street error: invalid digit in Street OK
         # !!! replacing šćčž to scz
 
     # Street_number errors 
     if pd.isna(street_number) or street_number is None or street_number.strip() == "" or street_number.strip() == ".":
-        errors.add('4201')  # Missing data 
+        street_number_errors.add('4201')  # Missing data 
     else:
         if re.search(r'\b(?:' + '|'.join(roman_numbers) + r')\d*\b', street_number, flags=re.IGNORECASE):
-            errors.add('4208')  # Contains roman numerals
+            street_number_errors.add('4208')  # Contains roman numerals
         if street_number.startswith(' ') or street_number.endswith(' ') or "  " in street_number:
-            errors.add('4202')  # Unnecessary spaces
+            street_number_errors.add('4202')  # Unnecessary spaces
         if any(pattern in street_number for pattern in hn_patterns) and re.search(r'\d', street_number):
-            errors.add('4213') # Street number error: contains BŠ as well as a number
-        if not '4213' in errors and any(pattern in street_number for pattern in hn_patterns):
-            errors.add('4203')  # Contains variation of BŠ
-        if not '4203' in errors  and street_number.endswith('.') and re.search(r'\d', street_number):
-            errors.add('4205') # Street number error: ends with full stop
+            street_number_errors.add('4213') # Street number error: contains BŠ as well as a number
+        if not '4213' in street_number_errors and any(pattern in street_number for pattern in hn_patterns):
+            street_number_errors.add('4203')  # Contains variation of BŠ
+        if not '4203' in street_number_errors  and street_number.endswith('.') and re.search(r'\d', street_number):
+            street_number_errors.add('4205') # Street number error: ends with full stop
         if len(re.findall(r'\d+', street_number)) > 1:
-            errors.add('210')  # Street number error: more than one number present
-        if not ('4202' in errors or '4203' in errors or '4208' in errors or '4208' in errors) and not re.search(r'\d', street_number) or re.search(r'^[^1-9]*0[^1-9]*$', street_number):
-            errors.add('4204')  # No house number
-        if not ('4202' in errors or '4203' in errors or '4208' in errors or '4204' in errors) and re.search(r'^[^0-9]',street_number):
-            errors.add('4208')  # Street number error: does not start with digit
-        if not '4204' in errors and re.findall(r'\d{4,}', street_number):
-            errors.add('4211')  #Street number error: 4 digits
-        if not ('4203' in errors or '210' in errors or '4208' in errors or '4208' in errors or '4211' in errors) and re.search(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', street_number):
-            errors.add('4207')  # Spacing / invalid characters between components 
-        if not '4204' in errors and re.search(r'\b0\s*\d+', street_number): 
-            errors.add('4206')  # Leading 0
-        if not errors and not re.search(r'^\d{1,3}[A-Za-zČčŠšŽž]{0,2}$', street_number):
-            errors.add('4205')  # Invalid combination
+            street_number_errors.add('210')  # Street number error: more than one number present
+        if not ('4202' in street_number_errors or '4203' in street_number_errors or '4208' in street_number_errors or '4208' in street_number_errors) and not re.search(r'\d', street_number) or re.search(r'^[^1-9]*0[^1-9]*$', street_number):
+            street_number_errors.add('4204')  # No house number
+        if not ('4202' in street_number_errors or '4203' in street_number_errors or '4208' in street_number_errors or '4204' in street_number_errors) and re.search(r'^[^0-9]',street_number):
+            street_number_errors.add('4208')  # Street number error: does not start with digit
+        if not '4204' in street_number_errors and re.findall(r'\d{4,}', street_number):
+            street_number_errors.add('4211')  #Street number error: 4 digits
+        if not ('4203' in street_number_errors or '210' in street_number_errors or '4208' in street_number_errors or '4208' in street_number_errors or '4211' in street_number_errors) and re.search(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', street_number):
+            street_number_errors.add('4207')  # Spacing / invalid characters between components 
+        if not '4204' in street_number_errors and re.search(r'\b0\s*\d+', street_number): 
+            street_number_errors.add('4206')  # Leading 0
+        if not street_number_errors and not re.search(r'^\d{1,3}[A-Za-zČčŠšŽž]{0,2}$', street_number):
+            street_number_errors.add('4205')  # Invalid combination
 
     # Zipcode errors        
     if pd.isna(zipcode) or zipcode is None or zipcode.strip() == "":
-        errors.add('4301')  # Missing data
+        zipcode_errors.add('4301')  # Missing data
     else:
         if len(re.findall(r'\d', zipcode)) > 4:
-            errors.add('4305')  # More than 4 digits
+            zipcode_errors.add('4305')  # More than 4 digits
         if len(re.findall(r'\d', zipcode)) < 4:
-            errors.add('4304')  # Less than 4 digits
+            zipcode_errors.add('4304')  # Less than 4 digits
         if zipcode.startswith(' ') or zipcode.endswith(' ') or "  " in zipcode:
-            errors.add('4302')  # Unnecessary spaces
-        if not '4302' in errors and not re.search(r'^\d+$',zipcode):
-            errors.add('4303')  # Invalid characters
-        elif not (999 < int(zipcode) <= 9265) and '4305' not in errors and '4304' not in errors:
-            errors.add('4307')  # Invalid Value
+            zipcode_errors.add('4302')  # Unnecessary spaces
+        if not '4302' in zipcode_errors and not re.search(r'^\d+$',zipcode):
+            zipcode_errors.add('4303')  # Invalid characters
+        elif not (999 < int(zipcode) <= 9265) and '4305' not in zipcode_errors and '4304' not in zipcode_errors:
+            zipcode_errors.add('4307')  # Invalid Value
 
     # City errors
     if pd.isna(city) or city is None or city.strip() == "" or city.strip() == "/" :
-        errors.add('4401')  # Missing data
+        city_errors.add('4401')  # Missing data
     else:
         if city.startswith(' ') or city.endswith(' ') or "  " in city:
-            errors.add('4402')  # Unnecessary spaces
+            city_errors.add('4402')  # Unnecessary spaces
         if re.search(r'[^a-zA-ZčČšŠžŽ\s]', city):
-            errors.add('4403')  # Invalid characters
+            city_errors.add('4403')  # Invalid characters
         if re.search(r'\d', city):
-            errors.add('4405') # Contains digits
+            city_errors.add('4405') # Contains digits
         if re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_city) + r')\.)\w+\.', city, flags=re.IGNORECASE): 
-            errors.add('4406')  # Invalid abbreviations
+            city_errors.add('4406')  # Invalid abbreviations
         if city:
             components = [comp.replace(',', '').upper() 
                         for comp in re.split(r'\s+', city) if comp]
             prev_comp = None
             for comp in components:
                 if prev_comp and prev_comp == comp:
-                    errors.add('4407')    # (consecutive) Duplicates
+                    city_errors.add('4407')    # (consecutive) Duplicates
                     break 
                 prev_comp = comp
 
-    return ','.join(sorted(errors))
+    # return ','.join(sorted(errors))
+    return {
+        "street_detected_errors": sorted(street_errors),
+        "street_number_detected_errors": sorted(street_number_errors),
+        "zipcode_detected_errors": sorted(zipcode_errors),
+        "city_detected_errors": sorted(city_errors)
+    }
 
 if __name__ == "__main__":
-    # Load the customer data
     customer_data = "src/processed_data/customer_data_with_errors.xlsx"
     df = pd.read_excel(customer_data)
 
-    df["DETECTED_ERRORS"] = df.apply(lambda row: detect_address_errors(
-        row["STREET"], row["HOUSE_NUMBER"], row["POSTAL_CODE"], row["POSTAL_CITY"]), axis=1)
+    errors_df = df.apply(
+        lambda row: pd.Series(detect_address_errors(row["STREET"], row["HOUSE_NUMBER"], row["POSTAL_CODE"], row["POSTAL_CITY"])),
+        axis=1
+    )
 
-    df.to_excel("src/processed_data/01_customer_data_with_detected_errors.xlsx", index=False)
-    print("Detection of address errors completed!")
+    # Convert lists to comma-separated strings just for saving
+    df["street_detected_errors"] = errors_df["street_detected_errors"].apply(lambda x: ", ".join(x))
+    df["house_number_detected_errors"] = errors_df["street_number_detected_errors"].apply(lambda x: ", ".join(x))
+    df["POSTAL_CODE_detected_errors"] = errors_df["zipcode_detected_errors"].apply(lambda x: ", ".join(x))
+    df["POSTAL_CITY_detected_errors"] = errors_df["city_detected_errors"].apply(lambda x: ", ".join(x))
+
+    # choose the columns to keep
+    columns_to_keep = [
+        "CUSTOMER_ID", 
+        "STREET", "street_detected_errors",
+        "HOUSE_NUMBER", "house_number_detected_errors",
+        "POSTAL_CODE", "POSTAL_CODE_detected_errors",
+        "POSTAL_CITY", "POSTAL_CITY_detected_errors"
+    ]
+    df = df[columns_to_keep]
+    
+    # Save the result
+    df.to_excel("src/processed_data/02_detected_address_errors.xlsx", index=False)
+    print("Detection of address errors completed and saved!")

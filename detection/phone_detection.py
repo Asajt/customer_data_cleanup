@@ -5,7 +5,7 @@ def detect_phone_errors(phone):
     # Check for NaN values and convert them to empty strings
     phone = "" if pd.isna(phone) else str(phone)
 
-    errors = set()
+    phone_errors = set()
     
     error_messages = {
         '3101': 'PHONE: Missing Data',
@@ -20,28 +20,28 @@ def detect_phone_errors(phone):
         
     # 3101 Check for missing data
     if pd.isna(phone) or phone is None or phone.strip() == "" or phone.strip() == "/" :
-        errors.add('3101') 
+        phone_errors.add('3101') 
     else:
         # 3102 Check for unnecessary spaces
         if phone.startswith(' ') or phone.endswith(' ') or "  " in phone:
-            errors.add('3102')
+            phone_errors.add('3102')
         # 3105 Check for too many digits
         if len(phone) > 13:
-            errors.add('3105')
+            phone_errors.add('3105')
         # 3106 Check for too little digits
         if len(phone) < 13:
-            errors.add('3106')
+            phone_errors.add('3106')
         # 3104 Check for formatting issues
         if (
             phone.count('+') > 1  # Only one "+" symbol is allowed
             or phone.startswith('+')  # "+" has to be at the start
             or any(char.isspace() for char in phone)  # No spaces allowed
         ):
-            errors.add('3104')
+            phone_errors.add('3104')
         
         # 3103 Check for invalid characters
         if not re.search(r'^[0-9]+$', phone):
-            errors.add('3103')
+            phone_errors.add('3103')
             
         # 3107 Check for two phone numbers
         if (
@@ -50,25 +50,31 @@ def detect_phone_errors(phone):
             or phone.count(' ') > 1
             or phone.count(';') > 1
         ):
-            errors.add('3107')
+            phone_errors.add('3107')
         # 3108 Check for different country format
         if not phone.startswith('00386'):
-            errors.add('3108')
+            phone_errors.add('3108')
         
-    return ','.join(sorted(errors))
+    return phone_errors
 
 if __name__ == "__main__":
-
     customer_data = "src/processed_data/customer_data_with_errors.xlsx"
 
     df = pd.read_excel(customer_data)
 
-    # Apply the phone error detection
-    df["DETECTED_ERRORS"] = df.apply(lambda row: detect_phone_errors(row["PHONE_NUMBER"]), axis=1)
+    df["phone_detected_errors"] = df["PHONE_NUMBER"].apply(detect_phone_errors)
+    
+    # Convert the set of errors to a sorted list
+    df["phone_detected_errors"] = df["phone_detected_errors"].apply(lambda x: ", ".join(sorted(x)))
 
+    # choose the columns to keep
+    columns_to_keep = [
+        "CUSTOMER_ID", 
+        "PHONE_NUMBER", "phone_detected_errors"
+    ]
+    df = df[columns_to_keep]
+    
+    # Save the result
+    df.to_excel("src/processed_data/02_detected_phone_errors.xlsx", index=False)
+    print("Detection of phone errors completed and saved!")
 
-    print(df.head())
-    # # Save the result to a new file
-    df.to_excel("src/processed_data/customer_data_with_detected_phone_errors.xlsx", index=False)
-
-    print("Detection of address errors completed!")

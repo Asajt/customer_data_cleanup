@@ -6,7 +6,7 @@ def detect_email_errors(email):
     # Ensure it's a valid string
     email = "" if pd.isna(email) else str(email)
 
-    errors = set()
+    email_errors = set()
 
     # Error messages for each error ID
     error_messages = {
@@ -22,16 +22,16 @@ def detect_email_errors(email):
 
     # Check for missing data (2101)
     if email.strip() == "" or email.strip() == "/" :
-        errors.add('2101')
+        email_errors.add('2101')
 
     else:
         # Check for unnecessary spaces (2102)
         if email.startswith(' ') or email.endswith(' ') or "  " in email:
-            errors.add('2102')
+            email_errors.add('2102')
 
         # Check for invalid characters (2103)
         if not re.search(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', email):
-            errors.add('2103')
+            email_errors.add('2103')
 
         # Check for formatting issues (2104)
         if (
@@ -43,7 +43,7 @@ def detect_email_errors(email):
             or email.split('@')[-1].startswith('.') or email.split('@')[-1].endswith('.')  # "." cannot be at start or end of domain
             or any(char.isspace() for char in email)  # No spaces allowed
         ):
-            errors.add('2104')
+            email_errors.add('2104')
 
         # Check for possibly two emails (2105)
         if (
@@ -52,12 +52,12 @@ def detect_email_errors(email):
             or email.count(' ') > 1 
             or email.count(';') > 1
         ):
-            errors.add('2105')
+            email_errors.add('2105')
 
         # Check for invalid domain (2106)
         domain = email.split('@')[-1]
         if not re.search(r'^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$', domain):
-            errors.add('2106')
+            email_errors.add('2106')
 
         else:
             # Check for possibly invalid domain (2107)
@@ -68,29 +68,36 @@ def detect_email_errors(email):
                 'icloud.com'
             ]
             if domain not in valid_domains:
-                errors.add('2107')
+                email_errors.add('2107')
 
         # If no specific error found, try validating the email format (2000)
-        if not errors:
+        if not email_errors:
             try:
                 validate_email(email, check_deliverability=False)
             except EmailNotValidError:
-                errors.add('2000')
+                email_errors.add('2000')
 
-    return ','.join(sorted(errors))
+    # return ','.join(sorted(email_errors
+    return email_errors
 
 
 if __name__ == "__main__":
-    # TESTING
-
     customer_data = "src/processed_data/customer_data_with_errors.xlsx"
 
     df = pd.read_excel(customer_data)
 
-    # Apply the email error detection
-    df["DETECTED_ERRORS"] = df.apply(lambda row: detect_email_errors(row["EMAIL"]), axis=1)
+    df["email_detected_errors"] = df["EMAIL"].apply(detect_email_errors)
+    
+    # Convert the set of errors to a sorted list
+    df["email_detected_errors"] = df["email_detected_errors"].apply(lambda x: ", ".join(sorted(x)))
 
-    # Save the result to a new file
-    df.to_excel("src/processed_data/01_customer_data_with_detected_errors.xlsx", index=False)
-
-    print("Detection of address errors completed!")
+    # choose the columns to keep
+    columns_to_keep = [
+        "CUSTOMER_ID", 
+        "EMAIL", "email_detected_errors"
+    ]
+    df = df[columns_to_keep]
+    
+    # Save the result
+    df.to_excel("src/processed_data/02_detected_email_errors.xlsx", index=False)
+    print("Detection of email errors completed and saved!")
