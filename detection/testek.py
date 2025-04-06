@@ -46,14 +46,39 @@ rule_condition = re.search(r'^[^0-9]', street_number) and \
 # rule_condition = re.search(r"^\d{1,3}$", zipcode)
 # if skip_if_condition:
 
+street = 'pOd HruseVCO' #trigger
+street = 'Gub=eva cesta' #dont trigger
+street = 'Cesta 19. oktobra ' #dont trigger
+# street = 'Rabel^ja vas '
+# street = 'Ulica  bratov U!akar'
+# street = '.'
+# street = 'Ulica  Franca Rozmana-Staneta'
+street = 'Ciril-Metodov trg'
+
+cleaned_street = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", " ", street.strip(), flags=re.IGNORECASE)
+words = cleaned_street.strip().split()
+rule_condition = bool(words) and ( # this ensures that if the string must containt at least one lettter to be evaluated 
+    not words[0].istitle() or #the frist word has to be in title case
+    any(not (word.islower() or word.istitle()) for word in words[1:]) # all other words can either be in title case or all lower case
+    )
+
+
+street = 'Gub eva ul. 955 NH'
+
+
+
 
 #### EMAIL
 
-email = 'x'
+# email = 'x'
 
-rule_condition = email.strip() == "" or email.strip() == "x" or not re.search(r"[a-zA-Z0-9]", email)
+# rule_condition = email.strip() == "" or email.strip() == "x" or not re.search(r"[a-zA-Z0-9]", email)
+
+
+
+######## MAIN ############
 if rule_condition:
-        print("error")
+    print("error")
 else:
     print("ok")
     
