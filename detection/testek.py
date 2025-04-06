@@ -135,6 +135,19 @@ email = 'x'
 rule_condition = re.search(r"[^a-zA-Z0-9@_.+\-]", email)  # disallow anything not in the basic set
 #################
 
+################# 1104
+# 1104 Check for formatting issues
+name = 'M0jc@'
+name = 'EL1Z@B3T@'
+name = 'Sn3ž@n@'
+name = 'D1mch3 M0jc'
+
+cleaned_name = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", "", name.strip(), flags=re.IGNORECASE)
+print(cleaned_name)
+rule_condition = (not cleaned_name.istitle())
+
+#################
+
 ######## MAIN ############
 if rule_condition:
     print("error")

@@ -51,7 +51,8 @@ def detect_name_errors(name, surname):
                     name_errors.add('1103')
         
             # 1104 Check for formatting issues
-            rule_condition = (not name.istitle())
+            cleaned_name = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", "", name.strip(), flags=re.IGNORECASE)
+            rule_condition = (not cleaned_name.istitle())
             if should_detect('1104', error_config):
                 if rule_condition:
                     name_errors.add('1104')
@@ -77,8 +78,11 @@ def detect_name_errors(name, surname):
                         name_errors.add('1106')
                         
             # 1107 Initials present
-            # rule_condition
-    
+            rule_condition = any(re.fullmatch(r"[A-ZČĆŠŽ]{1}\.?", word) for word in name.split())
+            if should_detect('1107', error_config):
+                if rule_condition:
+                    name_errors.add('1107')
+                        
     # SURNAME errors detection
     # 1201 Missing Data
     rule_condition = surname.strip() == "" or surname.strip() == "x" or not re.search(r"[a-zA-Z0-9]", surname)
