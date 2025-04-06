@@ -46,23 +46,8 @@ rule_condition = re.search(r'^[^0-9]', street_number) and \
 # rule_condition = re.search(r"^\d{1,3}$", zipcode)
 # if skip_if_condition:
 
-street = 'pOd HruseVCO' #trigger
-street = 'Gub=eva cesta' #dont trigger
-street = 'Cesta 19. oktobra ' #dont trigger
-# street = 'Rabel^ja vas '
-# street = 'Ulica  bratov U!akar'
-# street = '.'
-# street = 'Ulica  Franca Rozmana-Staneta'
-street = 'Ciril-Metodov trg'
 
-cleaned_street = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", " ", street.strip(), flags=re.IGNORECASE)
-words = cleaned_street.strip().split()
-rule_condition = bool(words) and ( # this ensures that if the string must containt at least one lettter to be evaluated 
-    not words[0].istitle() or #the frist word has to be in title case
-    any(not (word.islower() or word.istitle()) for word in words[1:]) # all other words can either be in title case or all lower case
-    )
-
-
+####################### 4107
 street = 'Šaleška B.Š.'
 # street = 'Šaleška ce. B$'
 
@@ -70,7 +55,43 @@ allowed_abbreviations_street = ['dr', 'Sv', 'Vel']
 rule_condition = re.search(r'(?<!\d)\.',street) and \
                 re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_street+hn_patterns) + r')\.)\w+\.', street, flags=re.IGNORECASE)
 # rule_condition_4106 = any(re.search(re.escape(pattern), street, re.IGNORECASE) for pattern in hn_patterns)
-if rule_condition:# and rule_condition_4106:
+# if rule_condition:# and rule_condition_4106:
+#################
+
+
+##################### formatting issues in street
+
+
+street = 'pOd HruseVCO' #trigger
+street = 'Gub=eva cesta' #dont trigger
+street = 'Cesta 19. oktobra ' #dont trigger
+# street = 'Rabel^ja vas '
+# street = 'Ulica  bratov U!akar'
+# street = '.'
+street = 'Ulica  Franca Rozmana-Staneta'
+# street = 'Ciril-Metodov trg'
+
+cleaned_street = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", " ", street.strip(), flags=re.IGNORECASE)
+words = cleaned_street.strip().split()
+rule_condition0 = bool(words) and ( # this ensures that if the string must containt at least one lettter to be evaluated 
+    not words[0].istitle() or #the frist word has to be in title case
+    any(not (word.islower() or word.istitle()) for word in words[1:]) # all other words can either be in title case or all lower case
+    )
+
+cleaned_street = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", "", street.strip(), flags=re.IGNORECASE)
+words = cleaned_street.strip().split()
+rule_condition1 = bool(words) and ( # this ensures that if the string must containt at least one lettter to be evaluated 
+    not words[0].istitle() or #the frist word has to be in title case
+    any(not (word.islower() or word.istitle()) for word in words[1:]) # all other words can either be in title case or all lower case
+    )
+rule_condition_4106 = any( # allow roman numerals, and variation of BŠ
+    re.search(r'(?<!\w)' + re.escape(pattern) + r'(?!\w)', street, re.IGNORECASE)
+    for pattern in hn_patterns + roman_numbers)
+
+if rule_condition0 and not rule_condition_4106:
+
+#####################
+
 #### EMAIL
 
 # email = 'x'
