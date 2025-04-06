@@ -24,7 +24,7 @@ def detect_phone_errors(phone):
     phone_errors = set()
     
     # 3101 Check for missing data
-    rule_condition = phone.strip() == ""
+    rule_condition = phone.strip() == "" or phone.strip() == "x" or not re.search(r"[a-zA-Z0-9]", phone)
     if should_detect('3101', error_config):
         if rule_condition:
             phone_errors.add('3101')
@@ -35,49 +35,70 @@ def detect_phone_errors(phone):
                 if rule_condition:
                     phone_errors.add('3102')
             
-            # 3105 Check for too many digits
-            rule_condition = (len(phone) > 13)
-            if should_detect('3105', error_config):
-                if rule_condition:
-                    phone_errors.add('3105')
-            
-            # 3106 Check for too little digits
-            rule_condition = (len(phone) < 13)
-            if should_detect('3106', error_config):
-                if rule_condition:
-                    phone_errors.add('3106')
-            
-            # 3104 Check for formatting issues
-            rule_condition = (
-                    not phone.isascii()  # Ensure only ASCII characters are used
-                    or phone.count('+') != 1  # Only one "+" symbol is allowed
-                    or phone.startswith('+')  # "+" has to be at the start
-                    or any(char.isspace() for char in phone))  # No spaces allowed
-            if should_detect('3104', error_config):
-                if rule_condition:
-                    phone_errors.add('3104')
-            
-            # 3103 Check for invalid characters
-            rule_condition = not re.search(r'^[0-9]+$', phone)
-            if should_detect('3103', error_config):
-                if rule_condition:  
-                    phone_errors.add('3103')
-                
             # 3107 Check for two phone numbers
-            rule_condition = (
-                    phone.count('+') > 1
-                    or phone.count(',') > 1
-                    or phone.count(' ') > 1
-                    or phone.count(';') > 1)
+            rule_condition = (len(re.findall(r"\d{6,}", phone)) > 1
+                              or re.search(",", phone)
+                              or re.search(";", phone)
+                            )
             if should_detect('3107', error_config):
                 if rule_condition:
                     phone_errors.add('3107')
             
-            # 3108 Check for different country format
-            rule_condition = not phone.startswith('00386')
-            if should_detect('3108', error_config):
+            # 3103 Check for invalid characters
+            skip_if_condition = not '3107' in phone_errors
+            rule_condition = not phone.replace("  ", "").strip().isdigit() # anything that is non-digit is flagged, except blankspaces since this is handled in error 3102
+            if should_detect('3103', error_config):
+                if skip_if_condition:
+                    if rule_condition:
+                        phone_errors.add('3103')
+                    
+            # 3105 Check for too many digits      
+            skip_if_condition = not '3107' in phone_errors              
+            digit_count = len(re.findall(r"\d", phone))
+            if phone.strip().startswith("00386"):
+                rule_condition = digit_count > 13
+            elif phone.strip().startswith("386"):
+                rule_condition = digit_count > 11
+            elif phone.strip().startswith("+00386"):
+                rule_condition = digit_count > 13
+            elif phone.strip().startswith("0"):
+                rule_condition = digit_count > 9
+            elif phone.strip().startswith("+386"):
+                rule_condition = digit_count > 11
+            else:
+                rule_condition = digit_count > 14  # fallback for unexpected cases
+            if should_detect("3105", error_config):
+                if skip_if_condition:
+                    if rule_condition:
+                        phone_errors.add("3105")
+                    
+            # 3106 Check for too little digits
+            digit_count = len(re.findall(r"\d", phone))
+            if phone.strip().startswith("00386"):
+                rule_condition = digit_count < 13
+            elif phone.strip().startswith("386"):
+                rule_condition = digit_count < 11
+            elif phone.strip().startswith("+00386"):
+                rule_condition = digit_count < 13
+            elif phone.strip().startswith("0"):
+                rule_condition = digit_count < 9
+            elif phone.strip().startswith("+386"):
+                rule_condition = digit_count < 11
+            else:
+                rule_condition = digit_count < 9  # fallback for unexpected cases
+            if should_detect("3106", error_config):
                 if rule_condition:
-                    phone_errors.add('3108')
+                    phone_errors.add("3106")
+            
+            # 3104 Check for formatting issues
+            skip_if_condition = not phone_errors
+            rule_condition = (not re.search(r'^00386[1-7][0-9]{7}$', phone.strip()) or
+                              not phone.strip()
+                              )
+            if should_detect('3104', error_config):
+                if skip_if_condition:
+                    if rule_condition:
+                        phone_errors.add('3104')
         
     return phone_errors
 

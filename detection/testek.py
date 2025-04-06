@@ -153,7 +153,7 @@ name = 'O. Marija'
 # rule_condition = any(re.fullmatch(r"[A-ZČĆŠŽ]{1}\.?", word) for word in name.split())
 rule_condition = any(re.fullmatch(r"[A-ZČĆŠŽ]{1}\.?", word.strip()) for word in name.strip().split())
 
-################# 110
+################# 110 duplicates
 name = 'Marko in Marko'
 
 names = name.split()
@@ -163,6 +163,22 @@ for i in names:
         counts[i] = 0
     counts[i] += 1
 rule_condition = (any(count > 1 for count in counts.values()))
+
+
+################# 3105
+phone = '+00386707696169 '
+rule_condition = len(re.findall(r"\d", phone)) > 13
+
+################# 3103
+phone = '0038664494841 '
+phone = ' OO3864O8O7I25'
+phone = '064 946 '
+rule_condition = not phone.replace(" ", "").isdigit()
+
+
+################# 3107 Check for two phone numbers
+phone = '064/498/706, 0038631357874'
+rule_condition = len(re.findall(r"\d{6,}", phone)) > 1
 
 
 ######## MAIN ############
