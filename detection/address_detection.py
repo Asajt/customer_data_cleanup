@@ -88,9 +88,10 @@ def detect_address_errors(street, street_number, zipcode, city):
                     street_errors.add('4106')
             
             # 4103 Check for invalid characters
-            rule_condition = not re.search(r'^[a-zA-ZčćšžČĆŠŽ\d\s\.,-/]+$', street) or \
-                '//' in street or \
-                not re.search(r"[a-zA-ZčćšžČĆŠŽ0-9]", street) #cannot have only special characters
+            rule_condition = (not re.search(r'^[a-zA-ZčćšžČĆŠŽ\d\s\.,-/]+$', street) or
+                '//' in street or
+                not re.search(r"[a-zA-ZčćšžČĆŠŽ0-9]", street) or #cannot have only special characters
+                len(street.strip()) <= 1) # cannot be only one character
             rule_condition_4106 = any(
                 re.search(r'(?<!\w)' + re.escape(pattern) + r'(?!\w)', street, re.IGNORECASE)
                 for pattern in hn_patterns)
@@ -168,8 +169,6 @@ def detect_address_errors(street, street_number, zipcode, city):
                 if skip_if_condition:
                     if rule_condition:
                         street_errors.add('4113')
-            
-            # !!! replacing šćčž to scz
 
     # Street_number errors 
     # 4201 Check for missing data

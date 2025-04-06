@@ -100,10 +100,25 @@ street = 'Ulica I.brigade VDV B.S.'
 # remove all hn patterns from the string
 pattern = r'(?<!\w)(' + '|'.join([re.escape(pat) for pat in hn_patterns+roman_numbers]) + r')(?!\w)'
 cleaned_street = re.sub(pattern, '', street, flags=re.IGNORECASE).strip()
-print(cleaned_street)
+# print(cleaned_street)
 rule_condition = re.search(r'(?<!\d)\.',cleaned_street) and \
                 re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_street) + r')\.)\w+\.', street, flags=re.IGNORECASE)
 
+
+
+################# 4103
+
+street = 'x'
+rule_condition = (not re.search(r'^[a-zA-ZčćšžČĆŠŽ\d\s\.,-/]+$', street) or
+    '//' in street or
+    not re.search(r"[a-zA-ZčćšžČĆŠŽ0-9]", street) or #cannot have only special characters
+    len(street.strip()) <= 1) # cannot be only one character
+rule_condition_4106 = any(
+    re.search(r'(?<!\w)' + re.escape(pattern) + r'(?!\w)', street, re.IGNORECASE)
+    for pattern in hn_patterns)
+if rule_condition:# and not rule_condition_4106:
+
+#################
 
 #################
 
@@ -117,7 +132,7 @@ rule_condition = re.search(r'(?<!\d)\.',cleaned_street) and \
 
 
 ######## MAIN ############
-if rule_condition:
+# if rule_condition:
     print("error")
 else:
     print("ok")
