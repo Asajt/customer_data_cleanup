@@ -116,7 +116,7 @@ rule_condition = (not re.search(r'^[a-zA-ZčćšžČĆŠŽ\d\s\.,-/]+$', street)
 rule_condition_4106 = any(
     re.search(r'(?<!\w)' + re.escape(pattern) + r'(?!\w)', street, re.IGNORECASE)
     for pattern in hn_patterns)
-if rule_condition:# and not rule_condition_4106:
+# if rule_condition:# and not rule_condition_4106:
 
 #################
 
@@ -129,10 +129,14 @@ if rule_condition:# and not rule_condition_4106:
 
 # rule_condition = email.strip() == "" or email.strip() == "x" or not re.search(r"[a-zA-Z0-9]", email)
 
-
+################# 2103
+email = 'x'
+# Check for invalid characters (2103)
+rule_condition = re.search(r"[^a-zA-Z0-9@_.+\-]", email)  # disallow anything not in the basic set
+#################
 
 ######## MAIN ############
-# if rule_condition:
+if rule_condition:
     print("error")
 else:
     print("ok")

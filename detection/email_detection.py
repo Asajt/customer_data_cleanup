@@ -38,29 +38,6 @@ def detect_email_errors(email):
                 if rule_condition:
                     email_errors.add('2102')
 
-            # Check for invalid characters (2103)
-            skip_if_condition = not '2102' in email_errors
-            rule_condition = (not re.search(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', email))
-            if should_detect('2103', error_config):
-                if skip_if_condition:
-                    if rule_condition:
-                        email_errors.add('2103')
-
-            # Check for formatting issues (2104)
-            rule_condition = (
-                    not email.isascii()  # Ensure only ASCII characters are used
-                    or email.count('@') != 1  # Only one "@" symbol is allowed
-                    or email.startswith('@') or email.endswith('@')  # "@" cannot be at the start or end
-                    or email.split('@')[0] == ""  # Missing local part (before @)
-                    or email.split('@')[-1].count('.') == 0  # Missing "." in domain
-                    or email.split('@')[-1].startswith('.') or email.split('@')[-1].endswith('.')  # "." cannot be at start or end of domain
-                    or any(char.isspace() for char in email))  # No spaces allowed
-            skip_if_condition = not (any (code in email_errors for code in ["2102", "2103"]))
-            if should_detect('2104', error_config):
-                if skip_if_condition:
-                    if rule_condition:
-                        email_errors.add('2104')
-
             # Check for possibly two emails (2105)
             rule_condition = (
                     email.count('@') > 1 
@@ -70,28 +47,53 @@ def detect_email_errors(email):
             if should_detect('2105', error_config):
                 if rule_condition:
                     email_errors.add('2105')
-                else:
-                    # Invalid domain structure (2106)
-                    domain = email.split('@')[-1]
-                    rule_condition = (not re.search(r'^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$', domain))
-                    skip_if_condition = not '2102' in email_errors
-                    if should_detect('2106', error_config):
-                        if skip_if_condition:
-                            if rule_condition:
-                                email_errors.add('2106')
 
-                            else:
-                                # Check for possibly invalid domain (2107)
-                                valid_domains = [
-                                    'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 
-                                    'siol.net', 't-2.net', 'amis.net', 'email.si', 'gov.si', 
-                                    'guest.arnes.si', 'guest.arnes.net', 'guest.arnes.org', 
-                                    'icloud.com', 'guest.arnes.net'
-                                ]
-                                rule_condition = (domain not in valid_domains)
-                                if should_detect('2107', error_config):
-                                    if rule_condition:
-                                        email_errors.add('2107')
+            # Check for invalid characters (2103)
+            skip_if_condition = not (any (code in email_errors for code in ["2102", "2105"]))
+            rule_condition = re.search(r"[^a-zA-Z0-9@_.+\-]", email)  # disallow anything not in the basic set
+            if should_detect('2103', error_config):
+                if skip_if_condition:
+                    if rule_condition:
+                        email_errors.add('2103')
+            
+            # Check for formatting issues (2104)
+            skip_if_condition = not (any (code in email_errors for code in ["2102", "2103"]))
+            rule_condition = (
+                email.count('@') != 1  # Must contain exactly one '@'
+                or email.startswith('@') or email.endswith('@')  # Cannot start or end with '@'
+                or email.split('@')[0] == ""  # No local part before '@'
+                or '.' not in email.split('@')[-1]  # Must contain dot in domain
+                or email.split('@')[-1].startswith('.') or email.split('@')[-1].endswith('.')  # Bad domain edge cases
+                or any(char.isspace() for char in email)  # Spaces not allowed
+                or not re.search(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', email)  # Fails general structure
+            )
+            if should_detect('2104', error_config):
+                if skip_if_condition:
+                    if rule_condition:
+                        email_errors.add('2104')
+                    
+            # Invalid domain structure (2106)
+            domain = email.split('@')[-1]
+            skip_if_condition = not (any (code in email_errors for code in ["2103", "2104", "2105"]))
+            rule_condition = (not re.search(r'^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$', domain))
+            if should_detect('2106', error_config):
+                if skip_if_condition:
+                    if rule_condition:
+                        email_errors.add('2106')
+
+            # Check for possibly invalid domain (2107)
+            valid_domains = [
+                'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 
+                'siol.net', 't-2.net', 'amis.net', 'email.si', 'gov.si', 
+                'guest.arnes.si', 'guest.arnes.net', 'guest.arnes.org', 
+                'icloud.com', 'guest.arnes.net'
+            ]
+            skip_if_condition = not (any (code in email_errors for code in ["2103", "2104", "2105", "2106"]))
+            rule_condition = (domain not in valid_domains)
+            if should_detect('2107', error_config):
+                if skip_if_condition:
+                    if rule_condition:
+                        email_errors.add('2107')
 
             # If no specific error found, try validating the email format (2000)
             if not email_errors:

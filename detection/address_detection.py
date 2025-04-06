@@ -345,15 +345,15 @@ def detect_address_errors(street, street_number, zipcode, city):
                         city_errors.add('4403')  
             
             # 4404 formatting issues
-            # skip_if_condition = not '4405' in city_errors
-            words = city.strip().split()
-            rule_condition = not (
-                all(word.istitle() for word in words) or
-                (words[0].istitle() and all(word.islower() for word in words[1:])))
+            cleaned_city = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", " ", city.strip(), flags=re.IGNORECASE)
+            words = cleaned_city.strip().split()
+            rule_condition = bool(words) and ( # this ensures that if the string must containt at least one lettter to be evaluated 
+                not words[0].istitle() or #the frist word has to be in title case
+                any(not (word.islower() or word.istitle()) for word in words[1:]) # all other words can either be in title case or all lower case
+                )
             if should_detect('4404', error_config):
-                # if skip_if_condition:
-                    if rule_condition:
-                        city_errors.add('4404')  
+                if rule_condition:
+                    street_errors.add('4404')
             
             # 4406 Check for invalid abbreviations
             rule_condition = re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_city) + r')\.)\w+\.', city, flags=re.IGNORECASE)
