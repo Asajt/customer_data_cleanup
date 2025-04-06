@@ -31,7 +31,7 @@ def detect_name_errors(name, surname):
     
     # NAME errors detection
     # 1101 Check for missing data
-    rule_condition = name.strip() == ""
+    rule_condition = name.strip() == "" or name.strip() == "x" or not re.search(r"[a-zA-Z0-9]", name)
     if should_detect('1101', error_config):
         if rule_condition:
             name_errors.add('1101') 
@@ -69,14 +69,16 @@ def detect_name_errors(name, surname):
                     name_errors.add('1105')
         
             # 1106 Check for two names in one field
+            skip_if_condition = not '1105' in name_errors
             rule_condition = (len(names) > 1)
             if should_detect('1106', error_config):
-                if rule_condition:
-                    name_errors.add('1106')
+                if skip_if_condition:
+                    if rule_condition:
+                        name_errors.add('1106')
     
     # SURNAME errors detection
     # 1201 Missing Data
-    rule_condition = surname.strip() == ""
+    rule_condition = surname.strip() == "" or surname.strip() == "x" or not re.search(r"[a-zA-Z0-9]", surname)
     if should_detect('1201', error_config):
         if rule_condition:
             surname_errors.add('1201')
