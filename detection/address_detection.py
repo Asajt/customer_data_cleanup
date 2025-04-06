@@ -99,9 +99,9 @@ def detect_address_errors(street, street_number, zipcode, city):
                     street_errors.add('4103')
         
             # 4104  Formatting issues (check whether the case of letters is correct) 
-            cleaned_street = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", " ", street.strip(), flags=re.IGNORECASE) # remove al non-letter characters from the string
-            pattern = r'(?<!\w)(' + '|'.join([re.escape(pat) for pat in hn_patterns+roman_numbers]) + r')(?!\w)' # remove hn_patterns and roman numbers from the string
+            pattern = r'(?<!\w)(' + '|'.join([re.escape(pat) for pat in hn_patterns+roman_numbers]) + r')(?!\w)'
             cleaned_street = re.sub(pattern, '', street, flags=re.IGNORECASE).strip()
+            cleaned_street = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", " ", cleaned_street.strip(), flags=re.IGNORECASE)
             words = cleaned_street.strip().split()
             rule_condition = bool(words) and ( # this ensures that if the string must containt at least one lettter to be evaluated 
                 not words[0].istitle() or #the frist word has to be in title case

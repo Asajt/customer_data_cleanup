@@ -50,24 +50,6 @@ rule_condition = re.search(r'^[^0-9]', street_number) and \
 
 
 
-####################### 4107: invalid abbreviations
-street = 'Šaleška B.Š.'
-street = 'Šaleška ce. B$'
-
-street = 'Mesarska c. B.S.'
-street = 'Sitarjevška cesta B.Š.'
-street = 'Seskova ulica B.S.'
-# street = 'Cankarjeva u. NH'
-street = 'Pot k čuvajnici B.Š.'
-# street = 'Oljøna pot B.Š.'
-
-# Build regex pattern from all variations
-pattern = r'(?<!\w)(' + '|'.join([re.escape(pat) for pat in hn_patterns]) + r')(?!\w)'
-cleaned_street = re.sub(pattern, '', street, flags=re.IGNORECASE).strip()
-rule_condition = re.search(r'(?<!\d)\.',cleaned_street) and \
-                re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_street) + r')\.)\w+\.', street, flags=re.IGNORECASE)
-
-#################
 
 
 ##################### formatting issues in street
@@ -82,19 +64,20 @@ street = 'Cesta 19. oktobra ' #dont trigger
 street = 'Ulica  Franca Rozmana-Staneta'
 # street = 'Ciril-Metodov trg'
 street = 'ULICA  PRVOBORCEV N.H.'
-street = 'Ulica VIII'
+# street = 'Ulica VIII'
+street = ' Spodnji Rudnik II 627'
+# 
 
 
-
-cleaned_street = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", " ", street.strip(), flags=re.IGNORECASE)
 pattern = r'(?<!\w)(' + '|'.join([re.escape(pat) for pat in hn_patterns+roman_numbers]) + r')(?!\w)'
 cleaned_street = re.sub(pattern, '', street, flags=re.IGNORECASE).strip()
+cleaned_street = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", " ", cleaned_street.strip(), flags=re.IGNORECASE)
 words = cleaned_street.strip().split()
 rule_condition = bool(words) and ( # this ensures that if the string must containt at least one lettter to be evaluated 
     not words[0].istitle() or #the frist word has to be in title case
     any(not (word.islower() or word.istitle()) for word in words[1:]) # all other words can either be in title case or all lower case
     )
-if rule_condition:
+# if rule_condition:
 
 
 # if rule_condition0 and not rule_condition_4106:
@@ -102,6 +85,27 @@ if rule_condition:
 #####################
 
 
+####################### 4107: invalid abbreviations
+street = 'Šaleška B.Š.'
+street = 'Šaleška ce. B$'
+
+street = 'Mesarska c. B.S.'
+street = 'Sitarjevška cesta B.Š.'
+street = 'Seskova ulica B.S.'
+# street = 'Cankarjeva u. NH'
+street = 'Pot k čuvajnici B.Š.'
+# street = 'Oljøna pot B.Š.'
+street = 'Ulica I.brigade VDV B.S.'
+
+# remove all hn patterns from the string
+pattern = r'(?<!\w)(' + '|'.join([re.escape(pat) for pat in hn_patterns+roman_numbers]) + r')(?!\w)'
+cleaned_street = re.sub(pattern, '', street, flags=re.IGNORECASE).strip()
+print(cleaned_street)
+rule_condition = re.search(r'(?<!\d)\.',cleaned_street) and \
+                re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_street) + r')\.)\w+\.', street, flags=re.IGNORECASE)
+
+
+#################
 
 
 #### EMAIL
@@ -113,7 +117,7 @@ if rule_condition:
 
 
 ######## MAIN ############
-# if rule_condition:
+if rule_condition:
     print("error")
 else:
     print("ok")
