@@ -40,10 +40,10 @@ def detect_email_errors(email):
 
             # Check for possibly two emails (2105)
             rule_condition = (
-                    email.count('@') > 1 
-                    or email.count(',') > 1 
-                    or email.count(' ') > 1 
-                    or email.count(';') > 1)
+                    email.count('@') > 1 and
+                    (email.count(',') == 1 
+                    or email.count(' ') == 1 
+                    or email.count(';') == 1))
             if should_detect('2105', error_config):
                 if rule_condition:
                     email_errors.add('2105')
@@ -57,7 +57,7 @@ def detect_email_errors(email):
                         email_errors.add('2103')
             
             # Check for formatting issues (2104)
-            skip_if_condition = not (any (code in email_errors for code in ["2102", "2103"]))
+            skip_if_condition = not (any (code in email_errors for code in ["2102", "2103", "2105"]))
             rule_condition = (
                 email.count('@') != 1  # Must contain exactly one '@'
                 or email.startswith('@') or email.endswith('@')  # Cannot start or end with '@'
@@ -74,6 +74,7 @@ def detect_email_errors(email):
                     
             # Invalid domain structure (2106)
             domain = email.split('@')[-1]
+            domain = domain.strip()
             skip_if_condition = not (any (code in email_errors for code in ["2103", "2104", "2105"]))
             rule_condition = (not re.search(r'^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$', domain))
             if should_detect('2106', error_config):
