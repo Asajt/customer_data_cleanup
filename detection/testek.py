@@ -45,9 +45,17 @@ rule_condition = re.search(r'^[^0-9]', street_number) and \
 # skip_if_condition = not '4303' in zipcode_errors
 # rule_condition = re.search(r"^\d{1,3}$", zipcode)
 # if skip_if_condition:
+
+
+#### EMAIL
+
+email = 'x'
+
+rule_condition = email.strip() == "" or email.strip() == "x" or not re.search(r"[a-zA-Z0-9]", email)
 if rule_condition:
         print("error")
 else:
     print("ok")
+    
     
     
