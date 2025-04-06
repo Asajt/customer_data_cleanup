@@ -89,7 +89,7 @@ def apply_errors(df):
 
                 # ERROR 1107 - Initials
                 if random.random() < 0.01:
-                    initials = ''.join([name[0].upper() + '.' for name in current_value.split()])
+                    initials = ''.join([name[0].upper() + random.choice([".", ""]) for name in current_value.split()])
                     new_value = initials if len(current_value.split()) == 1 else current_value
                     if new_value != current_value:
                         log_error(df, index, "1107")

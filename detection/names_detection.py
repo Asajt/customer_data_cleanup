@@ -75,6 +75,9 @@ def detect_name_errors(name, surname):
                 if skip_if_condition:
                     if rule_condition:
                         name_errors.add('1106')
+                        
+            # 1107 Initials present
+            # rule_condition
     
     # SURNAME errors detection
     # 1201 Missing Data
