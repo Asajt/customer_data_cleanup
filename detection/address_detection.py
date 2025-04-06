@@ -113,8 +113,11 @@ def detect_address_errors(street, street_number, zipcode, city):
                     street_errors.add('4104')
             
             # 4107 Check for invalid abbreviations
-            rule_condition = re.search(r'(?<!\d)\.',street) and \
-                re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_street+hn_patterns) + r')\.)\w+\.', street, flags=re.IGNORECASE)
+            # remove all hn patterns from the string
+            pattern = r'(?<!\w)(' + '|'.join([re.escape(pat) for pat in hn_patterns]) + r')(?!\w)'
+            cleaned_street = re.sub(pattern, '', street, flags=re.IGNORECASE).strip()
+            rule_condition = re.search(r'(?<!\d)\.',cleaned_street) and \
+                            re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_street) + r')\.)\w+\.', street, flags=re.IGNORECASE)
             if should_detect('4107', error_config):
                 if rule_condition:
                     street_errors.add('4107') 

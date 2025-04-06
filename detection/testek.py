@@ -7,6 +7,8 @@ roman_numbers = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'
                 , 'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII', 'XXVIII', 'XXIX', 'XXX'
                 , 'XXXI'
                 , 'XL']
+allowed_abbreviations_street = ['dr', 'Sv', 'Vel']
+allowed_abbreviations_street.extend(roman_numbers)
 
 street1 = 'Barletova ce.  B$'
 street11 = 'Zagrebška ulica'
@@ -47,16 +49,6 @@ rule_condition = re.search(r'^[^0-9]', street_number) and \
 # if skip_if_condition:
 
 
-####################### 4107
-street = 'Šaleška B.Š.'
-# street = 'Šaleška ce. B$'
-
-allowed_abbreviations_street = ['dr', 'Sv', 'Vel']
-rule_condition = re.search(r'(?<!\d)\.',street) and \
-                re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_street+hn_patterns) + r')\.)\w+\.', street, flags=re.IGNORECASE)
-# rule_condition_4106 = any(re.search(re.escape(pattern), street, re.IGNORECASE) for pattern in hn_patterns)
-# if rule_condition:# and rule_condition_4106:
-#################
 
 
 ##################### formatting issues in street
@@ -88,9 +80,29 @@ rule_condition_4106 = any( # allow roman numerals, and variation of BŠ
     re.search(r'(?<!\w)' + re.escape(pattern) + r'(?!\w)', street, re.IGNORECASE)
     for pattern in hn_patterns + roman_numbers)
 
-if rule_condition0 and not rule_condition_4106:
+# if rule_condition0 and not rule_condition_4106:
 
 #####################
+
+
+####################### 4107: invalid abbreviations
+street = 'Šaleška B.Š.'
+street = 'Šaleška ce. B$'
+
+street = 'Mesarska c. B.S.'
+street = 'Sitarjevška cesta B.Š.'
+street = 'Seskova ulica B.S.'
+# street = 'Cankarjeva u. NH'
+street = 'Pot k čuvajnici B.Š.'
+# street = 'Oljøna pot B.Š.'
+
+# Build regex pattern from all variations
+pattern = r'(?<!\w)(' + '|'.join([re.escape(pat) for pat in hn_patterns]) + r')(?!\w)'
+cleaned_street = re.sub(pattern, '', street, flags=re.IGNORECASE).strip()
+rule_condition = re.search(r'(?<!\d)\.',cleaned_street) and \
+                re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_street) + r')\.)\w+\.', street, flags=re.IGNORECASE)
+
+#################
 
 #### EMAIL
 
@@ -101,7 +113,7 @@ if rule_condition0 and not rule_condition_4106:
 
 
 ######## MAIN ############
-# if rule_condition:
+if rule_condition:
     print("error")
 else:
     print("ok")
