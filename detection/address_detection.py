@@ -149,15 +149,6 @@ def detect_address_errors(street, street_number, zipcode, city):
                 if skip_if_condition:
                     if rule_condition:
                         street_errors.add('4112')
-                        
-            # 4113 Check for invalid digit in street
-            skip_if_condition = not (any (code in street_errors for code in ["4105", "4109", "4111", "4112"]))
-            rule_condition = (re.search(r'\d+(?![.\d])', street)) and not \
-                (re.search(r'25\s+TALCEV',street)) #edina ulica, ki nima pike po številki 2024/03/12
-            if should_detect('4113', error_config):
-                if skip_if_condition:
-                    if rule_condition:
-                        street_errors.add('4113')
                     
             # 4108 Check for no space after full stop
             skip_if_condition = not '4103' in street_errors
@@ -168,15 +159,15 @@ def detect_address_errors(street, street_number, zipcode, city):
                 if skip_if_condition:
                     if rule_condition and not rule_condition_4107:
                         street_errors.add('4108') 
-        
+                    
             # 4113 Check for invalid digit in street
-            skip_if_condition = not '4105' in street_errors
+            skip_if_condition = not (any (code in street_errors for code in ["4105", "4109", "4111", "4112"]))
             rule_condition = (re.search(r'\d+(?![.\d])', street)) and not \
-                (re.search(r'25\s+TALCEV',street)) #edina ulica, ki nima pike po številki 2024/03/12 
+                (re.search(r'25\s+TALCEV',street)) #edina ulica, ki nima pike po številki 2024/03/12
             if should_detect('4113', error_config):
                 if skip_if_condition:
                     if rule_condition:
-                        street_errors.add('4113') 
+                        street_errors.add('4113')
             
             # !!! replacing šćčž to scz
 
