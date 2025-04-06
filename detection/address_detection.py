@@ -53,7 +53,9 @@ def detect_address_errors(street, street_number, zipcode, city):
 
     # Street errors
     # 4101 Check for missing data
-    rule_condition = street.strip() == ""
+    rule_condition = (street.strip() == "" 
+                      or len(street.strip()) <= 1 
+                      or '//' in street)
     if should_detect('4101', error_config):
         if rule_condition:
             street_errors.add('4101') 
@@ -89,9 +91,8 @@ def detect_address_errors(street, street_number, zipcode, city):
             
             # 4103 Check for invalid characters
             rule_condition = (not re.search(r'^[a-zA-ZčćšžČĆŠŽ\d\s\.,-/]+$', street) or
-                '//' in street or
-                not re.search(r"[a-zA-ZčćšžČĆŠŽ0-9]", street) or #cannot have only special characters
-                len(street.strip()) <= 1) # cannot be only one character
+                not re.search(r"[a-zA-ZčćšžČĆŠŽ0-9]", street) #cannot have only special characters
+                )
             rule_condition_4106 = any(
                 re.search(r'(?<!\w)' + re.escape(pattern) + r'(?!\w)', street, re.IGNORECASE)
                 for pattern in hn_patterns)
@@ -172,7 +173,11 @@ def detect_address_errors(street, street_number, zipcode, city):
 
     # Street_number errors 
     # 4201 Check for missing data
-    rule_condition = street_number.strip() == ""
+    rule_condition = (
+        street_number.strip() == "" or
+        ('//' in street_number) or
+        (len(street_number.strip()) == 1 and not re.search(r'[a-zA-Z0-9]', street_number))
+    )
     if should_detect('4201', error_config):
         if rule_condition:
             street_number_errors.add('4201') 
@@ -272,7 +277,11 @@ def detect_address_errors(street, street_number, zipcode, city):
 
     # Zipcode errors     
     # 4301 Check for missing data
-    rule_condition = zipcode.strip() == ""
+    rule_condition = (
+        zipcode.strip() == "" or
+        ('//' in zipcode) or
+        (len(zipcode.strip()) == 1 and not re.search(r'[a-zA-Z0-9]', zipcode))
+    )
     if should_detect('4301', error_config):
         if rule_condition:
             zipcode_errors.add('4301')
@@ -317,7 +326,9 @@ def detect_address_errors(street, street_number, zipcode, city):
 
     # City errors
     # 4401 Check for missing data
-    rule_condition = city.strip() == "" 
+    rule_condition = (city.strip() == "" 
+                      or len(city.strip()) <= 1 
+                      or '//' in city)
     if should_detect('4401', error_config):
         if rule_condition:
             city_errors.add('4401')

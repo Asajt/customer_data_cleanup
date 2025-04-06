@@ -6,7 +6,16 @@ from utils.errors_utils import should_correct, load_error_config
 
 error_config = load_error_config()
 
-def correct_address(street, street_number, zipcode, city, detected_errors):
+def split_into_set(detected_errors_column):
+    if isinstance(detected_errors_column, str):
+        # Split by comma, strip each item, exclude empty strings
+        return set(code.strip() for code in detected_errors_column.split(",") if code.strip())
+    elif isinstance(detected_errors_column, (set, list)):
+        return set(str(code).strip() for code in detected_errors_column if str(code).strip())
+    else:
+        return set()
+
+def correct_address(street, street_number, zipcode, city, detected_street_errors, detected_street_number_errors, detected_zipcode_errors, detected_city_errors):
     
     # 01. Store the original address components for comparison purposes
     original_street = street
@@ -20,14 +29,23 @@ def correct_address(street, street_number, zipcode, city, detected_errors):
     zipcode = "" if pd.isna(zipcode) else str(zipcode)
     city = "" if pd.isna(city) else str(city)
 
-    if isinstance(detected_errors, str):
-        detected_errors = set(detected_errors.split(",")) if detected_errors else set()
-    else:
-        detected_errors = set()
-        
-    orig_detected_errors = detected_errors.copy() # Store the original detected errors for comparison
-    corrected_errors = set()  # Set to store errors corrected during processing
-    uncorrected_errors = set()  # Set to store errors that remain uncorrected
+    # 3 split the string into a set
+    detected_street_errors = split_into_set(detected_street_errors)
+    detected_street_number_errors = split_into_set(detected_street_number_errors)
+    detected_zipcode_errors = split_into_set(detected_zipcode_errors)
+    detected_city_errors = split_into_set(detected_city_errors)
+    
+    corrected_street_errors = set()  
+    uncorrected_street_errors = detected_street_errors.copy()
+    
+    corrected_street_number_errors = set()  
+    uncorrected_street_number_errors = detected_street_number_errors.copy()
+    
+    corrected_zipcode_errors = set()  
+    uncorrected_zipcode_errors = detected_zipcode_errors.copy()
+    
+    corrected_city_errors = set()  
+    uncorrected_city_errors = detected_city_errors.copy()
     
     # values to compare with in checks and corrections
     roman_numbers = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'
@@ -42,36 +60,41 @@ def correct_address(street, street_number, zipcode, city, detected_errors):
     
     hn_patterns = ['BŠ', 'B.Š.', 'B. ŠT.', 'B.ŠT.', 'B$', 'BREZ ŠT.', 'BS', 'B.S.', 'NH', 'N.H.', 'BH', 'B.H.']
 
-
     corrected_street = street
     corrected_street_number = street_number
     corrected_zipcode = zipcode
     corrected_city = city
 
     # Street corrections 
-    if detected_errors:
-        if '102' in detected_errors: # Street error: unnecessary spaces
+    if detected_street_errors:
+        if '4101' in detected_street_errors: # missing data 
+            corrected_street_before = corrected_street
+            corrected_street = None
+            if corrected_street_before != corrected_street:
+                corrected_street_errors.add('4101')
+                uncorrected_street_errors.remove('4101')
+        if '4102' in detected_street_errors: # Street error: unnecessary spaces
             corrected_street_before = corrected_street
             corrected_street = corrected_street.rstrip() # removes trailing whitespaces
             corrected_street = corrected_street.lstrip() # removes leading whitespaces
             corrected_street = re.sub(r'\s{2,}', ' ', corrected_street) # removes double whitespace
             corrected_street = re.sub(r'\s,', ',', corrected_street) # removes whitespaces before comma
             if corrected_street_before != corrected_street:
-                corrected_errors.add('102')
-                detected_errors.remove('102')
-        if '107' in detected_errors: # Street error: no space after full stop
+                corrected_street_errors.add('4102')
+                uncorrected_street_errors.remove('4102')
+        if '4108' in detected_street_errors: # Street error: no space after full stop
             corrected_street_before = corrected_street
             corrected_street = re.sub(r'\.(?![\s\W])', r'. ', corrected_street)
             if corrected_street_before != corrected_street:
-                corrected_errors.add('107')
-                detected_errors.remove('107')
-        if '106' in detected_errors: # Street error: invalid abbreviations
+                corrected_street_errors.add('4108')
+                uncorrected_street_errors.remove('4108')
+        if '4107' in detected_street_errors: # Street error: invalid abbreviations
             corrected_street_before = corrected_street
             corrected_street = corrected_street.replace('c.', 'cesta').replace('u.','ulica').replace('ul.','ulica').replace('C.', 'CESTA').replace('U.','ULICA').replace('UL.','ULICA').replace('Ul.','Ulica')
             if corrected_street_before != corrected_street:
-                corrected_errors.add('106')
-                detected_errors.remove('106')
-        if '109' in detected_errors: #Street error: consecutive duplicates detected
+                corrected_street_errors.add('4107')
+                uncorrected_street_errors.remove('4107')
+        if '4110' in detected_street_errors: #Street error: consecutive duplicates detected
             corrected_street_before = corrected_street
             # Split the string into parts
             street_parts = street.replace(',', '').split()
@@ -87,63 +110,100 @@ def correct_address(street, street_number, zipcode, city, detected_errors):
             # Join the unique parts back together
             corrected_street = ' '.join(street_unique_parts)
             if corrected_street_before != corrected_street:
-                corrected_errors.add('109')
-                detected_errors.remove('109')
+                corrected_street_errors.add('4110')
+                uncorrected_street_errors.remove('4110')
 
     # Street number corrections 
-    if detected_errors:
-        if '202' in detected_errors: # Street number error: unnecessary spaces
+    if detected_street_number_errors:
+        # missing data 
+        if '4201' in detected_street_errors: 
+            corrected_street_number_before = corrected_street_number
+            corrected_street_number = None
+            if corrected_street_number_before != corrected_street_number:
+                corrected_street_number_errors.add('4201')
+                uncorrected_street_number_errors.remove('4201')
+        
+        # Street number error: unnecessary spaces
+        if '4202' in detected_street_number_errors: 
             corrected_street_number_before = corrected_street_number
             corrected_street_number = corrected_street_number.rstrip() # removes trailing whitespaces
             corrected_street_number = corrected_street_number.lstrip() # removes leading whitespaces
             corrected_street_number = re.sub(r'\s{2,}', ' ', corrected_street_number) # removes double whitespace
             corrected_street_number = re.sub(r'\s,', ',', corrected_street_number) # removes whitespaces before comma
             if corrected_street_number_before != corrected_street_number:
-                corrected_errors.add('202')
-                detected_errors.remove('202')
-        if '206' in detected_errors:
+                corrected_street_number_errors.add('4202')
+                uncorrected_street_number_errors.remove('4202')
+        
+        # remove leading 0s
+        if '4206' in detected_street_number_errors: 
             corrected_street_number_before = corrected_street_number
             corrected_street_number = re.sub(r'\b0+\s*(\d+)', r'\1', corrected_street_number)
             if corrected_street_number_before != corrected_street_number:
-                corrected_errors.add('206')
-                detected_errors.remove('206')
-        if '205' in detected_errors:
+                corrected_street_number_errors.add('4206')
+                uncorrected_street_number_errors.remove('4206')
+        
+        # remove dots
+        if '4209' in detected_street_number_errors:
             corrected_street_number_before = corrected_street_number
             corrected_street_number = corrected_street_number.rstrip('.')
             if corrected_street_number_before != corrected_street_number:
-                corrected_errors.add('205')
-                detected_errors.remove('205')
-        if '207' in detected_errors and not ('209' in detected_errors or '208' in detected_errors):
+                corrected_street_number_errors.add('4209')
+                uncorrected_street_number_errors.remove('4209')
+        
+        # correct spacing in between house number components
+        if '4205' in detected_street_number_errors and not (
+                '4208' in detected_street_number_errors or #roman numerals
+                '4209' in detected_street_number_errors): #ends with a full stop
             corrected_street_number_before = corrected_street_number
             corrected_street_number = re.sub(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', r'\1\5', corrected_street_number)
             if corrected_street_number_before != corrected_street_number:
-                corrected_errors.add('207')
-                detected_errors.remove('207')
+                corrected_street_number_errors.add('4205')
+                uncorrected_street_number_errors.remove('4205')
 
     # Zipcode corrections 
-    if detected_errors:
-        if '302' in detected_errors: # Zipcode error: unnecessary spaces
+    if detected_zipcode_errors:
+        # missing data 
+        if '4301' in detected_zipcode_errors: 
+            corrected_zipcode_before = corrected_zipcode
+            corrected_zipcode = None
+            if corrected_zipcode_before != corrected_zipcode:
+                corrected_zipcode_errors.add('4301')
+                uncorrected_zipcode_errors.remove('4301')
+        
+        # Zipcode error: unnecessary spaces
+        if '4302' in detected_zipcode_errors: 
             corrected_zipcode_before = corrected_zipcode
             corrected_zipcode = corrected_zipcode.rstrip() # removes trailing whitespaces
             corrected_zipcode = corrected_zipcode.lstrip() # removes leading whitespaces
             corrected_zipcode = re.sub(r'\s{2,}', ' ', corrected_zipcode) # removes double whitespace
             corrected_zipcode = re.sub(r'\s,', ',', corrected_zipcode) # removes whitespaces before comma
             if corrected_zipcode_before != corrected_zipcode:
-                corrected_errors.add('302')
-                detected_errors.remove('302')
+                corrected_zipcode_errors.add('4302')
+                uncorrected_zipcode_errors.remove('4302')
 
     # City corrections 
-    if detected_errors:
-        if '402' in detected_errors: # City error: unnecessary spaces
+    if detected_city_errors:
+        # missing data 
+        if '4401' in detected_city_errors: 
+            corrected_city_before = corrected_city
+            corrected_city = None
+            if corrected_city_before != corrected_city:
+                corrected_city_errors.add('4401')
+                uncorrected_city_errors.remove('4401')
+        
+        # City error: unnecessary spaces
+        if '4402' in detected_city_errors: 
             corrected_city_before = corrected_city
             corrected_city = corrected_city.rstrip() # removes trailing whitespaces
             corrected_city = corrected_city.lstrip() # removes leading whitespaces
             corrected_city = re.sub(r'\s{2,}', ' ', corrected_city) # removes double whitespace
             corrected_city = re.sub(r'\s,', ',', corrected_city) # removes whitespaces before comma
             if corrected_city_before != corrected_city:
-                corrected_errors.add('402')
-                detected_errors.remove('402')
-        if '406' in detected_errors: #Street error: consecutive duplicates detected
+                corrected_city_errors.add('4402')
+                uncorrected_city_errors.remove('4402')
+        
+        #Street error: consecutive duplicates detected
+        if '4407' in detected_city_errors: 
             corrected_city_before = corrected_city
             # Split the string into parts
             city_parts = city.replace(',', '').split()
@@ -159,77 +219,73 @@ def correct_address(street, street_number, zipcode, city, detected_errors):
             # Join the unique parts back together
             corrected_city = ' '.join(city_unique_parts)
             if corrected_city_before != corrected_city:
-                corrected_errors.add('406')
-                detected_errors.remove('406')
+                corrected_city_errors.add('4407')
+                uncorrected_city_errors.remove('4407')
 
-    # Update address components for next iteration
-    street = corrected_street
-    street_number = corrected_street_number
-    zipcode = corrected_zipcode
-    city = corrected_city
+    return {
+    "corrected_street": corrected_street if corrected_street != original_street else None,
+    "corrected_street_number": corrected_street_number if corrected_street_number != original_street_number else None,
+    "corrected_zipcode": corrected_zipcode if corrected_zipcode != original_zipcode else None,
+    "corrected_city": corrected_city if corrected_city != original_city else None,
 
-    # Compare the input with the corrected address parts, if there is a difference update the corrected column, if not, keep it blank 
-    if corrected_street != original_street:
-        street = corrected_street 
-    else:
-        street = None
-        
-    if corrected_street_number != original_street_number:
-        street_number = corrected_street_number
-    else:
-        street_number = None
-        
-    if corrected_zipcode != original_zipcode:
-        zipcode = corrected_zipcode
-    else:
-        zipcode = None
-        
-    if corrected_city != original_city:
-        city = corrected_city
-    else:
-        city = None
+    "corrected_street_errors": sorted(corrected_street_errors),
+    "uncorrected_street_errors": sorted(uncorrected_street_errors),
 
-    return (
-        street, 
-        street_number, 
-        zipcode, 
-        city, 
-        ','.join(sorted(orig_detected_errors)), 
-        ','.join(sorted(uncorrected_errors))
-    )
+    "corrected_street_number_errors": sorted(corrected_street_number_errors),
+    "uncorrected_street_number_errors": sorted(uncorrected_street_number_errors),
 
-# TESTING
+    "corrected_zipcode_errors": sorted(corrected_zipcode_errors),
+    "uncorrected_zipcode_errors": sorted(uncorrected_zipcode_errors),
 
-customer_data = "src/processed_data/customer_data_with_detected_errors.xlsx"
+    "corrected_city_errors": sorted(corrected_city_errors),
+    "uncorrected_city_errors": sorted(uncorrected_city_errors)
+    }
 
-df = pd.read_excel(customer_data)
+    
 
-df_new = df.apply(lambda row: pd.Series(correct_address(row['STREET'], row['HOUSE_NUMBER'], row['POSTAL_CODE'], row['POSTAL_CITY'], row['DETECTED_ERRORS'])), axis=1)
+if __name__ == "__main__":
 
-# set column names for `df_new`
-df_new.columns = [
-    "CORRECTED_STREET", "CORRECTED_HOUSE_NUMBER", "CORRECTED_POSTAL_CODE", "CORRECTED_CITY", 
-    "DETECTED_ERRORS", "UNCORRECTED_ERRORS"
-]
+    # TESTING
 
-address_df = pd.DataFrame({
-    "ORIG_STREET": df["STREET"],
-    "CORRECTED_STREET": df_new["CORRECTED_STREET"],
+    customer_data = "src/processed_data/02_detected_address_errors.xlsx"
 
-    "ORIG_HOUSE_NUMBER": df["HOUSE_NUMBER"],
-    "CORRECTED_HOUSE_NUMBER": df_new["CORRECTED_HOUSE_NUMBER"],
+    df = pd.read_excel(customer_data)
+    print(df.head())
 
-    "ORIG_POSTAL_CODE": df["POSTAL_CODE"],
-    "CORRECTED_POSTAL_CODE": df_new["CORRECTED_POSTAL_CODE"],
+    df_new = df.apply(lambda row: pd.Series(correct_address(
+        row['STREET'],
+        row['HOUSE_NUMBER'],
+        row['POSTAL_CODE'],
+        row['POSTAL_CITY'],
+        row["street_detected_errors"],
+        row["house_number_detected_errors"],
+        row["POSTAL_CODE_detected_errors"],
+        row["POSTAL_CITY_detected_errors"]
+    )), axis=1)
 
-    "ORIG_POSTAL_CITY": df["POSTAL_CITY"],
-    "CORRECTED_POSTAL_CITY": df_new["CORRECTED_CITY"],
+    print("#"*15)
+    print(df_new)
+    print("#"*15)
+    
+    # Convert lists to comma-separated strings just for saving
+    for col in df_new.columns:
+        if "errors" in col:
+            df_new[col] = df_new[col].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
 
-    "INTRODUCED_ERRORS": df["introduced_errors"],
-    "DETECTED_ERRORS": df_new["DETECTED_ERRORS"],
-    "UNCORRECTED_ERRORS": df_new["UNCORRECTED_ERRORS"]
-})
+    print(df_new.head())
 
-# print(address_df.head())
-address_df.to_excel("src/processed_data/02_customer_data_with_corrected_address.xlsx", index=False)
-print("Correction of address errors completed!")
+    # Merge original and corrected data
+    final_df = pd.concat([df, df_new], axis=1)
+
+    # Optional: Filter columns to save
+    columns_to_export = [
+        "CUSTOMER_ID",  #
+        "STREET", "corrected_street", "street_detected_errors", "corrected_street_errors", "uncorrected_street_errors",
+        "HOUSE_NUMBER", "corrected_street_number", "house_number_detected_errors", "corrected_street_number_errors", "uncorrected_street_number_errors",
+        "POSTAL_CODE", "corrected_zipcode", "POSTAL_CODE_detected_errors", "corrected_zipcode_errors", "uncorrected_zipcode_errors",
+        "POSTAL_CITY", "corrected_city", "POSTAL_CITY_detected_errors", "corrected_city_errors", "uncorrected_city_errors"
+    ]
+    
+    # Save to Excel
+    final_df[columns_to_export].to_excel("src/processed_data/03_corrected_address_errors.xlsx", index=False)
+    print("✅ Correction of address errors completed and saved.")
