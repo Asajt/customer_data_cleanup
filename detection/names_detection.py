@@ -111,11 +111,11 @@ def detect_name_errors(name, surname):
                 if rule_condition:
                     surname_errors.add('1204')
             
-            # 1103 Check for invalid characters
-            rule_condition = (not re.search(r'^[a-ž\s]+$', name, re.IGNORECASE))
-            if should_detect('1103', error_config):
+            # 1203 Check for invalid characters
+            rule_condition = (not re.search(r'^[a-ž\s]+$', surname, re.IGNORECASE))
+            if should_detect('1203', error_config):
                 if rule_condition:
-                    name_errors.add('1103')
+                    surname_errors.add('1203')
             
             # 1205 Duplicates    
             surnames = surname.split()
