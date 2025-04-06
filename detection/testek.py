@@ -63,11 +63,14 @@ rule_condition = bool(words) and ( # this ensures that if the string must contai
     )
 
 
-street = 'Gub eva ul. 955 NH'
+street = 'Šaleška B.Š.'
+# street = 'Šaleška ce. B$'
 
-
-
-
+allowed_abbreviations_street = ['dr', 'Sv', 'Vel']
+rule_condition = re.search(r'(?<!\d)\.',street) and \
+                re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_street+hn_patterns) + r')\.)\w+\.', street, flags=re.IGNORECASE)
+# rule_condition_4106 = any(re.search(re.escape(pattern), street, re.IGNORECASE) for pattern in hn_patterns)
+if rule_condition:# and rule_condition_4106:
 #### EMAIL
 
 # email = 'x'
@@ -77,7 +80,7 @@ street = 'Gub eva ul. 955 NH'
 
 
 ######## MAIN ############
-if rule_condition:
+# if rule_condition:
     print("error")
 else:
     print("ok")

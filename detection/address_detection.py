@@ -114,10 +114,9 @@ def detect_address_errors(street, street_number, zipcode, city):
             
             # 4107 Check for invalid abbreviations
             rule_condition = re.search(r'(?<!\d)\.',street) and \
-                re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_street) + r')\.)\w+\.', street, flags=re.IGNORECASE)
-            rule_condition_4106 = any(re.search(re.escape(pattern), street, re.IGNORECASE) for pattern in hn_patterns)
+                re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_street+hn_patterns) + r')\.)\w+\.', street, flags=re.IGNORECASE)
             if should_detect('4107', error_config):
-                if rule_condition and not rule_condition_4106:
+                if rule_condition:
                     street_errors.add('4107') 
             
             # 4110 Check for (consecutive) duplicates
