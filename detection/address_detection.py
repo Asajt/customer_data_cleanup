@@ -107,11 +107,8 @@ def detect_address_errors(street, street_number, zipcode, city):
                 not words[0].istitle() or #the frist word has to be in title case
                 any(not (word.islower() or word.istitle()) for word in words[1:]) # all other words can either be in title case or all lower case
                 )
-            rule_condition_4106 = any( # allow roman numerals, and variation of BŠ
-                re.search(r'(?<!\w)' + re.escape(pattern) + r'(?!\w)', street, re.IGNORECASE)
-                for pattern in hn_patterns + roman_numbers)
             if should_detect('4104', error_config):
-                if rule_condition and not rule_condition_4106:
+                if rule_condition:
                     street_errors.add('4104')
             
             # 4107 Check for invalid abbreviations
