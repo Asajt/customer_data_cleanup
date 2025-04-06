@@ -143,10 +143,27 @@ name = 'Sn3ž@n@'
 name = 'D1mch3 M0jc'
 
 cleaned_name = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", "", name.strip(), flags=re.IGNORECASE)
-print(cleaned_name)
 rule_condition = (not cleaned_name.istitle())
 
-#################
+################# 1107
+
+name = 'O. Marija'
+
+# 1107 Initials present
+# rule_condition = any(re.fullmatch(r"[A-ZČĆŠŽ]{1}\.?", word) for word in name.split())
+rule_condition = any(re.fullmatch(r"[A-ZČĆŠŽ]{1}\.?", word.strip()) for word in name.strip().split())
+
+################# 110
+name = 'Marko in Marko'
+
+names = name.split()
+counts = {}
+for i in names:
+    if i not in counts:
+        counts[i] = 0
+    counts[i] += 1
+rule_condition = (any(count > 1 for count in counts.values()))
+
 
 ######## MAIN ############
 if rule_condition:

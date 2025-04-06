@@ -44,44 +44,50 @@ def detect_name_errors(name, surname):
                 if rule_condition:
                     name_errors.add('1102')
         
+            # 1107 Initials present
+            rule_condition = any(re.fullmatch(r"[A-ZČĆŠŽ]{1}\.?", word.strip()) for word in name.strip().split())
+            if should_detect('1107', error_config):
+                if rule_condition:
+                    name_errors.add('1107')
+        
             # 1103 Check for invalid characters
+            skip_if_condition = not '1107' in name_errors
             rule_condition = (not re.search(r'^[a-ž\s]+$', name, re.IGNORECASE))
             if should_detect('1103', error_config):
-                if rule_condition:
-                    name_errors.add('1103')
-        
-            # 1104 Check for formatting issues
-            cleaned_name = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", "", name.strip(), flags=re.IGNORECASE)
-            rule_condition = (not cleaned_name.istitle())
-            if should_detect('1104', error_config):
-                if rule_condition:
-                    name_errors.add('1104')
-        
-            # 1105 Check for duplicates
-            names = name.split()
-            counts = {}
-            for name in names:
-                if name not in counts:
-                    counts[name] = 0
-                counts[name] += 1
-            rule_condition = (any(count > 1 for count in counts.values()))
-            if should_detect('1105', error_config):
-                if rule_condition:
-                    name_errors.add('1105')
-        
+                if skip_if_condition:
+                    if rule_condition:
+                        name_errors.add('1103')
+
             # 1106 Check for two names in one field
-            skip_if_condition = not '1105' in name_errors
-            rule_condition = (len(names) > 1)
+            names = name.split()
+            skip_if_condition = not '1107' in name_errors
+            rule_condition = (len(names) > 1) and (re.search(r"\bin\b", name, re.IGNORECASE) or "," in name)
             if should_detect('1106', error_config):
                 if skip_if_condition:
                     if rule_condition:
                         name_errors.add('1106')
+        
+            # 1105 Check for duplicates
+            counts = {}
+            for i in names:
+                if i not in counts:
+                    counts[i] = 0
+                counts[i] += 1
+            skip_if_condition = not '1106' in name_errors
+            rule_condition = (any(count > 1 for count in counts.values()))
+            if should_detect('1105', error_config):
+                if skip_if_condition:
+                    if rule_condition:
+                        name_errors.add('1105')
                         
-            # 1107 Initials present
-            rule_condition = any(re.fullmatch(r"[A-ZČĆŠŽ]{1}\.?", word) for word in name.split())
-            if should_detect('1107', error_config):
-                if rule_condition:
-                    name_errors.add('1107')
+            # 1104 Check for formatting issues
+            skip_if_condition = not '1106' in name_errors
+            cleaned_name = re.sub(r"[^a-zA-ZčćšžđČĆŠŽĐ\s]", "", name.strip(), flags=re.IGNORECASE)
+            rule_condition = (not cleaned_name.istitle())
+            if should_detect('1104', error_config):
+                if skip_if_condition:
+                    if rule_condition:
+                        name_errors.add('1104')
                         
     # SURNAME errors detection
     # 1201 Missing Data
@@ -99,18 +105,25 @@ def detect_name_errors(name, surname):
                     surname_errors.add('1202')
         
             # 1204 Formatting Issue
-            rule_condition = (not surname.istitle())
+            cleaned_surname = re.sub(r"[^a-zA-ZčćšžđČĆŠŽĐ\s]", "", surname.strip(), flags=re.IGNORECASE)
+            rule_condition = (not cleaned_surname.istitle())
             if should_detect('1204', error_config):
                 if rule_condition:
                     surname_errors.add('1204')
-        
+            
+            # 1103 Check for invalid characters
+            rule_condition = (not re.search(r'^[a-ž\s]+$', name, re.IGNORECASE))
+            if should_detect('1103', error_config):
+                if rule_condition:
+                    name_errors.add('1103')
+            
             # 1205 Duplicates    
             surnames = surname.split()
             counts = {}
-            for word in surnames:
-                if word not in counts:
-                    counts[word] = 0
-                counts[word] += 1
+            for i in surnames:
+                if i not in counts:
+                    counts[i] = 0
+                counts[i] += 1
             rule_condition = (any(count > 1 for count in counts.values()))
             if should_detect('1205', error_config):
                 if rule_condition:
