@@ -67,13 +67,21 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
 
     # Street corrections 
     if detected_street_errors:
-        if '4101' in detected_street_errors: # missing data 
+        # missing data 
+        if '4101' in detected_street_errors:
             corrected_street_before = corrected_street
             corrected_street = None
             if corrected_street_before != corrected_street:
                 corrected_street_errors.add('4101')
                 uncorrected_street_errors.remove('4101')
-        if '4102' in detected_street_errors: # Street error: unnecessary spaces
+        
+        # formatting issues - capitalization
+        # if '4204' in detected_street_errors:
+        #     corrected_street_before = corrected_street
+        #     corrected_street = 
+                
+        # Street error: unnecessary spaces
+        if '4102' in detected_street_errors: 
             corrected_street_before = corrected_street
             corrected_street = corrected_street.rstrip() # removes trailing whitespaces
             corrected_street = corrected_street.lstrip() # removes leading whitespaces
@@ -82,19 +90,25 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
             if corrected_street_before != corrected_street:
                 corrected_street_errors.add('4102')
                 uncorrected_street_errors.remove('4102')
-        if '4108' in detected_street_errors: # Street error: no space after full stop
+        
+        # Street error: no space after full stop
+        if '4108' in detected_street_errors:
             corrected_street_before = corrected_street
             corrected_street = re.sub(r'\.(?![\s\W])', r'. ', corrected_street)
             if corrected_street_before != corrected_street:
                 corrected_street_errors.add('4108')
                 uncorrected_street_errors.remove('4108')
-        if '4107' in detected_street_errors: # Street error: invalid abbreviations
+        
+        # Street error: invalid abbreviations
+        if '4107' in detected_street_errors: 
             corrected_street_before = corrected_street
             corrected_street = corrected_street.replace('c.', 'cesta').replace('u.','ulica').replace('ul.','ulica').replace('C.', 'CESTA').replace('U.','ULICA').replace('UL.','ULICA').replace('Ul.','Ulica')
             if corrected_street_before != corrected_street:
                 corrected_street_errors.add('4107')
                 uncorrected_street_errors.remove('4107')
-        if '4110' in detected_street_errors: #Street error: consecutive duplicates detected
+        
+        #Street error: consecutive duplicates detected
+        if '4110' in detected_street_errors: 
             corrected_street_before = corrected_street
             # Split the string into parts
             street_parts = street.replace(',', '').split()

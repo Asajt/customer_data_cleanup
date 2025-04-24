@@ -101,7 +101,7 @@ def detect_address_errors(street, street_number, zipcode, city):
                     street_errors.add('4103')
         
             # 4104  Formatting issues (check whether the case of letters is correct) 
-            pattern = r'(?<!\w)(' + '|'.join([re.escape(pat) for pat in hn_patterns+roman_numbers]) + r')(?!\w)'
+            pattern = r'(?<!\w)(' + '|'.join([re.escape(pat) for pat in hn_patterns + roman_numbers]) + r')(?!\w)'
             cleaned_street = re.sub(pattern, '', street, flags=re.IGNORECASE).strip()
             cleaned_street = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", " ", cleaned_street.strip(), flags=re.IGNORECASE)
             words = cleaned_street.strip().split()
