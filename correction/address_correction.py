@@ -17,6 +17,8 @@ def split_into_set(detected_errors_column):
 
 def correct_address(street, street_number, zipcode, city, detected_street_errors, detected_street_number_errors, detected_zipcode_errors, detected_city_errors):
     
+    hn_patterns = ['BŠ', 'B.Š.', 'B. ŠT.', 'B.ŠT.', 'B\$', 'BREZ ŠT.', 'BS', 'B.S.', 'NH', 'N.H.', 'BH', 'B.H.']
+    
     # 01. Store the original address components for comparison purposes
     original_street = street
     original_street_number = street_number
@@ -99,10 +101,20 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                 corrected_street_errors.add('4108')
                 uncorrected_street_errors.remove('4108')
         
+        # Street error: contains variation of BŠ
+        if '4106' in detected_street_errors:
+            corrected_street_before = corrected_street
+            for pattern in hn_patterns:
+                corrected_street = re.sub(pattern, '', corrected_street, flags=re.IGNORECASE)
+            if corrected_street_before != corrected_street:
+                corrected_street_errors.add('4106')
+                uncorrected_street_errors.remove('4106')
+                    
         # Street error: invalid abbreviations
         if '4107' in detected_street_errors: 
             corrected_street_before = corrected_street
-            corrected_street = corrected_street.replace('c.', 'cesta').replace('u.','ulica').replace('ul.','ulica').replace('C.', 'CESTA').replace('U.','ULICA').replace('UL.','ULICA').replace('Ul.','Ulica')
+            corrected_street = corrected_street.replace('c.', 'cesta').replace('ce.', 'cesta').replace('C.', 'CESTA').replace('Ce.', 'Cesta').replace('CE.', 'CESTA')
+            corrected_street = corrected_street.replace('u.','ulica').replace('ul.','ulica').replace('U.','ULICA').replace('Ul.','Ulica').replace('UL.','ULICA')
             if corrected_street_before != corrected_street:
                 corrected_street_errors.add('4107')
                 uncorrected_street_errors.remove('4107')
