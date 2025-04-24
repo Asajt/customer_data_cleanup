@@ -142,7 +142,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
     # Street number corrections 
     if detected_street_number_errors:
         # missing data 
-        if '4201' in detected_street_errors: 
+        if '4201' in detected_street_number_errors: 
             corrected_street_number_before = corrected_street_number
             corrected_street_number = None
             if corrected_street_number_before != corrected_street_number:
@@ -160,10 +160,19 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                 corrected_street_number_errors.add('4202')
                 uncorrected_street_number_errors.remove('4202')
         
+        # Street number error: contains variation of BŠ
+        if '4203' in detected_street_number_errors:
+            corrected_street_number_before = corrected_street_number
+            for pattern in hn_patterns:
+                corrected_street_number = re.sub(pattern, '', corrected_street_number, flags=re.IGNORECASE)
+            if corrected_street_number_before != corrected_street_number:
+                corrected_street_number_errors.add('4203')
+                uncorrected_street_number_errors.remove('4203')
+                
         # remove leading 0s
         if '4206' in detected_street_number_errors: 
             corrected_street_number_before = corrected_street_number
-            corrected_street_number = re.sub(r'\b0+\s*(\d+)', r'\1', corrected_street_number)
+            corrected_street_number = corrected_street_number.lstrip('0')
             if corrected_street_number_before != corrected_street_number:
                 corrected_street_number_errors.add('4206')
                 uncorrected_street_number_errors.remove('4206')
@@ -185,6 +194,16 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
             if corrected_street_number_before != corrected_street_number:
                 corrected_street_number_errors.add('4205')
                 uncorrected_street_number_errors.remove('4205')
+        
+        # street number error: invalid spacing between house number components    
+        if '4207' in detected_street_number_errors and not (
+                '4208' in detected_street_number_errors): #roman numerals
+            corrected_street_number_before = corrected_street_number
+            corrected_street_number = re.sub(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', r'\1\5', corrected_street_number)
+            if corrected_street_number_before != corrected_street_number:
+                corrected_street_number_errors.add('4207')
+                uncorrected_street_number_errors.remove('4207')
+            
 
     # Zipcode corrections 
     if detected_zipcode_errors:
