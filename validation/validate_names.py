@@ -71,7 +71,6 @@ def fetch_SURS_data():
     print("SURS data extracted")
     return all_names, all_surnames
 
-
 def validate_names(customer_df: pd.DataFrame, first_name_column: str, last_name_column: str) -> pd.DataFrame:
     """
     Validate first and last names in a DataFrame against SURS data.
