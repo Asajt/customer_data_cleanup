@@ -7,9 +7,13 @@ from utils.errors_utils import should_correct, load_error_config
 error_config = load_error_config()
 
 def split_into_set(detected_errors_column):
+    if pd.isna(detected_errors_column):
+        return set()
     if isinstance(detected_errors_column, str):
         # Split by comma, strip each item, exclude empty strings
         return set(code.strip() for code in detected_errors_column.split(",") if code.strip())
+    elif isinstance(detected_errors_column, (float, int)):
+        return {str(int(detected_errors_column))}
     elif isinstance(detected_errors_column, (set, list)):
         return set(str(code).strip() for code in detected_errors_column if str(code).strip())
     else:
@@ -77,11 +81,6 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                 corrected_street_errors.add('4101')
                 uncorrected_street_errors.remove('4101')
         
-        # formatting issues - capitalization
-        # if '4204' in detected_street_errors:
-        #     corrected_street_before = corrected_street
-        #     corrected_street = 
-                
         # Street error: unnecessary spaces
         if '4102' in detected_street_errors: 
             corrected_street_before = corrected_street
@@ -204,7 +203,6 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                 corrected_street_number_errors.add('4207')
                 uncorrected_street_number_errors.remove('4207')
             
-
     # Zipcode corrections 
     if detected_zipcode_errors:
         # missing data 
@@ -214,7 +212,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
             if corrected_zipcode_before != corrected_zipcode:
                 corrected_zipcode_errors.add('4301')
                 uncorrected_zipcode_errors.remove('4301')
-        
+    
         # Zipcode error: unnecessary spaces
         if '4302' in detected_zipcode_errors: 
             corrected_zipcode_before = corrected_zipcode
@@ -269,19 +267,18 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
 
     return {
     "corrected_street": corrected_street if corrected_street != original_street else None,
-    "corrected_street_number": corrected_street_number if corrected_street_number != original_street_number else None,
-    "corrected_zipcode": corrected_zipcode if corrected_zipcode != original_zipcode else None,
-    "corrected_city": corrected_city if corrected_city != original_city else None,
-
     "corrected_street_errors": sorted(corrected_street_errors),
     "uncorrected_street_errors": sorted(uncorrected_street_errors),
 
+    "corrected_street_number": corrected_street_number if corrected_street_number != original_street_number else None,
     "corrected_street_number_errors": sorted(corrected_street_number_errors),
     "uncorrected_street_number_errors": sorted(uncorrected_street_number_errors),
 
+    "corrected_zipcode": corrected_zipcode if corrected_zipcode != original_zipcode else None,
     "corrected_zipcode_errors": sorted(corrected_zipcode_errors),
     "uncorrected_zipcode_errors": sorted(uncorrected_zipcode_errors),
 
+    "corrected_city": corrected_city if corrected_city != original_city else None,
     "corrected_city_errors": sorted(corrected_city_errors),
     "uncorrected_city_errors": sorted(uncorrected_city_errors)
     }
@@ -295,29 +292,22 @@ if __name__ == "__main__":
     customer_data = "src/processed_data/02_detected_address_errors.xlsx"
 
     df = pd.read_excel(customer_data)
-    print(df.head())
-
-    df_new = df.apply(lambda row: pd.Series(correct_address(
-        row['STREET'],
-        row['HOUSE_NUMBER'],
-        row['POSTAL_CODE'],
-        row['POSTAL_CITY'],
-        row["street_detected_errors"],
-        row["house_number_detected_errors"],
-        row["POSTAL_CODE_detected_errors"],
-        row["POSTAL_CITY_detected_errors"]
+    
+    df_new = df.apply(lambda row: pd.Series(correct_address( 
+        street=row['STREET'],
+        street_number=row['HOUSE_NUMBER'],
+        zipcode=row['POSTAL_CODE'],
+        city=row['POSTAL_CITY'],
+        detected_street_errors=row["street_detected_errors"],
+        detected_street_number_errors=row["house_number_detected_errors"],
+        detected_zipcode_errors=row["POSTAL_CODE_detected_errors"],
+        detected_city_errors=row["POSTAL_CITY_detected_errors"]
     )), axis=1)
-
-    print("#"*15)
-    print(df_new)
-    print("#"*15)
     
     # Convert lists to comma-separated strings just for saving
     for col in df_new.columns:
         if "errors" in col:
-            df_new[col] = df_new[col].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
-
-    print(df_new.head())
+            df_new[col] = df_new[col].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)    
 
     # Merge original and corrected data
     final_df = pd.concat([df, df_new], axis=1)
@@ -325,12 +315,29 @@ if __name__ == "__main__":
     # Optional: Filter columns to save
     columns_to_export = [
         "CUSTOMER_ID",  #
-        "STREET", "corrected_street", "street_detected_errors", "corrected_street_errors", "uncorrected_street_errors",
-        "HOUSE_NUMBER", "corrected_street_number", "house_number_detected_errors", "corrected_street_number_errors", "uncorrected_street_number_errors",
-        "POSTAL_CODE", "corrected_zipcode", "POSTAL_CODE_detected_errors", "corrected_zipcode_errors", "uncorrected_zipcode_errors",
-        "POSTAL_CITY", "corrected_city", "POSTAL_CITY_detected_errors", "corrected_city_errors", "uncorrected_city_errors"
+        "STREET", 
+            "corrected_street", 
+            "street_detected_errors", 
+            "corrected_street_errors", 
+            "uncorrected_street_errors",
+        "HOUSE_NUMBER", 
+            "corrected_street_number", 
+            "house_number_detected_errors", 
+            "corrected_street_number_errors", 
+            "uncorrected_street_number_errors",
+        "POSTAL_CODE", 
+            "corrected_zipcode", 
+            "POSTAL_CODE_detected_errors", 
+            "corrected_zipcode_errors", 
+            "uncorrected_zipcode_errors",
+        "POSTAL_CITY", 
+            "corrected_city", 
+            "POSTAL_CITY_detected_errors", 
+            "corrected_city_errors", 
+            "uncorrected_city_errors"
     ]
     
     # Save to Excel
     final_df[columns_to_export].to_excel("src/processed_data/03_corrected_address_errors.xlsx", index=False)
+    
     print("✅ Correction of address errors completed and saved.")

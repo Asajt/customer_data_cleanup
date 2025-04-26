@@ -1,3 +1,4 @@
+'''
 import regex as re
 
 street = ''
@@ -29,3 +30,59 @@ print(street)
 print(detected_street_errors)
 print(corrected_street)
 print(uncorrected_street_errors)
+'''
+
+import pandas as pd
+import re
+
+customer_data = "src/processed_data/02_detected_address_errors.xlsx"
+zipcode = row['POSTAL_CODE']
+detected_zipcode_errors = row["POSTAL_CODE_detected_errors"],
+
+def split_into_set(detected_errors_column):
+    if isinstance(detected_errors_column, str):
+        # Split by comma, strip each item, exclude empty strings
+        return set(code.strip() for code in detected_errors_column.split(",") if code.strip())
+    elif isinstance(detected_errors_column, (set, list)):
+        return set(str(code).strip() for code in detected_errors_column if str(code).strip())
+    else:
+        return set()
+
+
+original_zipcode = zipcode
+
+zipcode = "" if pd.isna(zipcode) else str(zipcode)
+
+detected_zipcode_errors = split_into_set(detected_zipcode_errors)
+corrected_zipcode_errors = set()  
+uncorrected_zipcode_errors = detected_zipcode_errors.copy()
+
+corrected_zipcode = zipcode
+
+
+# Zipcode corrections 
+if detected_zipcode_errors:
+    # missing data 
+    if '4301' in detected_zipcode_errors: 
+        corrected_zipcode_before = corrected_zipcode
+        corrected_zipcode = None
+        if corrected_zipcode_before != corrected_zipcode:
+            corrected_zipcode_errors.add('4301')
+            uncorrected_zipcode_errors.remove('4301')
+    
+    # Zipcode error: unnecessary spaces
+    if '4302' in detected_zipcode_errors: 
+        corrected_zipcode_before = corrected_zipcode
+        corrected_zipcode = corrected_zipcode.rstrip() # removes trailing whitespaces
+        corrected_zipcode = corrected_zipcode.lstrip() # removes leading whitespaces
+        corrected_zipcode = re.sub(r'\s{2,}', ' ', corrected_zipcode) # removes double whitespace
+        corrected_zipcode = re.sub(r'\s,', ',', corrected_zipcode) # removes whitespaces before comma
+        if corrected_zipcode_before != corrected_zipcode:
+            corrected_zipcode_errors.add('4302')
+            uncorrected_zipcode_errors.remove('4302')
+
+print('original zipcode:', 'I',original_zipcode,'I')
+print('corrected zipcode:', 'I',corrected_zipcode,'I')
+print('detected zipcode errors:', detected_zipcode_errors)
+print('corrected zipcode errors:', corrected_zipcode_errors)
+print('uncorrected zipcode errors:', uncorrected_zipcode_errors)
