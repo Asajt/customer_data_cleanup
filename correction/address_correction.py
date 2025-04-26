@@ -7,6 +7,19 @@ from utils.errors_utils import should_correct, load_error_config
 error_config = load_error_config()
 
 def split_into_set(detected_errors_column):
+    """
+    Converts the input into a set of strings, handling various input types.
+
+    Parameters:
+    detected_errors_column (str, float, int, set, list, or None): The input data to be converted into a set.
+        - If the input is a string, it is split by commas, stripped of whitespace, and empty strings are excluded.
+        - If the input is a float or int, it is converted to a string and added to the set.
+        - If the input is a set or list, each element is converted to a string, stripped of whitespace, and empty strings are excluded.
+        - If the input is None or NaN, an empty set is returned.
+
+    Returns:
+    set: A set of strings derived from the input data.
+    """
     if pd.isna(detected_errors_column):
         return set()
     if isinstance(detected_errors_column, str):
@@ -20,6 +33,38 @@ def split_into_set(detected_errors_column):
         return set()
 
 def correct_address(street, street_number, zipcode, city, detected_street_errors, detected_street_number_errors, detected_zipcode_errors, detected_city_errors):
+    """
+    Corrects address components based on detected errors.
+
+    This function takes individual address components (street, street number, postal code, and city) 
+    along with their respective detected error sets and applies corrections based on predefined rules 
+    and configurations. It returns the corrected address components along with updated error sets.
+
+    Args:
+        street (str): The street name of the address.
+        street_number (str): The house number of the address.
+        zipcode (str): The postal code of the address.
+        city (str): The city name of the address.
+        detected_street_errors (set): A set of detected error codes for the street.
+        detected_street_number_errors (set): A set of detected error codes for the house number.
+        detected_zipcode_errors (set): A set of detected error codes for the postal code.
+        detected_city_errors (set): A set of detected error codes for the city.
+
+    Returns:
+        dict: A dictionary containing the following keys:
+            - corrected_street (str or None): The corrected street name, or None if no correction was made.
+            - corrected_street_errors (list): A sorted list of corrected error codes for the street.
+            - uncorrected_street_errors (list): A sorted list of uncorrected error codes for the street.
+            - corrected_street_number (str or None): The corrected house number, or None if no correction was made.
+            - corrected_street_number_errors (list): A sorted list of corrected error codes for the house number.
+            - uncorrected_street_number_errors (list): A sorted list of uncorrected error codes for the house number.
+            - corrected_zipcode (str or None): The corrected postal code, or None if no correction was made.
+            - corrected_zipcode_errors (list): A sorted list of corrected error codes for the postal code.
+            - uncorrected_zipcode_errors (list): A sorted list of uncorrected error codes for the postal code.
+            - corrected_city (str or None): The corrected city name, or None if no correction was made.
+            - corrected_city_errors (list): A sorted list of corrected error codes for the city.
+            - uncorrected_city_errors (list): A sorted list of uncorrected error codes for the city.
+    """
     
     # 01. Store the original address components for comparison purposes
     original_street = street

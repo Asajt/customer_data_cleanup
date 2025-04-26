@@ -7,6 +7,19 @@ from utils.errors_utils import should_correct, load_error_config
 error_config = load_error_config()
 
 def split_into_set(detected_errors_column):
+    """
+    Converts the input into a set of strings, handling various input types.
+
+    Parameters:
+    detected_errors_column (str, float, int, set, list, or None): The input data to be converted into a set.
+        - If the input is a string, it is split by commas, stripped of whitespace, and empty strings are excluded.
+        - If the input is a float or int, it is converted to a string and added to the set.
+        - If the input is a set or list, each element is converted to a string, stripped of whitespace, and empty strings are excluded.
+        - If the input is None or NaN, an empty set is returned.
+
+    Returns:
+    set: A set of strings derived from the input data.
+    """
     if pd.isna(detected_errors_column):
         return set()
     if isinstance(detected_errors_column, str):
@@ -20,6 +33,23 @@ def split_into_set(detected_errors_column):
         return set()
 
 def correct_phone(phone, detected_phone_errors):
+    """
+    Corrects phone number based on detected errors.
+
+    This function takes individual phone number along with the respective detected error set and
+    applies corrections based on predefined rules and configurations. It returns the corrected phone
+    number along with updated error set.
+
+    Args:
+        phone (str): The phone number to be corrected.
+        detected_phone_errors (set): A set of detected error codes for the phone number.
+        
+    Returns:
+        dict: A dictionary containing the following keys:
+            - corrected_phone (str or None): The corrected phone number, or None if no correction was made.
+            - corrected_phone_errors (list): A sorted list of corrected error codes for the phone number.
+            - uncorrected_phone_errors (list): A sorted list of uncorrected error codes for the phone number.
+    """
     
     # 01. Store the original address components for comparison purposes
     original_phone = phone

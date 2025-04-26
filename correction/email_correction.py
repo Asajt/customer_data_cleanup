@@ -7,6 +7,19 @@ from utils.errors_utils import should_correct, load_error_config
 error_config = load_error_config()
 
 def split_into_set(detected_errors_column):
+    """
+    Converts the input into a set of strings, handling various input types.
+
+    Parameters:
+    detected_errors_column (str, float, int, set, list, or None): The input data to be converted into a set.
+        - If the input is a string, it is split by commas, stripped of whitespace, and empty strings are excluded.
+        - If the input is a float or int, it is converted to a string and added to the set.
+        - If the input is a set or list, each element is converted to a string, stripped of whitespace, and empty strings are excluded.
+        - If the input is None or NaN, an empty set is returned.
+
+    Returns:
+    set: A set of strings derived from the input data.
+    """
     if pd.isna(detected_errors_column):
         return set()
     if isinstance(detected_errors_column, str):
@@ -20,6 +33,23 @@ def split_into_set(detected_errors_column):
         return set()
 
 def correct_email(email, detected_email_errors):
+    """
+    Corrects email based on detected errors.
+
+    This function takes individual email address along with the respective detected error set and 
+    applies corrections based on predefined rules and configurations. It returns the corrected email
+    address along with updated error set.
+
+    Args:
+        email (str): The email address to be corrected.
+        detected_email_errors (set): A set of detected error codes for the email address.
+
+    Returns:
+        dict: A dictionary containing the following keys:
+            - corrected_email (str or None): The corrected email address, or None if no correction was made.
+            - corrected_email_errors (list): A sorted list of corrected error codes for the email address.
+            - uncorrected_email_errors (list): A sorted list of uncorrected error codes for the email address.
+    """
     
     # 01. Store the original address components for comparison purposes
     original_email = email

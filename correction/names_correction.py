@@ -7,6 +7,19 @@ from utils.errors_utils import should_correct, load_error_config
 error_config = load_error_config()
 
 def split_into_set(detected_errors_column):
+    """
+    Converts the input into a set of strings, handling various input types.
+
+    Parameters:
+    detected_errors_column (str, float, int, set, list, or None): The input data to be converted into a set.
+        - If the input is a string, it is split by commas, stripped of whitespace, and empty strings are excluded.
+        - If the input is a float or int, it is converted to a string and added to the set.
+        - If the input is a set or list, each element is converted to a string, stripped of whitespace, and empty strings are excluded.
+        - If the input is None or NaN, an empty set is returned.
+
+    Returns:
+    set: A set of strings derived from the input data.
+    """
     if pd.isna(detected_errors_column):
         return set()
     if isinstance(detected_errors_column, str):
@@ -20,7 +33,28 @@ def split_into_set(detected_errors_column):
         return set()
 
 def correct_names(first_name, last_name, detected_first_name_errors, detected_last_name_errors):
-    
+    """
+    Corrects first and last names based on detected errors.
+
+    This function takes individual first and last names along with the respective detected error sets and
+    applies corrections based on predefined rules and configurations. It returns the corrected names
+    along with updated error sets.
+
+    Args:
+        first_name (str): The first name to be corrected.
+        last_name (str): The last name to be corrected.
+        detected_first_name_errors (set): A set of detected error codes for the first name.
+        detected_last_name_errors (set): A set of detected error codes for the last name.
+        
+    Returns:
+        dict: A dictionary containing the following keys:
+            - corrected_first_name (str or None): The corrected first name, or None if no correction was made.
+            - corrected_first_name_errors (list): A sorted list of corrected error codes for the first name.
+            - uncorrected_first_name_errors (list): A sorted list of uncorrected error codes for the first name.
+            - corrected_last_name (str or None): The corrected last name, or None if no correction was made.
+            - corrected_last_name_errors (list): A sorted list of corrected error codes for the last name.
+            - uncorrected_last_name_errors (list): A sorted list of uncorrected error codes for the last name.
+    """
     # 01. Store the original address components for comparison purposes
     original_first_name = first_name
     original_last_name = last_name
