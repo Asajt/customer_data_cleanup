@@ -74,7 +74,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
     # Street corrections 
     if detected_street_errors:
         # missing data 
-        if should_correct('4101', detected_street_errors):
+        if should_correct('4101', error_config):
             if '4101' in detected_street_errors:
                 corrected_street_before = corrected_street
                 corrected_street = None
@@ -83,7 +83,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                     uncorrected_street_errors.remove('4101')
             
         # Street error: unnecessary spaces
-        if should_correct('4102', detected_street_errors):
+        if should_correct('4102', error_config):
             if '4102' in detected_street_errors: 
                 corrected_street_before = corrected_street
                 corrected_street = corrected_street.rstrip() # removes trailing whitespaces
@@ -95,7 +95,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                     uncorrected_street_errors.remove('4102')
             
         # Street error: no space after full stop
-        if should_correct('4108', detected_street_errors):
+        if should_correct('4108', error_config):
             if '4108' in detected_street_errors:
                 corrected_street_before = corrected_street
                 corrected_street = re.sub(r'\.(?![\s\W])', r'. ', corrected_street)
@@ -104,7 +104,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                     uncorrected_street_errors.remove('4108')
             
         # Street error: contains variation of BŠ
-        if should_correct('4106', detected_street_errors):
+        if should_correct('4106', error_config):
             if '4106' in detected_street_errors:
                 corrected_street_before = corrected_street
                 for pattern in hn_patterns:
@@ -114,7 +114,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                     uncorrected_street_errors.remove('4106')
                         
         # Street error: invalid abbreviations
-        if should_correct('4107', detected_street_errors):
+        if should_correct('4107', error_config):
             if '4107' in detected_street_errors: 
                 corrected_street_before = corrected_street
                 corrected_street = corrected_street.replace('c.', 'cesta').replace('ce.', 'cesta').replace('C.', 'CESTA').replace('Ce.', 'Cesta').replace('CE.', 'CESTA')
@@ -124,7 +124,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                     uncorrected_street_errors.remove('4107')
             
         #Street error: consecutive duplicates detected
-        if should_correct('4110', detected_street_errors):
+        if should_correct('4110', error_config):
             if '4110' in detected_street_errors: 
                 corrected_street_before = corrected_street
                 # Split the string into parts
@@ -147,7 +147,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
     # Street number corrections 
     if detected_street_number_errors:
         # missing data 
-        if should_correct('4201', detected_street_number_errors):
+        if should_correct('4201', error_config):
             if '4201' in detected_street_number_errors: 
                 corrected_street_number_before = corrected_street_number
                 corrected_street_number = None
@@ -156,7 +156,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                     uncorrected_street_number_errors.remove('4201')
             
         # Street number error: unnecessary spaces
-        if should_correct('4202', detected_street_number_errors):
+        if should_correct('4202', error_config):
             if '4202' in detected_street_number_errors: 
                 corrected_street_number_before = corrected_street_number
                 corrected_street_number = corrected_street_number.rstrip() # removes trailing whitespaces
@@ -168,7 +168,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                     uncorrected_street_number_errors.remove('4202')
             
         # Street number error: contains variation of BŠ
-        if should_correct('4203', detected_street_number_errors):
+        if should_correct('4203', error_config):
             if '4203' in detected_street_number_errors:
                 corrected_street_number_before = corrected_street_number
                 for pattern in hn_patterns:
@@ -178,7 +178,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                     uncorrected_street_number_errors.remove('4203')
                     
         # remove leading 0s
-        if should_correct('4206', detected_street_number_errors):
+        if should_correct('4206', error_config):
             if '4206' in detected_street_number_errors: 
                 corrected_street_number_before = corrected_street_number
                 corrected_street_number = corrected_street_number.lstrip('0')
@@ -187,7 +187,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                     uncorrected_street_number_errors.remove('4206')
             
         # remove dots
-        if should_correct('4209', detected_street_number_errors):
+        if should_correct('4209', error_config):
             if '4209' in detected_street_number_errors:
                 corrected_street_number_before = corrected_street_number
                 corrected_street_number = corrected_street_number.rstrip('.')
@@ -197,7 +197,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
             
         # correct spacing in between house number components
         skip_if_condition = not (any (code in detected_street_number_errors for code in ["4208", "4209"]))
-        if should_correct('4205', detected_street_number_errors):
+        if should_correct('4205', error_config):
             if skip_if_condition:
                 if '4205' in detected_street_number_errors:
                     corrected_street_number_before = corrected_street_number
@@ -208,7 +208,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                 
         # street number error: invalid spacing between house number components    
         skip_if_condition = not '4208' in detected_street_number_errors
-        if should_correct('4207', detected_street_number_errors):
+        if should_correct('4207', error_config):
             if skip_if_condition:
                 if '4207' in detected_street_number_errors:
                     corrected_street_number_before = corrected_street_number
@@ -220,7 +220,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
     # Zipcode corrections 
     if detected_zipcode_errors:
         # missing data 
-        if should_correct('4301', detected_zipcode_errors):
+        if should_correct('4301', error_config):
             if '4301' in detected_zipcode_errors: 
                 corrected_zipcode_before = corrected_zipcode
                 corrected_zipcode = None
@@ -229,7 +229,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                     uncorrected_zipcode_errors.remove('4301')
         
         # Zipcode error: unnecessary spaces
-        if should_correct('4302', detected_zipcode_errors):
+        if should_correct('4302', error_config):
             if '4302' in detected_zipcode_errors: 
                 corrected_zipcode_before = corrected_zipcode
                 corrected_zipcode = corrected_zipcode.rstrip() # removes trailing whitespaces
@@ -243,7 +243,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
     # City corrections 
     if detected_city_errors:
         # missing data 
-        if should_correct('4401', detected_city_errors):
+        if should_correct('4401', error_config):
             if '4401' in detected_city_errors: 
                 corrected_city_before = corrected_city
                 corrected_city = None
@@ -252,7 +252,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                     uncorrected_city_errors.remove('4401')
             
         # City error: unnecessary spaces
-        if should_correct('4402', detected_city_errors):
+        if should_correct('4402', error_config):
             if '4402' in detected_city_errors: 
                 corrected_city_before = corrected_city
                 corrected_city = corrected_city.rstrip() # removes trailing whitespaces
@@ -264,7 +264,7 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
                     uncorrected_city_errors.remove('4402')
         
         #Street error: consecutive duplicates detected
-        if should_correct('4407', detected_city_errors):
+        if should_correct('4407', error_config):
             if '4407' in detected_city_errors: 
                 corrected_city_before = corrected_city
                 # Split the string into parts
