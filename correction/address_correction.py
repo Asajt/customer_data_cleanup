@@ -21,8 +21,6 @@ def split_into_set(detected_errors_column):
 
 def correct_address(street, street_number, zipcode, city, detected_street_errors, detected_street_number_errors, detected_zipcode_errors, detected_city_errors):
     
-    hn_patterns = ['BŠ', 'B.Š.', 'B. ŠT.', 'B.ŠT.', 'B\$', 'BREZ ŠT.', 'BS', 'B.S.', 'NH', 'N.H.', 'BH', 'B.H.']
-    
     # 01. Store the original address components for comparison purposes
     original_street = street
     original_street_number = street_number
