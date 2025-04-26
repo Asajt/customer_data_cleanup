@@ -74,196 +74,215 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
     # Street corrections 
     if detected_street_errors:
         # missing data 
-        if '4101' in detected_street_errors:
-            corrected_street_before = corrected_street
-            corrected_street = None
-            if corrected_street_before != corrected_street:
-                corrected_street_errors.add('4101')
-                uncorrected_street_errors.remove('4101')
-        
+        if should_correct('4101', detected_street_errors):
+            if '4101' in detected_street_errors:
+                corrected_street_before = corrected_street
+                corrected_street = None
+                if corrected_street_before != corrected_street:
+                    corrected_street_errors.add('4101')
+                    uncorrected_street_errors.remove('4101')
+            
         # Street error: unnecessary spaces
-        if '4102' in detected_street_errors: 
-            corrected_street_before = corrected_street
-            corrected_street = corrected_street.rstrip() # removes trailing whitespaces
-            corrected_street = corrected_street.lstrip() # removes leading whitespaces
-            corrected_street = re.sub(r'\s{2,}', ' ', corrected_street) # removes double whitespace
-            corrected_street = re.sub(r'\s,', ',', corrected_street) # removes whitespaces before comma
-            if corrected_street_before != corrected_street:
-                corrected_street_errors.add('4102')
-                uncorrected_street_errors.remove('4102')
-        
+        if should_correct('4102', detected_street_errors):
+            if '4102' in detected_street_errors: 
+                corrected_street_before = corrected_street
+                corrected_street = corrected_street.rstrip() # removes trailing whitespaces
+                corrected_street = corrected_street.lstrip() # removes leading whitespaces
+                corrected_street = re.sub(r'\s{2,}', ' ', corrected_street) # removes double whitespace
+                corrected_street = re.sub(r'\s,', ',', corrected_street) # removes whitespaces before comma
+                if corrected_street_before != corrected_street:
+                    corrected_street_errors.add('4102')
+                    uncorrected_street_errors.remove('4102')
+            
         # Street error: no space after full stop
-        if '4108' in detected_street_errors:
-            corrected_street_before = corrected_street
-            corrected_street = re.sub(r'\.(?![\s\W])', r'. ', corrected_street)
-            if corrected_street_before != corrected_street:
-                corrected_street_errors.add('4108')
-                uncorrected_street_errors.remove('4108')
-        
+        if should_correct('4108', detected_street_errors):
+            if '4108' in detected_street_errors:
+                corrected_street_before = corrected_street
+                corrected_street = re.sub(r'\.(?![\s\W])', r'. ', corrected_street)
+                if corrected_street_before != corrected_street:
+                    corrected_street_errors.add('4108')
+                    uncorrected_street_errors.remove('4108')
+            
         # Street error: contains variation of BŠ
-        if '4106' in detected_street_errors:
-            corrected_street_before = corrected_street
-            for pattern in hn_patterns:
-                corrected_street = re.sub(pattern, '', corrected_street, flags=re.IGNORECASE)
-            if corrected_street_before != corrected_street:
-                corrected_street_errors.add('4106')
-                uncorrected_street_errors.remove('4106')
-                    
+        if should_correct('4106', detected_street_errors):
+            if '4106' in detected_street_errors:
+                corrected_street_before = corrected_street
+                for pattern in hn_patterns:
+                    corrected_street = re.sub(pattern, '', corrected_street, flags=re.IGNORECASE)
+                if corrected_street_before != corrected_street:
+                    corrected_street_errors.add('4106')
+                    uncorrected_street_errors.remove('4106')
+                        
         # Street error: invalid abbreviations
-        if '4107' in detected_street_errors: 
-            corrected_street_before = corrected_street
-            corrected_street = corrected_street.replace('c.', 'cesta').replace('ce.', 'cesta').replace('C.', 'CESTA').replace('Ce.', 'Cesta').replace('CE.', 'CESTA')
-            corrected_street = corrected_street.replace('u.','ulica').replace('ul.','ulica').replace('U.','ULICA').replace('Ul.','Ulica').replace('UL.','ULICA')
-            if corrected_street_before != corrected_street:
-                corrected_street_errors.add('4107')
-                uncorrected_street_errors.remove('4107')
-        
+        if should_correct('4107', detected_street_errors):
+            if '4107' in detected_street_errors: 
+                corrected_street_before = corrected_street
+                corrected_street = corrected_street.replace('c.', 'cesta').replace('ce.', 'cesta').replace('C.', 'CESTA').replace('Ce.', 'Cesta').replace('CE.', 'CESTA')
+                corrected_street = corrected_street.replace('u.','ulica').replace('ul.','ulica').replace('U.','ULICA').replace('Ul.','Ulica').replace('UL.','ULICA')
+                if corrected_street_before != corrected_street:
+                    corrected_street_errors.add('4107')
+                    uncorrected_street_errors.remove('4107')
+            
         #Street error: consecutive duplicates detected
-        if '4110' in detected_street_errors: 
-            corrected_street_before = corrected_street
-            # Split the string into parts
-            street_parts = street.replace(',', '').split()
-            # List to keep track of items already added (in lowercase for comparison)
-            seen = set()
-            # List for the result, preserving original case
-            street_unique_parts = []
-            for part in street_parts:
-                # Convert part to lowercase for case-insensitive comparison
-                if part.upper() not in seen:
-                    seen.add(part.upper())  # Add upper version to seen for comparison
-                    street_unique_parts.append(part)  # Add original part to result
-            # Join the unique parts back together
-            corrected_street = ' '.join(street_unique_parts)
-            if corrected_street_before != corrected_street:
-                corrected_street_errors.add('4110')
-                uncorrected_street_errors.remove('4110')
+        if should_correct('4110', detected_street_errors):
+            if '4110' in detected_street_errors: 
+                corrected_street_before = corrected_street
+                # Split the string into parts
+                street_parts = street.replace(',', '').split()
+                # List to keep track of items already added (in lowercase for comparison)
+                seen = set()
+                # List for the result, preserving original case
+                street_unique_parts = []
+                for part in street_parts:
+                    # Convert part to lowercase for case-insensitive comparison
+                    if part.upper() not in seen:
+                        seen.add(part.upper())  # Add upper version to seen for comparison
+                        street_unique_parts.append(part)  # Add original part to result
+                # Join the unique parts back together
+                corrected_street = ' '.join(street_unique_parts)
+                if corrected_street_before != corrected_street:
+                    corrected_street_errors.add('4110')
+                    uncorrected_street_errors.remove('4110')
 
     # Street number corrections 
     if detected_street_number_errors:
         # missing data 
-        if '4201' in detected_street_number_errors: 
-            corrected_street_number_before = corrected_street_number
-            corrected_street_number = None
-            if corrected_street_number_before != corrected_street_number:
-                corrected_street_number_errors.add('4201')
-                uncorrected_street_number_errors.remove('4201')
-        
-        # Street number error: unnecessary spaces
-        if '4202' in detected_street_number_errors: 
-            corrected_street_number_before = corrected_street_number
-            corrected_street_number = corrected_street_number.rstrip() # removes trailing whitespaces
-            corrected_street_number = corrected_street_number.lstrip() # removes leading whitespaces
-            corrected_street_number = re.sub(r'\s{2,}', ' ', corrected_street_number) # removes double whitespace
-            corrected_street_number = re.sub(r'\s,', ',', corrected_street_number) # removes whitespaces before comma
-            if corrected_street_number_before != corrected_street_number:
-                corrected_street_number_errors.add('4202')
-                uncorrected_street_number_errors.remove('4202')
-        
-        # Street number error: contains variation of BŠ
-        if '4203' in detected_street_number_errors:
-            corrected_street_number_before = corrected_street_number
-            for pattern in hn_patterns:
-                corrected_street_number = re.sub(pattern, '', corrected_street_number, flags=re.IGNORECASE)
-            if corrected_street_number_before != corrected_street_number:
-                corrected_street_number_errors.add('4203')
-                uncorrected_street_number_errors.remove('4203')
-                
-        # remove leading 0s
-        if '4206' in detected_street_number_errors: 
-            corrected_street_number_before = corrected_street_number
-            corrected_street_number = corrected_street_number.lstrip('0')
-            if corrected_street_number_before != corrected_street_number:
-                corrected_street_number_errors.add('4206')
-                uncorrected_street_number_errors.remove('4206')
-        
-        # remove dots
-        if '4209' in detected_street_number_errors:
-            corrected_street_number_before = corrected_street_number
-            corrected_street_number = corrected_street_number.rstrip('.')
-            if corrected_street_number_before != corrected_street_number:
-                corrected_street_number_errors.add('4209')
-                uncorrected_street_number_errors.remove('4209')
-        
-        # correct spacing in between house number components
-        if '4205' in detected_street_number_errors and not (
-                '4208' in detected_street_number_errors or #roman numerals
-                '4209' in detected_street_number_errors): #ends with a full stop
-            corrected_street_number_before = corrected_street_number
-            corrected_street_number = re.sub(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', r'\1\5', corrected_street_number)
-            if corrected_street_number_before != corrected_street_number:
-                corrected_street_number_errors.add('4205')
-                uncorrected_street_number_errors.remove('4205')
-        
-        # street number error: invalid spacing between house number components    
-        if '4207' in detected_street_number_errors and not (
-                '4208' in detected_street_number_errors): #roman numerals
-            corrected_street_number_before = corrected_street_number
-            corrected_street_number = re.sub(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', r'\1\5', corrected_street_number)
-            if corrected_street_number_before != corrected_street_number:
-                corrected_street_number_errors.add('4207')
-                uncorrected_street_number_errors.remove('4207')
+        if should_correct('4201', detected_street_number_errors):
+            if '4201' in detected_street_number_errors: 
+                corrected_street_number_before = corrected_street_number
+                corrected_street_number = None
+                if corrected_street_number_before != corrected_street_number:
+                    corrected_street_number_errors.add('4201')
+                    uncorrected_street_number_errors.remove('4201')
             
+        # Street number error: unnecessary spaces
+        if should_correct('4202', detected_street_number_errors):
+            if '4202' in detected_street_number_errors: 
+                corrected_street_number_before = corrected_street_number
+                corrected_street_number = corrected_street_number.rstrip() # removes trailing whitespaces
+                corrected_street_number = corrected_street_number.lstrip() # removes leading whitespaces
+                corrected_street_number = re.sub(r'\s{2,}', ' ', corrected_street_number) # removes double whitespace
+                corrected_street_number = re.sub(r'\s,', ',', corrected_street_number) # removes whitespaces before comma
+                if corrected_street_number_before != corrected_street_number:
+                    corrected_street_number_errors.add('4202')
+                    uncorrected_street_number_errors.remove('4202')
+            
+        # Street number error: contains variation of BŠ
+        if should_correct('4203', detected_street_number_errors):
+            if '4203' in detected_street_number_errors:
+                corrected_street_number_before = corrected_street_number
+                for pattern in hn_patterns:
+                    corrected_street_number = re.sub(pattern, '', corrected_street_number, flags=re.IGNORECASE)
+                if corrected_street_number_before != corrected_street_number:
+                    corrected_street_number_errors.add('4203')
+                    uncorrected_street_number_errors.remove('4203')
+                    
+        # remove leading 0s
+        if should_correct('4206', detected_street_number_errors):
+            if '4206' in detected_street_number_errors: 
+                corrected_street_number_before = corrected_street_number
+                corrected_street_number = corrected_street_number.lstrip('0')
+                if corrected_street_number_before != corrected_street_number:
+                    corrected_street_number_errors.add('4206')
+                    uncorrected_street_number_errors.remove('4206')
+            
+        # remove dots
+        if should_correct('4209', detected_street_number_errors):
+            if '4209' in detected_street_number_errors:
+                corrected_street_number_before = corrected_street_number
+                corrected_street_number = corrected_street_number.rstrip('.')
+                if corrected_street_number_before != corrected_street_number:
+                    corrected_street_number_errors.add('4209')
+                    uncorrected_street_number_errors.remove('4209')
+            
+        # correct spacing in between house number components
+        skip_if_condition = not (any (code in detected_street_number_errors for code in ["4208", "4209"]))
+        if should_correct('4205', detected_street_number_errors):
+            if skip_if_condition:
+                if '4205' in detected_street_number_errors:
+                    corrected_street_number_before = corrected_street_number
+                    corrected_street_number = re.sub(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', r'\1\5', corrected_street_number)
+                    if corrected_street_number_before != corrected_street_number:
+                        corrected_street_number_errors.add('4205')
+                        uncorrected_street_number_errors.remove('4205')
+                
+        # street number error: invalid spacing between house number components    
+        skip_if_condition = not '4208' in detected_street_number_errors
+        if should_correct('4207', detected_street_number_errors):
+            if skip_if_condition:
+                if '4207' in detected_street_number_errors:
+                    corrected_street_number_before = corrected_street_number
+                    corrected_street_number = re.sub(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', r'\1\5', corrected_street_number)
+                    if corrected_street_number_before != corrected_street_number:
+                        corrected_street_number_errors.add('4207')
+                        uncorrected_street_number_errors.remove('4207')
+                    
     # Zipcode corrections 
     if detected_zipcode_errors:
         # missing data 
-        if '4301' in detected_zipcode_errors: 
-            corrected_zipcode_before = corrected_zipcode
-            corrected_zipcode = None
-            if corrected_zipcode_before != corrected_zipcode:
-                corrected_zipcode_errors.add('4301')
-                uncorrected_zipcode_errors.remove('4301')
-    
+        if should_correct('4301', detected_zipcode_errors):
+            if '4301' in detected_zipcode_errors: 
+                corrected_zipcode_before = corrected_zipcode
+                corrected_zipcode = None
+                if corrected_zipcode_before != corrected_zipcode:
+                    corrected_zipcode_errors.add('4301')
+                    uncorrected_zipcode_errors.remove('4301')
+        
         # Zipcode error: unnecessary spaces
-        if '4302' in detected_zipcode_errors: 
-            corrected_zipcode_before = corrected_zipcode
-            corrected_zipcode = corrected_zipcode.rstrip() # removes trailing whitespaces
-            corrected_zipcode = corrected_zipcode.lstrip() # removes leading whitespaces
-            corrected_zipcode = re.sub(r'\s{2,}', ' ', corrected_zipcode) # removes double whitespace
-            corrected_zipcode = re.sub(r'\s,', ',', corrected_zipcode) # removes whitespaces before comma
-            if corrected_zipcode_before != corrected_zipcode:
-                corrected_zipcode_errors.add('4302')
-                uncorrected_zipcode_errors.remove('4302')
+        if should_correct('4302', detected_zipcode_errors):
+            if '4302' in detected_zipcode_errors: 
+                corrected_zipcode_before = corrected_zipcode
+                corrected_zipcode = corrected_zipcode.rstrip() # removes trailing whitespaces
+                corrected_zipcode = corrected_zipcode.lstrip() # removes leading whitespaces
+                corrected_zipcode = re.sub(r'\s{2,}', ' ', corrected_zipcode) # removes double whitespace
+                corrected_zipcode = re.sub(r'\s,', ',', corrected_zipcode) # removes whitespaces before comma
+                if corrected_zipcode_before != corrected_zipcode:
+                    corrected_zipcode_errors.add('4302')
+                    uncorrected_zipcode_errors.remove('4302')
 
     # City corrections 
     if detected_city_errors:
         # missing data 
-        if '4401' in detected_city_errors: 
-            corrected_city_before = corrected_city
-            corrected_city = None
-            if corrected_city_before != corrected_city:
-                corrected_city_errors.add('4401')
-                uncorrected_city_errors.remove('4401')
-        
+        if should_correct('4401', detected_city_errors):
+            if '4401' in detected_city_errors: 
+                corrected_city_before = corrected_city
+                corrected_city = None
+                if corrected_city_before != corrected_city:
+                    corrected_city_errors.add('4401')
+                    uncorrected_city_errors.remove('4401')
+            
         # City error: unnecessary spaces
-        if '4402' in detected_city_errors: 
-            corrected_city_before = corrected_city
-            corrected_city = corrected_city.rstrip() # removes trailing whitespaces
-            corrected_city = corrected_city.lstrip() # removes leading whitespaces
-            corrected_city = re.sub(r'\s{2,}', ' ', corrected_city) # removes double whitespace
-            corrected_city = re.sub(r'\s,', ',', corrected_city) # removes whitespaces before comma
-            if corrected_city_before != corrected_city:
-                corrected_city_errors.add('4402')
-                uncorrected_city_errors.remove('4402')
+        if should_correct('4402', detected_city_errors):
+            if '4402' in detected_city_errors: 
+                corrected_city_before = corrected_city
+                corrected_city = corrected_city.rstrip() # removes trailing whitespaces
+                corrected_city = corrected_city.lstrip() # removes leading whitespaces
+                corrected_city = re.sub(r'\s{2,}', ' ', corrected_city) # removes double whitespace
+                corrected_city = re.sub(r'\s,', ',', corrected_city) # removes whitespaces before comma
+                if corrected_city_before != corrected_city:
+                    corrected_city_errors.add('4402')
+                    uncorrected_city_errors.remove('4402')
         
         #Street error: consecutive duplicates detected
-        if '4407' in detected_city_errors: 
-            corrected_city_before = corrected_city
-            # Split the string into parts
-            city_parts = city.replace(',', '').split()
-            # List to keep track of items already added (in lowercase for comparison)
-            seen = set()
-            # List for the result, preserving original case
-            city_unique_parts = []
-            for part in city_parts:
-                # Convert part to lowercase for case-insensitive comparison
-                if part.upper() not in seen:
-                    seen.add(part.upper())  # Add lowercase version to seen for comparison
-                    city_unique_parts.append(part)  # Add original part to result
-            # Join the unique parts back together
-            corrected_city = ' '.join(city_unique_parts)
-            if corrected_city_before != corrected_city:
-                corrected_city_errors.add('4407')
-                uncorrected_city_errors.remove('4407')
+        if should_correct('4407', detected_city_errors):
+            if '4407' in detected_city_errors: 
+                corrected_city_before = corrected_city
+                # Split the string into parts
+                city_parts = city.replace(',', '').split()
+                # List to keep track of items already added (in lowercase for comparison)
+                seen = set()
+                # List for the result, preserving original case
+                city_unique_parts = []
+                for part in city_parts:
+                    # Convert part to lowercase for case-insensitive comparison
+                    if part.upper() not in seen:
+                        seen.add(part.upper())  # Add lowercase version to seen for comparison
+                        city_unique_parts.append(part)  # Add original part to result
+                # Join the unique parts back together
+                corrected_city = ' '.join(city_unique_parts)
+                if corrected_city_before != corrected_city:
+                    corrected_city_errors.add('4407')
+                    uncorrected_city_errors.remove('4407')
 
     return {
     "corrected_street": corrected_street if corrected_street != original_street else None,
