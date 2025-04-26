@@ -57,49 +57,6 @@ def correct_names(email, detected_email_errors):
                 if corrected_email_before != corrected_email:
                     corrected_email_errors.add('2102')
                     uncorrected_email_errors.remove('2102')
-            
-        # formatting issues - has to be in title case
-        if should_correct('2104', error_config):
-            if '2104' in detected_email_errors:
-                corrected_email_before = corrected_email
-                # Split the string into parts
-                email_parts = email.replace(',', '').split()
-                # List to keep track of items already added (in lowercase for comparison)
-                seen = set()
-                # List for the result, preserving original case
-                email_title_case_parts = []
-                for part in email_parts:
-                    # Convert part to lowercase for case-insensitive comparison
-                    if part.upper() not in seen:
-                        seen.add(part.upper())
-                        # Capitalize the first letter and make the rest lowercase
-                        email_title_case_parts.append(part.capitalize())
-                # Join the unique parts back together
-                corrected_email = ' '.join(email_title_case_parts)
-                if corrected_email_before != corrected_email:
-                    corrected_email_errors.add('2104')
-                    uncorrected_email_errors.remove('2104')
-                              
-        #consecutive duplicates detected
-        if should_correct('2105', error_config):
-            if '2105' in detected_email_errors: 
-                corrected_email_before = corrected_email
-                # Split the string into parts
-                email_parts = email.replace(',', '').split()
-                # List to keep track of items already added (in lowercase for comparison)
-                seen = set()
-                # List for the result, preserving original case
-                email_unique_parts = []
-                for part in email_parts:
-                    # Convert part to lowercase for case-insensitive comparison
-                    if part.upper() not in seen:
-                        seen.add(part.upper())  # Add upper version to seen for comparison
-                        email_unique_parts.append(part)  # Add original part to result
-                # Join the unique parts back together
-                corrected_email = ' '.join(email_unique_parts)
-                if corrected_email_before != corrected_email:
-                    corrected_email_errors.add('2105')
-                    uncorrected_email_errors.remove('2105')
                     
     return {
     "corrected_email": corrected_email if corrected_email != original_email else None,
@@ -139,6 +96,6 @@ if __name__ == "__main__":
     ]
     
     # Save to Excel
-    final_df[columns_to_export].to_excel("src/processed_data/03_corrected_name_errors.xlsx", index=False)
+    final_df[columns_to_export].to_excel("src/processed_data/03_corrected_email_errors.xlsx", index=False)
     
-    print("✅ Correction of name errors completed and saved.")
+    print("✅ Correction of email errors completed and saved.")
