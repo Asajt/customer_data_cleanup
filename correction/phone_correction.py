@@ -57,9 +57,6 @@ def correct_phone(phone, detected_phone_errors):
     # 02. Check for NaN values and convert them to empty strings
     phone = "" if pd.isna(phone) else str(phone)
     
-    # 3 split the string into a set
-    detected_phone_errors = split_into_set(detected_phone_errors)
-    
     corrected_phone_errors = set()  
     uncorrected_phone_errors = detected_phone_errors.copy()
     
@@ -126,19 +123,24 @@ if __name__ == "__main__":
 
     df = pd.read_excel(customer_data)
     
+    # split the string into a set
+    df['phone_detected_errors'] = df['phone_detected_errors'].apply(split_into_set)
+
     df_new = df.apply(lambda row: pd.Series(correct_phone( 
         phone=row['PHONE_NUMBER'],
         detected_phone_errors=row["phone_detected_errors"],
     )), axis=1)
-    
-    # Convert lists to comma-separated strings just for saving
-    for col in df_new.columns:
-        if "errors" in col:
-            df_new[col] = df_new[col].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)    
 
     # Merge original and corrected data
     final_df = pd.concat([df, df_new], axis=1)
-    print(list(final_df.columns))
+    
+    # Convert lists and sets to strings before saving
+    for col in final_df.columns:
+        if "errors" in col:
+            final_df[col] = final_df[col].apply(
+                lambda x: ", ".join(sorted(x)) if isinstance(x, (set, list)) else x
+            )
+    
     # Optional: Filter columns to save
     columns_to_export = [
         "CUSTOMER_ID",  #

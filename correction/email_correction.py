@@ -57,9 +57,6 @@ def correct_email(email, detected_email_errors):
     # 02. Check for NaN values and convert them to empty strings
     email = "" if pd.isna(email) else str(email)
     
-    # 3 split the string into a set
-    detected_email_errors = split_into_set(detected_email_errors)
-    
     corrected_email_errors = set()  
     uncorrected_email_errors = detected_email_errors.copy()
     
@@ -102,19 +99,24 @@ if __name__ == "__main__":
 
     df = pd.read_excel(customer_data)
     
+    # split the string into a set
+    df['email_detected_errors'] = df['email_detected_errors'].apply(split_into_set)
+
     df_new = df.apply(lambda row: pd.Series(correct_email( 
         email=row['EMAIL'],
         detected_email_errors=row["email_detected_errors"],
     )), axis=1)
     
-    # Convert lists to comma-separated strings just for saving
-    for col in df_new.columns:
-        if "errors" in col:
-            df_new[col] = df_new[col].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)    
-
     # Merge original and corrected data
     final_df = pd.concat([df, df_new], axis=1)
-    print(list(final_df.columns))
+    
+    # Convert lists and sets to strings before saving
+    for col in final_df.columns:
+        if "errors" in col:
+            final_df[col] = final_df[col].apply(
+                lambda x: ", ".join(sorted(x)) if isinstance(x, (set, list)) else x
+            )
+    
     # Optional: Filter columns to save
     columns_to_export = [
         "CUSTOMER_ID",  #

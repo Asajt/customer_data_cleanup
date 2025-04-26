@@ -77,12 +77,6 @@ def correct_address(street, street_number, zipcode, city, detected_street_errors
     street_number = "" if pd.isna(street_number) else str(street_number)
     zipcode = "" if pd.isna(zipcode) else str(zipcode)
     city = "" if pd.isna(city) else str(city)
-
-    # 3 split the string into a set
-    detected_street_errors = split_into_set(detected_street_errors)
-    detected_street_number_errors = split_into_set(detected_street_number_errors)
-    detected_zipcode_errors = split_into_set(detected_zipcode_errors)
-    detected_city_errors = split_into_set(detected_city_errors)
     
     corrected_street_errors = set()  
     uncorrected_street_errors = detected_street_errors.copy()
@@ -355,6 +349,12 @@ if __name__ == "__main__":
 
     df = pd.read_excel(customer_data)
     
+    # split the string into a set
+    df['street_detected_errors'] = df['street_detected_errors'].apply(split_into_set)
+    df['house_number_detected_errors'] = df['house_number_detected_errors'].apply(split_into_set)
+    df['POSTAL_CODE_detected_errors'] = df['POSTAL_CODE_detected_errors'].apply(split_into_set)
+    df['POSTAL_CITY_detected_errors'] = df['POSTAL_CITY_detected_errors'].apply(split_into_set)
+    
     df_new = df.apply(lambda row: pd.Series(correct_address( 
         street=row['STREET'],
         street_number=row['HOUSE_NUMBER'],
@@ -365,15 +365,17 @@ if __name__ == "__main__":
         detected_zipcode_errors=row["POSTAL_CODE_detected_errors"],
         detected_city_errors=row["POSTAL_CITY_detected_errors"]
     )), axis=1)
-    
-    # Convert lists to comma-separated strings just for saving
-    for col in df_new.columns:
-        if "errors" in col:
-            df_new[col] = df_new[col].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)    
 
     # Merge original and corrected data
     final_df = pd.concat([df, df_new], axis=1)
 
+    # Convert lists and sets to strings before saving
+    for col in final_df.columns:
+        if "errors" in col:
+            final_df[col] = final_df[col].apply(
+                lambda x: ", ".join(sorted(x)) if isinstance(x, (set, list)) else x
+            )
+    
     # Optional: Filter columns to save
     columns_to_export = [
         "CUSTOMER_ID",  #

@@ -63,10 +63,6 @@ def correct_names(first_name, last_name, detected_first_name_errors, detected_la
     first_name = "" if pd.isna(first_name) else str(first_name)
     last_name = "" if pd.isna(last_name) else str(last_name)
     
-    # 3 split the string into a set
-    detected_first_name_errors = split_into_set(detected_first_name_errors)
-    detected_last_name_errors = split_into_set(detected_last_name_errors)
-    
     corrected_first_name_errors = set()  
     uncorrected_first_name_errors = detected_first_name_errors.copy()
     
@@ -226,21 +222,28 @@ if __name__ == "__main__":
 
     df = pd.read_excel(customer_data)
     
+    # split the string into a set for processing
+    df['name_detected_errors'] = df['name_detected_errors'].apply(split_into_set)
+    df['surname_detected_errors'] = df['surname_detected_errors'].apply(split_into_set)
+    
+    # Apply the correction function to each row
     df_new = df.apply(lambda row: pd.Series(correct_names( 
         first_name=row['FIRST_NAME'],
         last_name=row['LAST_NAME'],
         detected_first_name_errors=row["name_detected_errors"],
         detected_last_name_errors=row["surname_detected_errors"],
     )), axis=1)
-    
-    # Convert lists to comma-separated strings just for saving
-    for col in df_new.columns:
-        if "errors" in col:
-            df_new[col] = df_new[col].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)    
-
+        
     # Merge original and corrected data
     final_df = pd.concat([df, df_new], axis=1)
-    print(list(final_df.columns))
+    
+    # Convert lists and sets to strings before saving
+    for col in final_df.columns:
+        if "errors" in col:
+            final_df[col] = final_df[col].apply(
+                lambda x: ", ".join(sorted(x)) if isinstance(x, (set, list)) else x
+            )
+    
     # Optional: Filter columns to save
     columns_to_export = [
         "CUSTOMER_ID",  #
