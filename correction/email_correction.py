@@ -19,7 +19,7 @@ def split_into_set(detected_errors_column):
     else:
         return set()
 
-def correct_names(email, detected_email_errors):
+def correct_email(email, detected_email_errors):
     
     # 01. Store the original address components for comparison purposes
     original_email = email
