@@ -38,26 +38,50 @@ def correct_phone(phone, detected_phone_errors):
     # First name corrections 
     if detected_phone_errors:
         # missing data 
-        if should_correct('2101', error_config):
-            if '2101' in detected_phone_errors:
+        if should_correct('3101', error_config):
+            if '3101' in detected_phone_errors:
                 corrected_phone_before = corrected_phone
                 corrected_phone = None
                 if corrected_phone_before != corrected_phone:
-                    corrected_phone_errors.add('2101')
-                    uncorrected_phone_errors.remove('2101')
+                    corrected_phone_errors.add('3101')
+                    uncorrected_phone_errors.remove('3101')
 
         # unnecessary spaces
-        if should_correct('2102', error_config):
-            if '2102' in detected_phone_errors: 
+        if should_correct('3102', error_config):
+            if '3102' in detected_phone_errors: 
                 corrected_phone_before = corrected_phone
                 corrected_phone = corrected_phone.rstrip() # removes trailing whitespaces
                 corrected_phone = corrected_phone.lstrip() # removes leading whitespaces
                 corrected_phone = re.sub(r'\s{2,}', ' ', corrected_phone) # removes double whitespace
                 corrected_phone = re.sub(r'\s,', ',', corrected_phone) # removes whitespaces before comma
                 if corrected_phone_before != corrected_phone:
-                    corrected_phone_errors.add('2102')
-                    uncorrected_phone_errors.remove('2102')
+                    corrected_phone_errors.add('3102')
+                    uncorrected_phone_errors.remove('3102')
                     
+        # 3103	Invalid characters        
+        if should_correct('3103', error_config):
+            if '3103' in detected_phone_errors: 
+                corrected_phone_before = corrected_phone
+                corrected_phone = re.sub(r"^\+386", "00386", corrected_phone)
+                corrected_phone = re.sub(r"^\+00386", "00386", corrected_phone)
+                corrected_phone = corrected_phone.replace(" ", "")
+                corrected_phone = corrected_phone.replace("/", "")
+                corrected_phone = corrected_phone.replace("-", "")
+                if corrected_phone_before != corrected_phone:
+                    corrected_phone_errors.add('3103')
+                    uncorrected_phone_errors.remove('3103')
+                
+        # 3104	Formatting Issue
+        if should_correct('3104', error_config):
+            if '3104' in detected_phone_errors:
+                mobile_prefixes = ("041", "031", "051", "040", "030", "01", "068", "069", "065", "070", "071")
+                if corrected_phone.startswith(mobile_prefixes):
+                    corrected_phone_before = corrected_phone
+                    corrected_phone = re.sub(r"^0", "00386", corrected_phone)
+                    if corrected_phone_before != corrected_phone:
+                        corrected_phone_errors.add('3104')
+                        uncorrected_phone_errors.remove('3104')
+                      
     return {
     "corrected_phone": corrected_phone if corrected_phone != original_phone else None,
     "corrected_phone_errors": sorted(corrected_phone_errors),
@@ -73,8 +97,8 @@ if __name__ == "__main__":
     df = pd.read_excel(customer_data)
     
     df_new = df.apply(lambda row: pd.Series(correct_phone( 
-        phone=row['EMAIL'],
-        detected_phone_errors=row["email_detected_errors"],
+        phone=row['PHONE_NUMBER'],
+        detected_phone_errors=row["phone_detected_errors"],
     )), axis=1)
     
     # Convert lists to comma-separated strings just for saving
@@ -88,8 +112,8 @@ if __name__ == "__main__":
     # Optional: Filter columns to save
     columns_to_export = [
         "CUSTOMER_ID",  #
-        "EMAIL", 
-            "corrected_email", 
+        "PHONE_NUMBER", 
+            "corrected_phone", 
             "phone_detected_errors", 
             "corrected_phone_errors", 
             "uncorrected_phone_errors"
