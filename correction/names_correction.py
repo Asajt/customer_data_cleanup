@@ -202,15 +202,15 @@ if __name__ == "__main__":
 
     # TESTING
 
-    customer_data = "src/processed_data/02_detected_address_errors.xlsx"
+    customer_data = "src/processed_data/02_detected_name_errors.xlsx"
 
     df = pd.read_excel(customer_data)
     
     df_new = df.apply(lambda row: pd.Series(correct_names( 
-        first_name=row['STREET'],
-        last_name=row['HOUSE_NUMBER'],
-        detected_first_name_errors=row["street_detected_errors"],
-        detected_last_name_errors=row["house_number_detected_errors"],
+        first_name=row['FIRST_NAME'],
+        last_name=row['LAST_NAME'],
+        detected_first_name_errors=row["name_detected_errors"],
+        detected_last_name_errors=row["surname_detected_errors"],
     )), axis=1)
     
     # Convert lists to comma-separated strings just for saving
@@ -224,29 +224,19 @@ if __name__ == "__main__":
     # Optional: Filter columns to save
     columns_to_export = [
         "CUSTOMER_ID",  #
-        "STREET", 
-            "corrected_street", 
-            "street_detected_errors", 
-            "corrected_street_errors", 
-            "uncorrected_street_errors",
-        "HOUSE_NUMBER", 
-            "corrected_street_number", 
-            "house_number_detected_errors", 
-            "corrected_street_number_errors", 
-            "uncorrected_street_number_errors",
-        "POSTAL_CODE", 
-            "corrected_zipcode", 
-            "POSTAL_CODE_detected_errors", 
-            "corrected_zipcode_errors", 
-            "uncorrected_zipcode_errors",
-        "POSTAL_CITY", 
-            "corrected_city", 
-            "POSTAL_CITY_detected_errors", 
-            "corrected_city_errors", 
-            "uncorrected_city_errors"
+        "FIRST_NAME", 
+            "corrected_first_name", 
+            "first_name_detected_errors", 
+            "corrected_first_name_errors", 
+            "uncorrected_first_name_errors",
+        "LAST_NAME", 
+            "corrected_last_name", 
+            "last_name_detected_errors", 
+            "corrected_last_name_errors", 
+            "uncorrected_last_name_errors",
     ]
     
     # Save to Excel
-    final_df[columns_to_export].to_excel("src/processed_data/03_corrected_address_errors.xlsx", index=False)
+    final_df[columns_to_export].to_excel("src/processed_data/03_corrected_name_errors.xlsx", index=False)
     
-    print("✅ Correction of address errors completed and saved.")
+    print("✅ Correction of name errors completed and saved.")
