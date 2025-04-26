@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     df = pd.read_excel(customer_data)
     
-    df_new = df.apply(lambda row: pd.Series(correct_names( 
+    df_new = df.apply(lambda row: pd.Series(correct_email( 
         email=row['EMAIL'],
         detected_email_errors=row["email_detected_errors"],
     )), axis=1)
