@@ -47,147 +47,133 @@ def correct_names(first_name, last_name, detected_first_name_errors, detected_la
         # missing data 
         if should_correct('1101', error_config):
             if '1101' in detected_first_name_errors:
-                corrected_street_before = corrected_street
-                corrected_street = None
-                if corrected_street_before != corrected_street:
-                    corrected_street_errors.add('4101')
-                    uncorrected_street_errors.remove('4101')
+                corrected_first_name_before = corrected_first_name
+                corrected_first_name = None
+                if corrected_first_name_before != corrected_first_name:
+                    corrected_first_name_errors.add('1101')
+                    uncorrected_first_name_errors.remove('1101')
+
+        # unnecessary spaces
+        if should_correct('1102', error_config):
+            if '1102' in detected_first_name_errors: 
+                corrected_first_name_before = corrected_first_name
+                corrected_first_name = corrected_first_name.rstrip() # removes trailing whitespaces
+                corrected_first_name = corrected_first_name.lstrip() # removes leading whitespaces
+                corrected_first_name = re.sub(r'\s{2,}', ' ', corrected_first_name) # removes double whitespace
+                corrected_first_name = re.sub(r'\s,', ',', corrected_first_name) # removes whitespaces before comma
+                if corrected_first_name_before != corrected_first_name:
+                    corrected_first_name_errors.add('1102')
+                    uncorrected_first_name_errors.remove('1102')
             
-        # Street error: unnecessary spaces
-        if should_correct('4102', error_config):
-            if '4102' in detected_street_errors: 
-                corrected_street_before = corrected_street
-                corrected_street = corrected_street.rstrip() # removes trailing whitespaces
-                corrected_street = corrected_street.lstrip() # removes leading whitespaces
-                corrected_street = re.sub(r'\s{2,}', ' ', corrected_street) # removes double whitespace
-                corrected_street = re.sub(r'\s,', ',', corrected_street) # removes whitespaces before comma
-                if corrected_street_before != corrected_street:
-                    corrected_street_errors.add('4102')
-                    uncorrected_street_errors.remove('4102')
-            
-        # Street error: no space after full stop
-        if should_correct('4108', error_config):
-            if '4108' in detected_street_errors:
-                corrected_street_before = corrected_street
-                corrected_street = re.sub(r'\.(?![\s\W])', r'. ', corrected_street)
-                if corrected_street_before != corrected_street:
-                    corrected_street_errors.add('4108')
-                    uncorrected_street_errors.remove('4108')
-            
-        # Street error: contains variation of BŠ
-        if should_correct('4106', error_config):
-            if '4106' in detected_street_errors:
-                corrected_street_before = corrected_street
-                for pattern in hn_patterns:
-                    corrected_street = re.sub(pattern, '', corrected_street, flags=re.IGNORECASE)
-                if corrected_street_before != corrected_street:
-                    corrected_street_errors.add('4106')
-                    uncorrected_street_errors.remove('4106')
-                        
-        # Street error: invalid abbreviations
-        if should_correct('4107', error_config):
-            if '4107' in detected_street_errors: 
-                corrected_street_before = corrected_street
-                corrected_street = corrected_street.replace('c.', 'cesta').replace('ce.', 'cesta').replace('C.', 'CESTA').replace('Ce.', 'Cesta').replace('CE.', 'CESTA')
-                corrected_street = corrected_street.replace('u.','ulica').replace('ul.','ulica').replace('U.','ULICA').replace('Ul.','Ulica').replace('UL.','ULICA')
-                if corrected_street_before != corrected_street:
-                    corrected_street_errors.add('4107')
-                    uncorrected_street_errors.remove('4107')
-            
-        #Street error: consecutive duplicates detected
-        if should_correct('4110', error_config):
-            if '4110' in detected_street_errors: 
-                corrected_street_before = corrected_street
+        # formatting issues - has to be in title case
+        if should_correct('1104', error_config):
+            if '1104' in detected_first_name_errors:
+                corrected_first_name_before = corrected_first_name
                 # Split the string into parts
-                street_parts = street.replace(',', '').split()
+                first_name_parts = first_name.replace(',', '').split()
                 # List to keep track of items already added (in lowercase for comparison)
                 seen = set()
                 # List for the result, preserving original case
-                street_unique_parts = []
-                for part in street_parts:
+                first_name_title_case_parts = []
+                for part in first_name_parts:
+                    # Convert part to lowercase for case-insensitive comparison
+                    if part.upper() not in seen:
+                        seen.add(part.upper())
+                        # Capitalize the first letter and make the rest lowercase
+                        first_name_title_case_parts.append(part.capitalize())
+                # Join the unique parts back together
+                corrected_first_name = ' '.join(first_name_title_case_parts)
+                if corrected_first_name_before != corrected_first_name:
+                    corrected_first_name_errors.add('1104')
+                    uncorrected_first_name_errors.remove('1104')
+                              
+        #consecutive duplicates detected
+        if should_correct('1105', error_config):
+            if '1105' in detected_first_name_errors: 
+                corrected_first_name_before = corrected_first_name
+                # Split the string into parts
+                first_name_parts = first_name.replace(',', '').split()
+                # List to keep track of items already added (in lowercase for comparison)
+                seen = set()
+                # List for the result, preserving original case
+                first_name_unique_parts = []
+                for part in first_name_parts:
                     # Convert part to lowercase for case-insensitive comparison
                     if part.upper() not in seen:
                         seen.add(part.upper())  # Add upper version to seen for comparison
-                        street_unique_parts.append(part)  # Add original part to result
+                        first_name_unique_parts.append(part)  # Add original part to result
                 # Join the unique parts back together
-                corrected_street = ' '.join(street_unique_parts)
-                if corrected_street_before != corrected_street:
-                    corrected_street_errors.add('4110')
-                    uncorrected_street_errors.remove('4110')
+                corrected_first_name = ' '.join(first_name_unique_parts)
+                if corrected_first_name_before != corrected_first_name:
+                    corrected_first_name_errors.add('1105')
+                    uncorrected_first_name_errors.remove('1105')
 
-    # Street number corrections 
+    # Last name corrections 
     if detected_last_name_errors:
         # missing data 
-        if should_correct('4201', error_config):
-            if '4201' in detected_street_number_errors: 
-                corrected_street_number_before = corrected_street_number
-                corrected_street_number = None
-                if corrected_street_number_before != corrected_street_number:
-                    corrected_street_number_errors.add('4201')
-                    uncorrected_street_number_errors.remove('4201')
+        if should_correct('1201', error_config):
+            if '1201' in detected_last_name_errors: 
+                corrected_last_name_before = corrected_last_name
+                corrected_last_name = None
+                if corrected_last_name_before != corrected_last_name:
+                    corrected_last_name_errors.add('1201')
+                    uncorrected_last_name_errors.remove('1201')
             
         # Street number error: unnecessary spaces
-        if should_correct('4202', error_config):
-            if '4202' in detected_street_number_errors: 
-                corrected_street_number_before = corrected_street_number
-                corrected_street_number = corrected_street_number.rstrip() # removes trailing whitespaces
-                corrected_street_number = corrected_street_number.lstrip() # removes leading whitespaces
-                corrected_street_number = re.sub(r'\s{2,}', ' ', corrected_street_number) # removes double whitespace
-                corrected_street_number = re.sub(r'\s,', ',', corrected_street_number) # removes whitespaces before comma
-                if corrected_street_number_before != corrected_street_number:
-                    corrected_street_number_errors.add('4202')
-                    uncorrected_street_number_errors.remove('4202')
-            
-        # Street number error: contains variation of BŠ
-        if should_correct('4203', error_config):
-            if '4203' in detected_street_number_errors:
-                corrected_street_number_before = corrected_street_number
-                for pattern in hn_patterns:
-                    corrected_street_number = re.sub(pattern, '', corrected_street_number, flags=re.IGNORECASE)
-                if corrected_street_number_before != corrected_street_number:
-                    corrected_street_number_errors.add('4203')
-                    uncorrected_street_number_errors.remove('4203')
+        if should_correct('1202', error_config):
+            if '1202' in detected_last_name_errors: 
+                corrected_last_name_before = corrected_last_name
+                corrected_last_name = corrected_last_name.rstrip() # removes trailing whitespaces
+                corrected_last_name = corrected_last_name.lstrip() # removes leading whitespaces
+                corrected_last_name = re.sub(r'\s{2,}', ' ', corrected_last_name) # removes double whitespace
+                corrected_last_name = re.sub(r'\s,', ',', corrected_last_name) # removes whitespaces before comma
+                if corrected_last_name_before != corrected_last_name:
+                    corrected_last_name_errors.add('1202')
+                    uncorrected_last_name_errors.remove('1202')
+
+        # formatting issues - has to be in title case
+        if should_correct('1204', error_config):
+            if '1204' in detected_last_name_errors:
+                corrected_last_name_before = corrected_last_name
+                # Split the string into parts
+                last_name_parts = last_name.replace(',', '').split()
+                # List to keep track of items already added (in lowercase for comparison)
+                seen = set()
+                # List for the result, preserving original case
+                last_name_title_case_parts = []
+                for part in last_name_parts:
+                    # Convert part to lowercase for case-insensitive comparison
+                    if part.upper() not in seen:
+                        seen.add(part.upper())
+                        # Capitalize the first letter and make the rest lowercase
+                        last_name_title_case_parts.append(part.capitalize())
+                # Join the unique parts back together
+                corrected_last_name = ' '.join(last_name_title_case_parts)
+                if corrected_last_name_before != corrected_first_name:
+                    corrected_last_name_errors.add('1204')
+                    uncorrected_last_name_errors.remove('1204')
+        
+        #consecutive duplicates detected
+        if should_correct('1205', error_config):
+            if '1205' in detected_last_name_errors: 
+                corrected_last_name_before = corrected_last_name
+                # Split the string into parts
+                last_name_parts = last_name.replace(',', '').split()
+                # List to keep track of items already added (in lowercase for comparison)
+                seen = set()
+                # List for the result, preserving original case
+                last_name_unique_parts = []
+                for part in last_name_parts:
+                    # Convert part to lowercase for case-insensitive comparison
+                    if part.upper() not in seen:
+                        seen.add(part.upper())  # Add upper version to seen for comparison
+                        last_name_unique_parts.append(part)  # Add original part to result
+                # Join the unique parts back together
+                corrected_last_name = ' '.join(last_name_unique_parts)
+                if corrected_last_name_before != corrected_last_name:
+                    corrected_last_name_errors.add('1205')
+                    uncorrected_last_name_errors.remove('1205')
                     
-        # remove leading 0s
-        if should_correct('4206', error_config):
-            if '4206' in detected_street_number_errors: 
-                corrected_street_number_before = corrected_street_number
-                corrected_street_number = corrected_street_number.lstrip('0')
-                if corrected_street_number_before != corrected_street_number:
-                    corrected_street_number_errors.add('4206')
-                    uncorrected_street_number_errors.remove('4206')
-            
-        # remove dots
-        if should_correct('4209', error_config):
-            if '4209' in detected_street_number_errors:
-                corrected_street_number_before = corrected_street_number
-                corrected_street_number = corrected_street_number.rstrip('.')
-                if corrected_street_number_before != corrected_street_number:
-                    corrected_street_number_errors.add('4209')
-                    uncorrected_street_number_errors.remove('4209')
-            
-        # correct spacing in between house number components
-        skip_if_condition = not (any (code in detected_street_number_errors for code in ["4208", "4209"]))
-        if should_correct('4205', error_config):
-            if skip_if_condition:
-                if '4205' in detected_street_number_errors:
-                    corrected_street_number_before = corrected_street_number
-                    corrected_street_number = re.sub(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', r'\1\5', corrected_street_number)
-                    if corrected_street_number_before != corrected_street_number:
-                        corrected_street_number_errors.add('4205')
-                        uncorrected_street_number_errors.remove('4205')
-                
-        # street number error: invalid spacing between house number components    
-        skip_if_condition = not '4208' in detected_street_number_errors
-        if should_correct('4207', error_config):
-            if skip_if_condition:
-                if '4207' in detected_street_number_errors:
-                    corrected_street_number_before = corrected_street_number
-                    corrected_street_number = re.sub(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', r'\1\5', corrected_street_number)
-                    if corrected_street_number_before != corrected_street_number:
-                        corrected_street_number_errors.add('4207')
-                        uncorrected_street_number_errors.remove('4207')
-    
     return {
     "corrected_first_name": corrected_first_name if corrected_first_name != original_first_name else None,
     "corrected_first_name_errors": sorted(corrected_first_name_errors),
@@ -220,18 +206,18 @@ if __name__ == "__main__":
 
     # Merge original and corrected data
     final_df = pd.concat([df, df_new], axis=1)
-
+    print(list(final_df.columns))
     # Optional: Filter columns to save
     columns_to_export = [
         "CUSTOMER_ID",  #
         "FIRST_NAME", 
             "corrected_first_name", 
-            "first_name_detected_errors", 
+            "name_detected_errors", 
             "corrected_first_name_errors", 
             "uncorrected_first_name_errors",
         "LAST_NAME", 
             "corrected_last_name", 
-            "last_name_detected_errors", 
+            "surname_detected_errors", 
             "corrected_last_name_errors", 
             "uncorrected_last_name_errors",
     ]
