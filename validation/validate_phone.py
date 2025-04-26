@@ -11,6 +11,9 @@ def is_valid_phone(phone: str) -> bool:
 def validate_phone(df: pd.DataFrame, phone_column: str) -> pd.DataFrame:
     """
     Validate Slovenian phone numbers in a DataFrame.
+    This function checks if the phone numbers in the specified column of the DataFrame are valid
+    according to a regex pattern. It adds a new column to the DataFrame indicating whether each
+    phone number is valid or not.
 
     Args:
         df (pd.DataFrame): DataFrame containing customer data.

@@ -73,7 +73,11 @@ def fetch_SURS_data():
 
 
 def validate_names(customer_df: pd.DataFrame, first_name_column: str, last_name_column: str) -> pd.DataFrame:
-    """_summary_
+    """
+    Validate first and last names in a DataFrame against SURS data.
+    This function checks if the first and last names in the specified columns of the DataFrame are valid
+    according to SURS data. It adds new columns to the DataFrame indicating whether each name is valid or not.
+    
     Args:
         customer_df (pd.DataFrame): DataFrame containing customer data.
         first_name_column (str): Name of the column containing first names.

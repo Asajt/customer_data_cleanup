@@ -10,8 +10,12 @@ def is_valid_email(email: str) -> bool:
     return bool(EMAIL_REGEX.match(email))
 
 def validate_email(customer_df: pd.DataFrame, email_column: str) -> pd.DataFrame:
-    """_summary_
-
+    """
+    Validate email addresses in a DataFrame.
+    This function checks if the email addresses in the specified column of the DataFrame are valid 
+    according to a regex pattern. It adds a new column to the DataFrame indicating whether each 
+    email address is valid or not.
+    
     Args:
         customer_df (pd.DataFrame): DataFrame containing customer data.
         email_column (str): Name of the column containing email addresses.

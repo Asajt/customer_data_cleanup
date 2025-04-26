@@ -1,7 +1,12 @@
 import pandas as pd
 
 def validate_full_address(customer_df: pd.DataFrame, full_address_column: str, path_to_gurs_RN_csv: str) -> pd.DataFrame:
-    """_summary_
+    """
+    Validate full addresses in a DataFrame against GURS RN data.
+    This function checks if the full addresses in the specified column of the DataFrame are valid
+    according to GURS RN data. It adds new columns to the DataFrame indicating whether each address is valid or not.
+    It also adds a column with the GURS full address for matched addresses.
+    The GURS full address is in the format "street house_number, postal_code postal_city".
 
     Args:
         customer_df (pd.DataFrame): DataFrame containing customer data.
