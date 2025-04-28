@@ -216,8 +216,6 @@ def correct_names(first_name, last_name, detected_first_name_errors, detected_la
 
 if __name__ == "__main__":
 
-    # TESTING
-
     customer_data = "src/processed_data/02_detected_name_errors.xlsx"
 
     df = pd.read_excel(customer_data)
