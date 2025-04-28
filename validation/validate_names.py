@@ -4,9 +4,11 @@ import requests
 def fetch_SURS_data():
     """
     Fetch and process SURS data for Slovenian names and surnames.
-
+    
+    Args:
+        None
+        
     Returns:
-    --------
     tuple (pd.DataFrame, pd.DataFrame)
         - all_names : DataFrame containing first names and their frequencies.
         - all_surnames : DataFrame containing last names and their frequencies.
@@ -71,76 +73,54 @@ def fetch_SURS_data():
     print("SURS data extracted")
     return all_names, all_surnames
 
-def validate_names(customer_df: pd.DataFrame, first_name_column: str = None, last_name_column: str = None) -> pd.DataFrame:
+def validate_names_test(first_name=None, last_name=None):
     """
-    Validate first and/or last names in a DataFrame against SURS data.
+    Validate first and last names against SURS data.
     
     Args:
-        customer_df (pd.DataFrame): DataFrame containing customer data.
-        first_name_column (str, optional): Name of the column containing first names.
-        last_name_column (str, optional): Name of the column containing last names.
-
-    Raises:
-        ValueError: If SURS data fetching fails.
-
+        first_name (str, optional): First name to validate.
+        last_name (str, optional): Last name to validate.
+    
     Returns:
-        pd.DataFrame: DataFrame with additional columns for name validation.
-    """   
+        tuple: (first_name_valid, last_name_valid)
+            - first_name_valid (bool): True if the first name is valid, False otherwise.
+            - last_name_valid (bool): True if the last name is valid, False otherwise.
+    """
+    if first_name is None and last_name is None:
+        raise ValueError("At least one of first_name or last_name must be provided.")
     
-    if first_name_column is None and last_name_column is None:
-        raise ValueError("At least one of first_name_column or last_name_column must be provided.")
+    # Fetch SURS data only once
+    if not hasattr(validate_names_test, "all_names"):
+        print("Fetching SURS data...")
+        validate_names_test.all_names, validate_names_test.all_surnames = fetch_SURS_data()
     
-    # Fetch SURS name and surname datasets
-    all_names, all_surnames = fetch_SURS_data()
-
+    all_names = validate_names_test.all_names
+    all_surnames = validate_names_test.all_surnames
+    
     if all_names is None or all_surnames is None:
         raise ValueError("Failed to fetch SURS data.")
     
-    if first_name_column:    
-        # dataframe of FIRST_NAME 
-        first_names_df = pd.DataFrame(all_names["value"])
-        first_names_df.columns = ["SURS_FIRST_NAME"]
-    
-        # Merge FIRST_NAME
-        merged_df = customer_df.merge(
-            first_names_df,
-            how="left",
-            left_on=first_name_column,
-            right_on="SURS_FIRST_NAME",
-        )
-        merged_df[f"{first_name_column}_VALID"] = merged_df["SURS_FIRST_NAME"].notnull()
-    
-    if last_name_column:
-        # dataframe of LAST_NAME
-        last_names_df = pd.DataFrame(all_surnames["value"])
-        last_names_df.columns = ["SURS_LAST_NAME"]
+    first_name_valid = None
+    last_name_valid = None
 
-        # Merge LAST_NAME
-        merged_df = merged_df.merge(
-            last_names_df,
-            how="left",
-            left_on=last_name_column,
-            right_on="SURS_LAST_NAME",
-        )
-        merged_df[f"{last_name_column}_VALID"] = merged_df["SURS_LAST_NAME"].notnull()
-
-    return merged_df
+    if first_name:
+        first_name_valid = not all_names[all_names["value"] == first_name].empty
+    
+    if last_name:
+        last_name_valid = not all_surnames[all_surnames["value"] == last_name].empty
+    
+    return first_name_valid, last_name_valid
 
 if __name__ == "__main__":
-    # Load customer data
     customer_data = "src/processed_data/customer_data_with_errors.xlsx"
     df = pd.read_excel(customer_data)
 
-    # Run name validation
-    df = validate_names(df, "FIRST_NAME", "LAST_NAME")
+    # Apply validation and expand results into two new columns
+    df[["FIRST_NAME_VALID", "LAST_NAME_VALID"]] = df.apply(
+        lambda row: pd.Series(
+            validate_names_test(first_name=row["FIRST_NAME"], last_name=row["LAST_NAME"])
+        ),
+        axis=1
+    )
 
-  # choose the columns to keep
-    columns_to_keep = [
-        "CUSTOMER_ID", "FIRST_NAME", "SURS_FIRST_NAME",  "FIRST_NAME_VALID", "LAST_NAME", "SURS_LAST_NAME", "LAST_NAME_VALID"
-    ]
-    df = df[columns_to_keep]
-    
-    # Save updated file
-    df.to_excel("src/processed_data/01_validated_namess.xlsx", index=False)
-    print("Name validation complete.")
-
+    df.to_excel("src/processed_data/01_validated_names_test.xlsx", index=False)
