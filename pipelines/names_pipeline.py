@@ -4,7 +4,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_root)
 from detection.names_detection import detect_name_errors
 from correction.names_correction import correct_names
-from validation.validate_names import validate_names
+from validation.names_validation import validate_names
 
 def run_name_pipeline(df: pd.DataFrame) -> pd.DataFrame:
     """
