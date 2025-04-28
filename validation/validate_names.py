@@ -73,7 +73,7 @@ def fetch_SURS_data():
     print("SURS data extracted")
     return all_names, all_surnames
 
-def validate_names_test(first_name=None, last_name=None):
+def validate_names(first_name=None, last_name=None):
     """
     Validate first and last names against SURS data.
     
@@ -90,12 +90,12 @@ def validate_names_test(first_name=None, last_name=None):
         raise ValueError("At least one of first_name or last_name must be provided.")
     
     # Fetch SURS data only once
-    if not hasattr(validate_names_test, "all_names"):
+    if not hasattr(validate_names, "all_names"):
         print("Fetching SURS data...")
-        validate_names_test.all_names, validate_names_test.all_surnames = fetch_SURS_data()
+        validate_names.all_names, validate_names.all_surnames = fetch_SURS_data()
     
-    all_names = validate_names_test.all_names
-    all_surnames = validate_names_test.all_surnames
+    all_names = validate_names.all_names
+    all_surnames = validate_names.all_surnames
     
     if all_names is None or all_surnames is None:
         raise ValueError("Failed to fetch SURS data.")
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     # Apply validation and expand results into two new columns
     df[["FIRST_NAME_VALID", "LAST_NAME_VALID"]] = df.apply(
         lambda row: pd.Series(
-            validate_names_test(first_name=row["FIRST_NAME"], last_name=row["LAST_NAME"])
+            validate_names(first_name=row["FIRST_NAME"], last_name=row["LAST_NAME"])
         ),
         axis=1
     )
