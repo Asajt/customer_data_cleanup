@@ -26,6 +26,15 @@ def run_name_pipeline(df: pd.DataFrame) -> pd.DataFrame:
     
     ################################################################################
     # Step 1: Validate names
+    ...
+    # Apply validation and expand results into two new columns
+    df[["FIRST_NAME_VALID", "LAST_NAME_VALID"]] = df.apply(
+        lambda row: pd.Series(
+            validate_names(first_name=row["FIRST_NAME"], last_name=row["LAST_NAME"])
+        ),
+        axis=1
+    )
+    
     df = validate_names(df, "FIRST_NAME", "LAST_NAME")
     print('df after validation:')
     print(df.head(10))
@@ -87,8 +96,8 @@ def run_name_pipeline(df: pd.DataFrame) -> pd.DataFrame:
     print('#' * 50)
     
     
-    df["was_name_corrected"] = df["corrected_first_name_errors"].apply(lambda x: len(x) > 0)
-    df["was_surname_corrected"] = df["corrected_last_name_errors"].apply(lambda x: len(x) > 0)
+    df["was_name_corrected"] = df["corrected_first_name"].notnull()
+    df["was_surname_corrected"] = df["corrected_last_name"].notnull()
     
     print('df after adding correction bool:')
     print(df.head(10))
@@ -98,23 +107,24 @@ def run_name_pipeline(df: pd.DataFrame) -> pd.DataFrame:
     
     ################################################################################
     # Step 4: Re-validate (only if fully corrected)
-    '''
-    define a row validation function which will be applied to each row if the length of the detected errors is 
-    the same as the length of the corrected errors
-    '''
+    
+    # Step 4: Re-validate if corrections were made
+    if df["was_name_corrected"].any():
+        df_validated = validate_names(df, first_name_column="corrected_first_name")
+        df["name_valid_after_correction"] = df_validated["corrected_first_name_VALID"]
+    else:
+        df["name_valid_after_correction"] = None
 
-    def validate_if_corrected(row):
-        results = {"name_valid_after_correction": None, "surname_valid_after_correction": None}
-        if len(row["name_detected_errors"]) == len(row["name_corrected_errors"]):
-            results["name_valid_after_correction"] = validate_names(row["name_corrected"], row["surname_corrected"])["name_valid"]
-        if len(row["surname_detected_errors"]) == len(row["surname_corrected_errors"]):
-            results["surname_valid_after_correction"] = validate_names(row["name_corrected"], row["surname_corrected"])["surname_valid"]
-        return pd.Series(results)
-
-    # Apply the validation function to each row
-    validation_df = df.apply(validate_if_corrected, axis=1)
-    # concatenate the validation results with the original DataFrame
-    df = pd.concat([df, validation_df], axis=1)
+    if df["was_surname_corrected"].any():
+        df_validated = validate_names(df, last_name_column="corrected_last_name")
+        df["surname_valid_after_correction"] = df_validated["corrected_last_name_VALID"]
+    else:
+        df["surname_valid_after_correction"] = None
+    
+    print('df after second validation:')
+    print(df.head(10))
+    df.to_excel("src/processed_data/04_pipeline_names_5.xlsx", index=False)
+    print('#' * 50)
     ################################################################################
     
     ################################################################################
