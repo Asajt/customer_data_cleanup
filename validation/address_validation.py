@@ -1,26 +1,25 @@
 import pandas as pd
 
-def validate_full_address(customer_df: pd.DataFrame, full_address_column: str, path_to_gurs_RN_csv: str) -> pd.DataFrame:
+def load_gurs_data(path_to_gurs_RN_csv: str) -> pd.DataFrame:
     """
-    Validate full addresses in a DataFrame against GURS RN data.
-    This function checks if the full addresses in the specified column of the DataFrame are valid
-    according to GURS RN data. It adds new columns to the DataFrame indicating whether each address is valid or not.
-    It also adds a column with the GURS full address for matched addresses.
-    The GURS full address is in the format "street house_number, postal_code postal_city".
+    Load GURS RN data from a CSV file and prepare it for validation.
+    This function loads the GURS RN data, cleans the POSTNI_OKOLIS_NAZIV column,
+    and creates a full address column for validation.
 
     Args:
-        customer_df (pd.DataFrame): DataFrame containing customer data.
-        full_address_column (str): Name of the column containing the full address in format "street house_number, postal_code postal_city"
         path_to_gurs_RN_csv (str): Path to the GURS RN CSV file.
 
     Returns:
-        pd.DataFrame: DataFrame with additional columns for full address validation.
-    """    
-
+        pd.DataFrame: DataFrame containing the cleaned GURS RN data.
+    """
+    
     # Load and prepare GURS data
     gurs_df = pd.read_csv(path_to_gurs_RN_csv, usecols = ['ULICA_NAZIV','HS_STEVILKA','HS_DODATEK','POSTNI_OKOLIS_SIFRA','POSTNI_OKOLIS_NAZIV'])
+    print("GURS data loaded.")
+    
     # Remove dvojezična imena from POSTNI_OKOLIS_NAZIV
     gurs_df['POSTNI_OKOLIS_NAZIV'] = gurs_df['POSTNI_OKOLIS_NAZIV'].str.split('-').str[0].str.strip()
+    print("POSTNI_OKOLIS_NAZIV cleaned.")
     
     gurs_df["GURS_FULL_ADDRESS"] = (
         gurs_df["ULICA_NAZIV"].str.strip() + " " +
@@ -29,43 +28,58 @@ def validate_full_address(customer_df: pd.DataFrame, full_address_column: str, p
         gurs_df["POSTNI_OKOLIS_SIFRA"].fillna("").astype(str).str.strip() + " " +
         gurs_df["POSTNI_OKOLIS_NAZIV"].str.strip()
     )
+    print("GURS_FULL_ADDRESS created.")
     
     gurs_df = gurs_df[["GURS_FULL_ADDRESS"]]
-    # Remove duplicates
-    gurs_df = gurs_df.drop_duplicates(subset=["GURS_FULL_ADDRESS"])
+    
+    # Make a set of GURS_FULL_ADDRESS for faster lookup
+    gurs_address_set = set(gurs_df['GURS_FULL_ADDRESS'].dropna().str.strip())
+    print("GURS_FULL_ADDRESS set created.")
+    
+    return gurs_address_set
 
-    # Merge to get GURS match
-    merged_df = customer_df.merge(
-        gurs_df,
-        how="left",
-        left_on=full_address_column,
-        right_on="GURS_FULL_ADDRESS",
-    )
-
-    merged_df[f"{full_address_column}_VALID"] = merged_df["GURS_FULL_ADDRESS"].notnull()
-
-    return merged_df
+def validate_full_address(full_address: str, gurs_address_set: set) -> bool:
+    """
+    Validate the full address against the GURS address set.
+    This function checks if the provided full address is present in the GURS address set.
+    
+    Args:
+        full_address (str): Full address to validate.
+        gurs_address_set (set): Set of valid GURS addresses.
+    
+    Returns:
+        bool: True if the full address is valid, False otherwise.
+    """    
+    
+    # If the full_address_column value is not in the gurs_address_set, it is invalid, so we set it to False
+    if pd.isna(full_address):
+        return False
+    return full_address.strip() in gurs_address_set
 
 if __name__ == "__main__":
     customer_data = "src/processed_data/customer_data_with_errors.xlsx"
     df = pd.read_excel(customer_data)
 
-    # Apply the address validation
+    # Create FULL_ADDRESS
     df["FULL_ADDRESS"] = (
         df["STREET"].str.strip() + " " +
         df["HOUSE_NUMBER"].str.strip() + ", " +
         df["POSTAL_CODE"].str.strip() + " " +
         df["POSTAL_CITY"].str.strip()
     )
-
-    df = validate_full_address(df,"FULL_ADDRESS",
-        path_to_gurs_RN_csv="src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv")
     
-    # choose the columns to keep
+    # Load GURS data ONCE
+    gurs_address_set = load_gurs_data("src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv")
+    
+    # Apply validation
+    df["FULL_ADDRESS_VALID"] = df["FULL_ADDRESS"].apply(lambda addr: validate_full_address(addr, gurs_address_set))
+
+    # Save only desired columns
     columns_to_keep = [
-        "CUSTOMER_ID", "FULL_ADDRESS", "GURS_FULL_ADDRESS", "FULL_ADDRESS_VALID"
+        "CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID"
     ]
     df = df[columns_to_keep]
-    
-    df.to_excel("src/processed_data/01_validated_address.xlsx", index=False)
+
+    print(df.head(10))
     print("Address validation complete.")
+    # df.to_excel("src/processed_data/01_validated_address.xlsx", index=False)

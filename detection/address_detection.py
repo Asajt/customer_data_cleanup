@@ -387,28 +387,27 @@ def detect_address_errors(street, street_number, zipcode, city):
             
             # 4408 replacing ščž with scz
 
-    # return ','.join(sorted(errors))
-    return {
-        "street_detected_errors": sorted(street_errors),
-        "street_number_detected_errors": sorted(street_number_errors),
-        "zipcode_detected_errors": sorted(zipcode_errors),
-        "city_detected_errors": sorted(city_errors)
-    }
+    return (
+        sorted(street_errors),
+        sorted(street_number_errors),
+        sorted(zipcode_errors),
+        sorted(city_errors)
+    )
 
 if __name__ == "__main__":
     customer_data = "src/processed_data/customer_data_with_errors.xlsx"
     df = pd.read_excel(customer_data)
 
-    errors_df = df.apply(
+    df[["street_detected_errors", "street_number_detected_errors", "postal_code_detected_errors", "postal_area_detected_errors"]] = df.apply(
         lambda row: pd.Series(detect_address_errors(row["STREET"], row["HOUSE_NUMBER"], row["POSTAL_CODE"], row["POSTAL_CITY"])),
         axis=1
     )
 
     # Convert lists to comma-separated strings just for saving
-    df["street_detected_errors"] = errors_df["street_detected_errors"].apply(lambda x: ", ".join(x))
-    df["house_number_detected_errors"] = errors_df["street_number_detected_errors"].apply(lambda x: ", ".join(x))
-    df["POSTAL_CODE_detected_errors"] = errors_df["zipcode_detected_errors"].apply(lambda x: ", ".join(x))
-    df["POSTAL_CITY_detected_errors"] = errors_df["city_detected_errors"].apply(lambda x: ", ".join(x))
+    df["street_detected_errors"] = df["street_detected_errors"].apply(lambda x: ", ".join(x))
+    df["house_number_detected_errors"] = df["street_number_detected_errors"].apply(lambda x: ", ".join(x))
+    df["POSTAL_CODE_detected_errors"] = df["postal_code_detected_errors"].apply(lambda x: ", ".join(x))
+    df["POSTAL_CITY_detected_errors"] = df["postal_area_detected_errors"].apply(lambda x: ", ".join(x))
 
     # choose the columns to keep
     columns_to_keep = [
@@ -421,5 +420,6 @@ if __name__ == "__main__":
     df = df[columns_to_keep]
     
     # Save the result
+    print(df.head(10))
     df.to_excel("src/processed_data/02_detected_address_errors.xlsx", index=False)
     print("Detection of address errors completed and saved!")
