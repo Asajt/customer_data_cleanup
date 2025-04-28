@@ -71,16 +71,14 @@ def fetch_SURS_data():
     print("SURS data extracted")
     return all_names, all_surnames
 
-def validate_names(customer_df: pd.DataFrame, first_name_column: str, last_name_column: str) -> pd.DataFrame:
+def validate_names(customer_df: pd.DataFrame, first_name_column: str = None, last_name_column: str = None) -> pd.DataFrame:
     """
-    Validate first and last names in a DataFrame against SURS data.
-    This function checks if the first and last names in the specified columns of the DataFrame are valid
-    according to SURS data. It adds new columns to the DataFrame indicating whether each name is valid or not.
+    Validate first and/or last names in a DataFrame against SURS data.
     
     Args:
         customer_df (pd.DataFrame): DataFrame containing customer data.
-        first_name_column (str): Name of the column containing first names.
-        last_name_column (str): Name of the column containing last names.
+        first_name_column (str, optional): Name of the column containing first names.
+        last_name_column (str, optional): Name of the column containing last names.
 
     Raises:
         ValueError: If SURS data fetching fails.
@@ -88,37 +86,43 @@ def validate_names(customer_df: pd.DataFrame, first_name_column: str, last_name_
     Returns:
         pd.DataFrame: DataFrame with additional columns for name validation.
     """   
-     
+    
+    if first_name_column is None and last_name_column is None:
+        raise ValueError("At least one of first_name_column or last_name_column must be provided.")
+    
     # Fetch SURS name and surname datasets
     all_names, all_surnames = fetch_SURS_data()
 
     if all_names is None or all_surnames is None:
         raise ValueError("Failed to fetch SURS data.")
     
-    # dataframe of FIRST_NAME 
-    first_names_df = pd.DataFrame(all_names["value"])
-    first_names_df.columns = ["SURS_FIRST_NAME"]
-    # dataframe of LAST_NAME
-    last_names_df = pd.DataFrame(all_surnames["value"])
-    last_names_df.columns = ["SURS_LAST_NAME"]
-
-    # Merge FIRST_NAME
-    merged_df = customer_df.merge(
-        first_names_df,
-        how="left",
-        left_on=first_name_column,
-        right_on="SURS_FIRST_NAME",
-    )
-    merged_df[f"{first_name_column}_VALID"] = merged_df["SURS_FIRST_NAME"].notnull()
+    if first_name_column:    
+        # dataframe of FIRST_NAME 
+        first_names_df = pd.DataFrame(all_names["value"])
+        first_names_df.columns = ["SURS_FIRST_NAME"]
     
-    # Merge LAST_NAME
-    merged_df = merged_df.merge(
-        last_names_df,
-        how="left",
-        left_on=last_name_column,
-        right_on="SURS_LAST_NAME",
-    )
-    merged_df[f"{last_name_column}_VALID"] = merged_df["SURS_LAST_NAME"].notnull()
+        # Merge FIRST_NAME
+        merged_df = customer_df.merge(
+            first_names_df,
+            how="left",
+            left_on=first_name_column,
+            right_on="SURS_FIRST_NAME",
+        )
+        merged_df[f"{first_name_column}_VALID"] = merged_df["SURS_FIRST_NAME"].notnull()
+    
+    if last_name_column:
+        # dataframe of LAST_NAME
+        last_names_df = pd.DataFrame(all_surnames["value"])
+        last_names_df.columns = ["SURS_LAST_NAME"]
+
+        # Merge LAST_NAME
+        merged_df = merged_df.merge(
+            last_names_df,
+            how="left",
+            left_on=last_name_column,
+            right_on="SURS_LAST_NAME",
+        )
+        merged_df[f"{last_name_column}_VALID"] = merged_df["SURS_LAST_NAME"].notnull()
 
     return merged_df
 
