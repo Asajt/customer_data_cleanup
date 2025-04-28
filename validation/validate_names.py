@@ -135,15 +135,12 @@ if __name__ == "__main__":
     #         validate_names(first_name=row["FIRST_NAME"])
     #     ),
     #     axis=1)
-    
-    
+
     df["corrected_first_name_VALID"] = df.apply(
         lambda row: pd.Series(
             validate_names(first_name=row["corrected_first_name"])
         ),
         axis=1)
-    
-    print(df)
     
     df.to_excel("src/processed_data/01_validated_names_test2.xlsx", index=False)
 
