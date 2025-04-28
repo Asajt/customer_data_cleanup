@@ -26,66 +26,74 @@ def run_name_pipeline(df: pd.DataFrame) -> pd.DataFrame:
     
     ################################################################################
     # Step 1: Validate names
-    # df = validate_names(df, "FIRST_NAME", "LAST_NAME")
+    df = validate_names(df, "FIRST_NAME", "LAST_NAME")
     print('df after validation:')
-    print(df)
+    print(df.head(10))
     print('#' * 50)
     ################################################################################
     
     ################################################################################
     # Step 2: Detect name + surname errors
-    df = df.apply(
+    detection_results = df.apply(
         lambda row: pd.Series(detect_name_errors(row["FIRST_NAME"], row["LAST_NAME"])),
         axis=1
     )
+
+    df = pd.concat([df, detection_results], axis=1)
     print('df after validation:')
-    print(df)
+    print(df.head(10))
+    df.to_excel("src/processed_data/04_pipeline_names_1.xlsx", index=False)
     print('#' * 50)
+    
     ################################################################################
+    # create columns to check if there are errors
+    df['name_has_errors'] = df['name_detected_errors'].apply(lambda x: len(x) > 0)
+    df['surname_has_errors'] = df['surname_detected_errors'].apply(lambda x: len(x) > 0)
+    
+    print('df after adding detection bool:')
+    print(df.head(10))
+    df.to_excel("src/processed_data/04_pipeline_names_2.xlsx", index=False)
+    print('#' * 50)
     
     ################################################################################
     # Step 3: Correct if errors detected
     '''
     define a row correction function which will be applied to each row if there are errors and 
     if there are no errors then it will return empty lists and empty errors for both name and surname
-    '''
-    df_new = df.apply(lambda row: pd.Series(correct_names( 
-        first_name=row['FIRST_NAME'],
-        last_name=row['LAST_NAME'],
-        detected_first_name_errors=row["name_detected_errors"],
-        detected_last_name_errors=row["surname_detected_errors"],
-    )), axis=1)
+    '''    
     
-    # Convert lists to comma-separated strings just for saving
-    for col in df_new.columns:
-        if "errors" in col:
-            df_new[col] = df_new[col].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)    
+    correction_results = df.apply(
+        lambda row: pd.Series(correct_names(
+            first_name=row['FIRST_NAME'],
+            last_name=row['LAST_NAME'],
+            detected_first_name_errors=row["name_detected_errors"],
+            detected_last_name_errors=row["surname_detected_errors"]
+        )) if (len(row['name_detected_errors']) > 0 or len(row['surname_detected_errors']) > 0)
+        else pd.Series({
+            "corrected_first_name": None,
+            "corrected_last_name": None,
+            "corrected_first_name_errors": [],
+            "corrected_last_name_errors": []
+        }),
+        axis=1
+    )
+        
 
-    # Merge original and corrected data
-    final_df = pd.concat([df, df_new], axis=1)
-    print(list(final_df.columns))
+    # Merge the correction results
+    df = pd.concat([df, correction_results], axis=1)
+    print('df after correction:')
+    print(df.head(10))
+    df.to_excel("src/processed_data/04_pipeline_names_3.xlsx", index=False)
+    print('#' * 50)
     
-    def correct(row):
-        if row["has_name_errors"] or row["has_surname_errors"]:
-            result = correct_name_errors(
-                row["name"], row["surname"],
-                row["name_detected_errors"], row["surname_detected_errors"]
-            )
-        else:
-            result = {
-                "name_corrected": [],
-                "surname_corrected": [],
-                "name_corrected_errors": [],
-                "surname_corrected_errors": []
-            }
-        return pd.Series(result)
-
-    # Apply the correction function to each row
-    correction_df = df.apply(correct, axis=1)
-    # concatenate the correction results with the original DataFrame
-    df = pd.concat([df, correction_df], axis=1)
-    df["was_name_corrected"] = df["name_corrected_errors"].apply(lambda x: len(x) > 0)
-    df["was_surname_corrected"] = df["surname_corrected_errors"].apply(lambda x: len(x) > 0)
+    
+    df["was_name_corrected"] = df["corrected_first_name_errors"].apply(lambda x: len(x) > 0)
+    df["was_surname_corrected"] = df["corrected_last_name_errors"].apply(lambda x: len(x) > 0)
+    
+    print('df after adding correction bool:')
+    print(df.head(10))
+    df.to_excel("src/processed_data/04_pipeline_names_4.xlsx", index=False)
+    print('#' * 50)
     ################################################################################
     
     ################################################################################
