@@ -130,24 +130,31 @@ def detect_name_errors(name, surname):
                     surname_errors.add('1205')
                    
     # return ','.join(sorted(errors))
-    return {
-        "name_detected_errors": sorted(name_errors),
-        "surname_detected_errors": sorted(surname_errors)
-    }
+    # return {
+    #     "name_detected_errors": sorted(name_errors),
+    #     "surname_detected_errors": sorted(surname_errors)
+    # }
+    
+    return sorted(name_errors), sorted(surname_errors)
 
 if __name__ == "__main__":
     customer_data = "src/processed_data/customer_data_with_errors.xlsx"
     df = pd.read_excel(customer_data)
 
     # Apply the name error detection
-    errors_df = df.apply(
+    # errors_df = df.apply(
+    #     lambda row: pd.Series(detect_name_errors(row["FIRST_NAME"], row["LAST_NAME"])),
+    #     axis=1
+    # )
+
+    df[["name_detected_errors", "surname_detected_errors"]] = df.apply(
         lambda row: pd.Series(detect_name_errors(row["FIRST_NAME"], row["LAST_NAME"])),
         axis=1
     )
 
     # Convert lists to comma-separated strings just for saving
-    df["name_detected_errors"] = errors_df["name_detected_errors"].apply(lambda x: ", ".join(x))
-    df["surname_detected_errors"] = errors_df["surname_detected_errors"].apply(lambda x: ", ".join(x))
+    df["name_detected_errors"] = df["name_detected_errors"].apply(lambda x: ", ".join(x))
+    df["surname_detected_errors"] = df["surname_detected_errors"].apply(lambda x: ", ".join(x))
 
     # choose the columns to keep
     columns_to_keep = [

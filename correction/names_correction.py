@@ -204,15 +204,15 @@ def correct_names(first_name, last_name, detected_first_name_errors, detected_la
                     corrected_last_name_errors.add('1205')
                     uncorrected_last_name_errors.remove('1205')
                     
-    return {
-    "corrected_first_name": corrected_first_name if corrected_first_name != original_first_name else None,
-    "corrected_first_name_errors": sorted(corrected_first_name_errors),
-    "uncorrected_first_name_errors": sorted(uncorrected_first_name_errors),
+    return (
+        corrected_first_name if corrected_first_name != original_first_name else None,
+        sorted(corrected_first_name_errors),
+        sorted(uncorrected_first_name_errors),
 
-    "corrected_last_name": corrected_last_name if corrected_last_name != original_last_name else None,
-    "corrected_last_name_errors": sorted(corrected_last_name_errors),
-    "uncorrected_last_name_errors": sorted(uncorrected_last_name_errors),
-    }    
+        corrected_last_name if corrected_last_name != original_last_name else None,
+        sorted(corrected_last_name_errors),
+        sorted(uncorrected_last_name_errors),
+    ) 
 
 if __name__ == "__main__":
 
@@ -227,20 +227,20 @@ if __name__ == "__main__":
     df['surname_detected_errors'] = df['surname_detected_errors'].apply(split_into_set)
     
     # Apply the correction function to each row
-    df_new = df.apply(lambda row: pd.Series(correct_names( 
-        first_name=row['FIRST_NAME'],
-        last_name=row['LAST_NAME'],
-        detected_first_name_errors=row["name_detected_errors"],
-        detected_last_name_errors=row["surname_detected_errors"],
-    )), axis=1)
-        
-    # Merge original and corrected data
-    final_df = pd.concat([df, df_new], axis=1)
+    df[["corrected_first_name", "corrected_first_name_errors", "uncorrected_first_name_errors",
+        "corrected_last_name", "corrected_last_name_errors", "uncorrected_last_name_errors"]] = df.apply(
+        lambda row: pd.Series(correct_names(
+            first_name=row['FIRST_NAME'],
+            last_name=row['LAST_NAME'],
+            detected_first_name_errors=row["name_detected_errors"],
+            detected_last_name_errors=row["surname_detected_errors"],
+        )), axis=1
+    )
     
     # Convert lists and sets to strings before saving
-    for col in final_df.columns:
+    for col in df.columns:
         if "errors" in col:
-            final_df[col] = final_df[col].apply(
+            df[col] = df[col].apply(
                 lambda x: ", ".join(sorted(x)) if isinstance(x, (set, list)) else x
             )
     
@@ -260,6 +260,6 @@ if __name__ == "__main__":
     ]
     
     # Save to Excel
-    final_df[columns_to_export].to_excel("src/processed_data/03_corrected_name_errors.xlsx", index=False)
+    df[columns_to_export].to_excel("src/processed_data/03_corrected_name_errors.xlsx", index=False)
     
     print("✅ Correction of name errors completed and saved.")
