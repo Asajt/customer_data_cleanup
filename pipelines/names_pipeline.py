@@ -32,10 +32,8 @@ def run_name_pipeline(df: pd.DataFrame) -> pd.DataFrame:
         lambda row: pd.Series(
             validate_names(first_name=row["FIRST_NAME"], last_name=row["LAST_NAME"])
         ),
-        axis=1
-    )
-    
-    df = validate_names(df, "FIRST_NAME", "LAST_NAME")
+        axis=1)
+
     print('df after validation:')
     print(df.head(10))
     print('#' * 50)
@@ -106,20 +104,19 @@ def run_name_pipeline(df: pd.DataFrame) -> pd.DataFrame:
     ################################################################################
     
     ################################################################################
-    # Step 4: Re-validate (only if fully corrected)
+    # Step 4: Re-validate for corrected names
     
-    # Step 4: Re-validate if corrections were made
-    if df["was_name_corrected"].any():
-        df_validated = validate_names(df, first_name_column="corrected_first_name")
-        df["name_valid_after_correction"] = df_validated["corrected_first_name_VALID"]
-    else:
-        df["name_valid_after_correction"] = None
-
-    if df["was_surname_corrected"].any():
-        df_validated = validate_names(df, last_name_column="corrected_last_name")
-        df["surname_valid_after_correction"] = df_validated["corrected_last_name_VALID"]
-    else:
-        df["surname_valid_after_correction"] = None
+    df["corrected_first_name_VALID"] = df.apply(
+    lambda row: validate_names(first_name=row["corrected_first_name"]) 
+    if row["was_name_corrected"] else None,
+    axis=1
+    )
+    
+    df["corrected_last_name_VALID"] = df.apply(
+    lambda row: validate_names(first_name=row["corrected_last_name"]) 
+    if row["was_surname_corrected"] else None,
+    axis=1
+    )
     
     print('df after second validation:')
     print(df.head(10))
@@ -130,20 +127,20 @@ def run_name_pipeline(df: pd.DataFrame) -> pd.DataFrame:
     ################################################################################
     # Step 5: Assign status
     def name_status(row):
-        if row["name_valid"]:
+        if row["FIRST_NAME_VALID"]:
             return "VALID"
-        if row["has_name_errors"] and len(row["name_detected_errors"]) == len(row["name_corrected_errors"]):
-            return "CORRECTED" if row["name_valid_after_correction"] else "PARTIALLY_CORRECTED"
-        if row["has_name_errors"] and len(row["name_corrected_errors"]) == 0:
+        if row["name_has_errors"] and len(row["name_detected_errors"]) == len(row["corrected_first_name_errors"]):
+            return "CORRECTED" if row["corrected_first_name_VALID"] else "PARTIALLY_CORRECTED"
+        if row["name_has_errors"] and len(row["corrected_first_name_errors"]) == 0:
             return "DETECTED"
         return "INVALID"
 
     def surname_status(row):
-        if row["surname_valid"]:
+        if row["LAST_NAME_VALID"]:
             return "VALID"
-        if row["has_surname_errors"] and len(row["surname_detected_errors"]) == len(row["surname_corrected_errors"]):
-            return "CORRECTED" if row["surname_valid_after_correction"] else "PARTIALLY_CORRECTED"
-        if row["has_surname_errors"] and len(row["surname_corrected_errors"]) == 0:
+        if row["surname_has_errors"] and len(row["surname_detected_errors"]) == len(row["corrected_last_name_errors"]):
+            return "CORRECTED" if row["corrected_last_name_VALID"] else "PARTIALLY_CORRECTED"
+        if row["surname_has_errors"] and len(row["corrected_last_name_errors"]) == 0:
             return "DETECTED"
         return "INVALID"
     
@@ -162,15 +159,15 @@ if __name__ == "__main__":
     df = run_name_pipeline(df)
 
     # choose the columns to keep
-    columns_to_keep = [
-        "CUSTOMER_ID", "NAME", "SURNAME", "name_detected_errors", "surname_detected_errors",
-        "has_name_errors", "has_surname_errors", "name_corrected", "surname_corrected",
-        "name_corrected_errors", "surname_corrected_errors", "was_name_corrected",
-        "was_surname_corrected", "name_valid_after_correction", "surname_valid_after_correction",
-        "NAME_STATUS", "SURNAME_STATUS"
-    ]
-    df = df[columns_to_keep]
+    # columns_to_keep = [
+    #     "CUSTOMER_ID", "NAME", "SURNAME", "name_detected_errors", "surname_detected_errors",
+    #     "has_name_errors", "has_surname_errors", "name_corrected", "surname_corrected",
+    #     "name_corrected_errors", "surname_corrected_errors", "was_name_corrected",
+    #     "was_surname_corrected", "name_valid_after_correction", "surname_valid_after_correction",
+    #     "NAME_STATUS", "SURNAME_STATUS"
+    # ]
+    # df = df[columns_to_keep]
 
     # Save updated file
-    df.to_excel("src/processed_data/01_validated_names.xlsx", index=False)
-    print("Name validation complete.")
+    df.to_excel("src/processed_data/05_names.xlsx", index=False)
+    print("Name pipeline completed successfully.")
