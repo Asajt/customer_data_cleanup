@@ -5,7 +5,6 @@ sys.path.append(project_root)
 from detection.email_detection import detect_email_errors
 from correction.email_correction import correct_email
 from validation.email_validation import validate_email
-from tqdm import tqdm
 
 def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
     """
@@ -26,11 +25,7 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
     
     ################################################################################
     # Step 1: Validate emails
-    ...
-    # Apply validation and expand results
-    tqdm.pandas(desc="Validating emails")
-    # Validate emails
-    df[f"{email_column}_VALID"] = df[email_column].progress_apply(validate_email)
+    df[f"{email_column}_VALID"] = df[email_column].apply(validate_email)
 
     print('df after validation:')
     print(df.head(10))
@@ -38,9 +33,7 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
     ################################################################################
     
     ################################################################################
-    # Step 2: Detect email errors
-    tqdm.pandas(desc="Detecting email errors")
-    df[f"{email_column}_DETECTED_ERRORS"] = df[email_column].progress_apply(detect_email_errors)
+    df[f"{email_column}_DETECTED_ERRORS"] = df[email_column].apply(detect_email_errors)
     
     print('df after detection:')
     print(df.head(10))
@@ -49,8 +42,7 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
     
     ################################################################################
     # create columns to check if there are errors
-    tqdm.pandas(desc="Adding detection bool")
-    df[f"{email_column}_HAS_ERRORS"] = df[f"{email_column}_DETECTED_ERRORS"].progress_apply(lambda x: len(x) > 0)
+    df[f"{email_column}_HAS_ERRORS"] = df[f"{email_column}_DETECTED_ERRORS"].apply(lambda x: len(x) > 0)
     
     print('df after adding detection bool:')
     print(df.head(10))
@@ -63,10 +55,9 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
     define a row correction function which will be applied to each row if there are errors and 
     if there are no errors then it will return empty lists and empty errors for both name and surname
     '''
-    
-    tqdm.pandas(desc="Correcting email errors")
+
     # Apply correction function to each row
-    df[[f"{email_column}_CORRECTED", f"{email_column}_CORRECTED_ERRORS", f"{email_column}_UNCORRECTED_ERRORS"]] = df.progress_apply(
+    df[[f"{email_column}_CORRECTED", f"{email_column}_CORRECTED_ERRORS", f"{email_column}_UNCORRECTED_ERRORS"]] = df.apply(
         lambda row: pd.Series(correct_email(
             email=row[email_column],
             detected_email_errors=row[f"{email_column}_DETECTED_ERRORS"],
@@ -91,9 +82,7 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
     
     ################################################################################
     # Step 4: Re-validate for corrected emails
-    tqdm.pandas(desc="Re-validating emails after correction")
-    # Re-validate emails after correction
-    df[f"{email_column}_VALID_AFTER_CORRECTION"] = df.progress_apply(
+    df[f"{email_column}_VALID_AFTER_CORRECTION"] = df.apply(
         lambda row: validate_email(email=row[f"{email_column}_CORRECTED"]) 
         if row[f"{email_column}_WAS_CORRECTED"] else None,
         axis=1
@@ -116,8 +105,7 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
             return "DETECTED"
         return "INVALID"
     
-    tqdm.pandas(desc="Assigning status")
-    df[f"{email_column}_STATUS"] = df.progress_apply(lambda row: status(row, email_column), axis=1)
+    df[f"{email_column}_STATUS"] = df.apply(lambda row: status(row, email_column), axis=1)
     
     return df
 

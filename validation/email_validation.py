@@ -1,6 +1,5 @@
 import pandas as pd
 import regex as re
-from tqdm import tqdm
 
 def validate_email(email) -> bool:
     """
@@ -26,10 +25,8 @@ if __name__ == "__main__":
     customer_data = "src/processed_data/customer_data_with_errors.xlsx"
     df = pd.read_excel(customer_data)
 
-    # Add tqdm progress bar to the apply function
-    tqdm.pandas(desc="Validating emails")
     # Validate emails
-    df["EMAIL_VALID"] = df["EMAIL"].progress_apply(validate_email)
+    df["EMAIL_VALID"] = df["EMAIL"].apply(validate_email)
 
     # Choose the columns to keep
     columns_to_keep = [
