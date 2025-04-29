@@ -43,7 +43,7 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
         axis=1
     )
     
-    print('Name validation completed.')
+    print('Name error detection completed.')
     
     ################################################################################
     # Create columns to check if there are errors
