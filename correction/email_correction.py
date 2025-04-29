@@ -85,35 +85,32 @@ def correct_email(email, detected_email_errors):
                     corrected_email_errors.add('2102')
                     uncorrected_email_errors.remove('2102')
                     
-    return {
-    "corrected_email": corrected_email if corrected_email != original_email else None,
-    "corrected_email_errors": sorted(corrected_email_errors),
-    "uncorrected_email_errors": sorted(uncorrected_email_errors),
-    }    
+    return (
+    corrected_email if corrected_email != original_email else None,
+    sorted(corrected_email_errors),
+    sorted(uncorrected_email_errors),
+    )    
 
 if __name__ == "__main__":
-
-    # TESTING
-
+    
     customer_data = "src/processed_data/02_detected_email_errors.xlsx"
-
     df = pd.read_excel(customer_data)
     
     # split the string into a set
     df['email_detected_errors'] = df['email_detected_errors'].apply(split_into_set)
 
-    df_new = df.apply(lambda row: pd.Series(correct_email( 
-        email=row['EMAIL'],
-        detected_email_errors=row["email_detected_errors"],
-    )), axis=1)
-    
-    # Merge original and corrected data
-    final_df = pd.concat([df, df_new], axis=1)
+    # Apply correction function to each row
+    df[["corrected_email", "corrected_email_errors", "uncorrected_email_errors"]] = df.apply(
+        lambda row: pd.Series(correct_email(
+            email=row['EMAIL'],
+            detected_email_errors=row["email_detected_errors"],
+        )), axis=1
+    )
     
     # Convert lists and sets to strings before saving
-    for col in final_df.columns:
+    for col in df.columns:
         if "errors" in col:
-            final_df[col] = final_df[col].apply(
+            df[col] = df[col].apply(
                 lambda x: ", ".join(sorted(x)) if isinstance(x, (set, list)) else x
             )
     
@@ -128,6 +125,6 @@ if __name__ == "__main__":
     ]
     
     # Save to Excel
-    final_df[columns_to_export].to_excel("src/processed_data/03_corrected_email_errors.xlsx", index=False)
+    df[columns_to_export].to_excel("src/processed_data/03_corrected_email_errors.xlsx", index=False)
     
     print("✅ Correction of email errors completed and saved.")

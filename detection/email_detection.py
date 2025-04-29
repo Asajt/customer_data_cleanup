@@ -102,8 +102,7 @@ def detect_email_errors(email):
                     validate_email(email, check_deliverability=False)
                 except EmailNotValidError:
                     email_errors.add('2000')
-
-    # return ','.join(sorted(email_errors
+                    
     return email_errors
 
 
