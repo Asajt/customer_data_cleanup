@@ -109,11 +109,11 @@ def correct_phone(phone, detected_phone_errors):
                         corrected_phone_errors.add('3104')
                         uncorrected_phone_errors.remove('3104')
                       
-    return {
-    "corrected_phone": corrected_phone if corrected_phone != original_phone else None,
-    "corrected_phone_errors": sorted(corrected_phone_errors),
-    "uncorrected_phone_errors": sorted(uncorrected_phone_errors),
-    }    
+    return (
+    corrected_phone if corrected_phone != original_phone else None,
+    sorted(corrected_phone_errors),
+    sorted(uncorrected_phone_errors),
+    )    
 
 if __name__ == "__main__":
 
@@ -126,18 +126,17 @@ if __name__ == "__main__":
     # split the string into a set
     df['phone_detected_errors'] = df['phone_detected_errors'].apply(split_into_set)
 
-    df_new = df.apply(lambda row: pd.Series(correct_phone( 
-        phone=row['PHONE_NUMBER'],
-        detected_phone_errors=row["phone_detected_errors"],
-    )), axis=1)
-
-    # Merge original and corrected data
-    final_df = pd.concat([df, df_new], axis=1)
-    
+    df[["corrected_phone", "corrected_phone_errors", "uncorrected_phone_errors"]] = df.apply(
+        lambda row: pd.Series(correct_phone(
+            phone=row['PHONE_NUMBER'],
+            detected_phone_errors=row["phone_detected_errors"],
+        )), axis=1
+    )
+        
     # Convert lists and sets to strings before saving
-    for col in final_df.columns:
+    for col in df.columns:
         if "errors" in col:
-            final_df[col] = final_df[col].apply(
+            df[col] = df[col].apply(
                 lambda x: ", ".join(sorted(x)) if isinstance(x, (set, list)) else x
             )
     
@@ -152,6 +151,6 @@ if __name__ == "__main__":
     ]
     
     # Save to Excel
-    final_df[columns_to_export].to_excel("src/processed_data/03_corrected_phone_errors.xlsx", index=False)
+    df[columns_to_export].to_excel("src/processed_data/03_corrected_phone_errors.xlsx", index=False)
     
     print("✅ Correction of phone errors completed and saved.")
