@@ -3,14 +3,8 @@ import numpy as np
 import random
 import regex as re
 
-# Set seed for reproducibility
-SEED = 42
-np.random.seed(SEED)
-random.seed(SEED)
 
-# ============================
-# **HELPER FUNCTION: LOG ERRORS**
-# ============================
+# HELPER FUNCTION: LOG ERRORS
 def log_error(df, row_id, error_id):
     """ Append error ID to INTRODUCED_ERRORS column """
     if df.at[row_id, "INTRODUCED_ERRORS"]:
@@ -18,11 +12,7 @@ def log_error(df, row_id, error_id):
     else:
         df.at[row_id, "INTRODUCED_ERRORS"] = str(error_id)
 
-
-# ============================
-# **APPLY ERRORS FUNCTION**
-# ============================
-def apply_errors(df):
+def apply_errors(df, seed):
     """
     Introduces errors into the dataset and tracks them in the 'INTRODUCED_ERRORS' column.
     
@@ -32,6 +22,9 @@ def apply_errors(df):
     Returns:
     None (Modifies the dataframe in place and tracks applied errors)
     """
+    # Set random seed for reproducibility
+    np.random.seed(seed)
+    random.seed(seed)
     
     df = df.astype(str)
     
@@ -885,18 +878,15 @@ def apply_errors(df):
     return df[["CUSTOMER_ID", "FIRST_NAME", "LAST_NAME", "EMAIL", "PHONE_NUMBER",
             "STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY", "INTRODUCED_ERRORS"]]
 
-# # ============================
-# # **EXECUTION**
-# # ============================
+if __name__ == "__main__":
+    # Load the dataset (replace with your file path)
+    customer_data_path = "src/processed_data/customer_data.xlsx"
+    customer_df = pd.read_excel(customer_data_path, dtype=str)
+    # Ensure all columns are handled as strings
+    customer_df = customer_df.astype(str)
 
-# Load the dataset (replace with your file path)
-customer_data_path = "src/processed_data/customer_data.xlsx"
-customer_df = pd.read_excel(customer_data_path, dtype=str)
-# Ensure all columns are handled as strings
-customer_df = customer_df.astype(str)
+    customer_df_w_errors = apply_errors(customer_df, seed=42)
 
-customer_df_w_errors = apply_errors(customer_df)
-
-print("Errors introduced into the cusotmer dataset")
-
-customer_df_w_errors.to_excel("src/processed_data/customer_data_with_errors.xlsx", index=False)
+    print("Errors introduced into the cusotmer dataset")
+    customer_df_w_errors.to_excel("src/processed_data/customer_data_with_errors.xlsx", index=False)
+    print("Customer data with errors saved to 'customer_data_with_errors.xlsx'")   
