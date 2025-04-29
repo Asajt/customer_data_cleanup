@@ -56,7 +56,7 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     6. Return the updated DataFrame with additional columns for detected errors, corrections, and validation status.
     Args:
         df (pd.DataFrame): DataFrame containing customer data with columns "street", "street_number", "postal_code", and "postal_area".
-        street_column (str): Name of the column containing street names.
+        street_column (str): Name of the column containing street address.
         street_number_column (str): Name of the column containing street numbers.
         postal_code_column (str): Name of the column containing postal codes.
         postal_area_column (str): Name of the column containing postal areas.
@@ -65,16 +65,13 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     """
     
     ################################################################################
-    # Step 1: Validate names
-    
-    # Apply validation 
+    # Step 1: Validate address
     # Create FULL_ADDRESS
     df["FULL_ADDRESS"] = (
         df[street_column].str.strip() + " " +
         df[street_number_column].str.strip() + ", " +
         df[postal_code_column].str.strip() + " " +
-        df[postal_city_column].str.strip()
-    )
+        df[postal_city_column].str.strip())
     
     # Load GURS data ONCE
     gurs_address_set = load_gurs_data("src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv")
@@ -83,12 +80,11 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     df["FULL_ADDRESS_VALID"] = df["FULL_ADDRESS"].apply(lambda addr: validate_full_address(addr, gurs_address_set))
 
     print('df after validation:')
-    print(df.head(10))
+    print(df.head(5))
     print('#' * 50)
-    ################################################################################
     
     ################################################################################
-    # Step 2: Detect name + surname errors
+    # Step 2: Detect errors
     df[[f"{street_column}_DETECTED_ERRORS", 
         f"{street_number_column}_DETECTED_ERRORS", 
         f"{postal_code_column}_DETECTED_ERRORS", 
@@ -99,28 +95,22 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     )
     
     print('df after detection:')
-    print(df.head(10))
-    df.to_excel("src/processed_data/04_pipeline_address_1.xlsx", index=False)
+    print(df.head(5))
     print('#' * 50)
     
     ################################################################################
-    # create columns to check if there are errors
+    # Create columns to check if there are errors
     df[f'{street_column}_HAS_ERRORS'] = df[f"{street_column}_DETECTED_ERRORS"].apply(lambda x: len(x) > 0)
     df[f'{street_number_column}_HAS_ERRORS'] = df[f"{street_number_column}_DETECTED_ERRORS"].apply(lambda x: len(x) > 0)
     df[f'{postal_code_column}_HAS_ERRORS'] = df[f"{postal_code_column}_DETECTED_ERRORS"].apply(lambda x: len(x) > 0)
     df[f'{postal_city_column}_HAS_ERRORS'] = df[f"{postal_city_column}_DETECTED_ERRORS"].apply(lambda x: len(x) > 0)
     
     print('df after adding detection bool:')
-    print(df.head(10))
-    df.to_excel("src/processed_data/04_pipeline_address_2.xlsx", index=False)
+    print(df.head(5))
     print('#' * 50)
     
     ################################################################################
     # Step 3: Correct if errors detected
-    '''
-    define a row correction function which will be applied to each row if there are errors and 
-    if there are no errors then it will return empty lists and empty errors for both name and surname
-    '''
     df[[f"{street_column}_CORRECTED", f"{street_column}_CORRECTED_ERRORS", f"{street_column}_UNCORRECTED_ERRORS",
         f"{street_number_column}_CORRECTED", f"{street_number_column}_CORRECTED_ERRORS", f"{street_number_column}_UNCORRECTED_ERRORS",
         f"{postal_code_column}_CORRECTED", f"{postal_code_column}_CORRECTED_ERRORS", f"{postal_code_column}_UNCORRECTED_ERRORS",
@@ -141,31 +131,28 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     )
     
     print('df after correction:')
-    print(df.head(10))
-    df.to_excel("src/processed_data/04_pipeline_address_3.xlsx", index=False)
+    print(df.head(5))
     print('#' * 50)
     
+    ################################################################################
+    # Create columns to check which rows were corrected
     df[f"{street_column}_WAS_CORRECTED"] = df[f"{street_column}_CORRECTED"].notnull()
     df[f"{street_number_column}_WAS_CORRECTED"] = df[f"{street_number_column}_CORRECTED"].notnull()
     df[f"{postal_code_column}_WAS_CORRECTED"] = df[f"{postal_code_column}_CORRECTED"].notnull()
     df[f"{postal_city_column}_WAS_CORRECTED"] = df[f"{postal_city_column}_CORRECTED"].notnull()
     
     print('df after adding correction bool:')
-    print(df.head(10))
-    df.to_excel("src/processed_data/04_pipeline_address_4.xlsx", index=False)
+    print(df.head(5))
     print('#' * 50)
-    ################################################################################
     
     ################################################################################
-    # Step 4: Re-validate for corrected names
-    
+    # Step 4: Re-validate for corrected address
     # Create FULL_ADDRESS
     df["FULL_ADDRESS_CORRECTED"] = (
         df[f"{street_column}_CORRECTED"].str.strip() + " " +
         df[f"{street_number_column}_CORRECTED"].str.strip() + ", " +
         df[f"{postal_code_column}_CORRECTED"].str.strip() + " " +
-        df[f"{postal_city_column}_CORRECTED"].str.strip()
-    )
+        df[f"{postal_city_column}_CORRECTED"].str.strip())
     
     # Apply validation only if at least one of the components was corrected
     df["FULL_ADDRESS_VALID_AFTER_CORRECTION"] = df.apply(
@@ -179,10 +166,8 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     )
     
     print('df after second validation:')
-    print(df.head(10))
-    df.to_excel("src/processed_data/04_pipeline_address_5.xlsx", index=False)
+    print(df.head(5))
     print('#' * 50)
-    ################################################################################
     
     ################################################################################
     # Step 5: Assign status
@@ -207,7 +192,7 @@ if __name__ == "__main__":
     customer_data = "src/processed_data/customer_data_with_errors.xlsx"
     df = pd.read_excel(customer_data)
 
-    # Run the name pipeline
+    # Run the address pipeline
     df = run_address_pipeline(df, "STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY")
 
     # choose the columns to keep

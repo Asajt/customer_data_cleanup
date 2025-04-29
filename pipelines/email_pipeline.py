@@ -28,35 +28,27 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
     df[f"{email_column}_VALID"] = df[email_column].apply(validate_email)
 
     print('df after validation:')
-    print(df.head(10))
+    print(df.head(5))
     print('#' * 50)
-    ################################################################################
     
     ################################################################################
+    # Step 2: Detect errors
     df[f"{email_column}_DETECTED_ERRORS"] = df[email_column].apply(detect_email_errors)
     
     print('df after detection:')
-    print(df.head(10))
-    df.to_excel("src/processed_data/04_pipeline_names_1.xlsx", index=False)
+    print(df.head(5))
     print('#' * 50)
     
     ################################################################################
-    # create columns to check if there are errors
+    # Create columns to check if there are errors
     df[f"{email_column}_HAS_ERRORS"] = df[f"{email_column}_DETECTED_ERRORS"].apply(lambda x: len(x) > 0)
     
     print('df after adding detection bool:')
-    print(df.head(10))
-    df.to_excel("src/processed_data/04_pipeline_names_2.xlsx", index=False)
+    print(df.head(5))
     print('#' * 50)
     
     ################################################################################
     # Step 3: Correct if errors detected
-    '''
-    define a row correction function which will be applied to each row if there are errors and 
-    if there are no errors then it will return empty lists and empty errors for both name and surname
-    '''
-
-    # Apply correction function to each row
     df[[f"{email_column}_CORRECTED", f"{email_column}_CORRECTED_ERRORS", f"{email_column}_UNCORRECTED_ERRORS"]] = df.apply(
         lambda row: pd.Series(correct_email(
             email=row[email_column],
@@ -66,19 +58,13 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
         , axis=1
     )
     
-    print('df after correction:')
-    print(df.head(10))
-    df.to_excel("src/processed_data/04_pipeline_names_3.xlsx", index=False)
-    print('#' * 50)
-    
-    # create columns to check if there are errors
+    ################################################################################
+    # Check if the email was corrected
     df[f"{email_column}_WAS_CORRECTED"] = df[f"{email_column}_CORRECTED"].notnull()
     
     print('df after adding correction bool:')
-    print(df.head(10))
-    df.to_excel("src/processed_data/04_pipeline_names_4.xlsx", index=False)
+    print(df.head(5))
     print('#' * 50)
-    ################################################################################
     
     ################################################################################
     # Step 4: Re-validate for corrected emails
@@ -89,10 +75,8 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
     )
     
     print('df after second validation:')
-    print(df.head(10))
-    df.to_excel("src/processed_data/04_pipeline_names_5.xlsx", index=False)
+    print(df.head(5))
     print('#' * 50)
-    ################################################################################
     
     ################################################################################
     # Step 5: Assign status
