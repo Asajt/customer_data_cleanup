@@ -73,8 +73,8 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
     df[[f"{first_name_column}_CORRECTED", f"{first_name_column}_CORRECTED_ERRORS", f"{first_name_column}_UNCORRECTED_ERRORS",
         f"{last_name_column}_CORRECTED", f"{last_name_column}CORRECTED_ERRORS", f"{last_name_column}_UNCORRECTED_ERRORS"]] = df.apply(
         lambda row: pd.Series(correct_names(
-            first_name=row['FIRST_NAME'],
-            last_name=row['LAST_NAME'],
+            first_name=row[first_name_column],
+            last_name=row[last_name_column],
             detected_first_name_errors=row[f"{first_name_column}_DETECTED_ERRORS"],
             detected_last_name_errors=row[f"{last_name_column}_DETECTED_ERRORS"],
         )) if (len(row[f"{first_name_column}_DETECTED_ERRORS"]) > 0 or len(row[f"{last_name_column}_DETECTED_ERRORS"]) > 0)
