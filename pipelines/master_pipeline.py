@@ -35,18 +35,45 @@ def run_full_quality_pipeline(df,
         pd.DataFrame: Updated DataFrame with additional columns for detected errors, corrections, and validation status.
     """
     df = run_name_pipeline(df, first_name_column, last_name_column)
-    print('name pipeline done')
+    print('Name pipeline done')
     
     df = run_email_pipeline(df, email_column)
-    print('email pipeline done')
+    print('Email pipeline done')
     
     df = run_address_pipeline(df, 
                               street_column, street_number_column, 
                               postal_code_column, postal_city_column)
-    print('address pipeline done')
+    print('Address pipeline done')
     
     df = run_phone_pipeline(df, phone_column)
-    print('phone pipeline done')
+    print('Phone pipeline done')
+    
+    # Step 5: Assign overall status based on individual statuses
+    def overall_status(row):
+        statuses = [
+            row[f"{first_name_column}_STATUS"],
+            row[f"{last_name_column}_STATUS"],
+            row[f"{street_column}_STATUS"],
+            row[f"{street_number_column}_STATUS"],
+            row[f"{postal_code_column}_STATUS"],
+            row[f"{postal_city_column}_STATUS"],
+            row[f"{email_column}_STATUS"],
+            row[f"{phone_column}_STATUS"]
+        ]
+        
+        if all(status == "VALID" for status in statuses):
+            return "VALID"
+        if any(status == "INVALID" for status in statuses):
+            return "INVALID"
+        if any(status == "CORRECTED" for status in statuses):
+            return "CORRECTED"
+        if any(status == "UNCORRECTED" for status in statuses):
+            return "UNCORRECTED"
+        return "PARTIALLY_VALID"
+    
+    df["OVERALL_STATUS"] = df.apply(overall_status, axis=1)
+    
+    print('Overall status assigned')
     
     return df
 
@@ -64,3 +91,13 @@ if __name__ == "__main__":
                               postal_city_column="POSTAL_CITY", 
                               email_column="EMAIL", 
                               phone_column="PHONE_NUMBER")
+    
+    # Convert lists and sets to strings before saving
+    for col in df.columns:
+        if "ERRORS" in col and df[col].dtype == "object":
+            df[col] = df[col].apply(
+                lambda x: ", ".join(sorted(x)) if isinstance(x, (set, list)) else x
+            )
+    
+    df.to_excel("src/processed_data/final_customer_data.xlsx", index=False)
+    print("Pipeline completed and saved to final_customer_data.xlsx")
