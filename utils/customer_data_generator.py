@@ -168,7 +168,7 @@ def generate_random_email(first_name, last_name):
     
     return f"{email_base}@{domain}"
 
-def generate_synthetic_customer_data(gurs_file_path, dataset_size = 10000, output_file_path = None, seed = 42):
+def generate_synthetic_customer_data(gurs_file_path, dataset_size = 10000, seed = 42):
     """
     Generate a synthetic customer dataset using GURS and SURS data.
 
@@ -178,8 +178,6 @@ def generate_synthetic_customer_data(gurs_file_path, dataset_size = 10000, outpu
         Path to the GURS address data CSV file.
     dataset_size : int
         Number of synthetic customer records to generate.
-    output_file_path : str, optional
-        File path to save the generated dataset as an Excel file.
     seed : int, default=42
         Random seed for reproducibility.
 
@@ -197,6 +195,7 @@ def generate_synthetic_customer_data(gurs_file_path, dataset_size = 10000, outpu
     all_names, all_surnames = fetch_SURS_data()
     
     
+    # Randomly sample names and surnames based on their frequencies
     random_names = np.random.choice(
         all_names["value"],
         size=dataset_size,
@@ -235,19 +234,12 @@ def generate_synthetic_customer_data(gurs_file_path, dataset_size = 10000, outpu
                     'APARTMENT_NUMBER', 'POSTAL_CODE', 'POSTAL_CITY', 'COUNTRY', 'PHONE_NUMBER', 'EMAIL']
     customer_df = customer_df[columns_order]
 
-    if output_file_path:
-        customer_df.to_excel(output_file_path, index=False)
-        print(f'Synthetic customer dataset saved to: {output_file_path}')
         
     return customer_df
 
-
-# # ============================
-# # **EXECUTION**
-# # ============================
-
-# GURS_file_path = 'src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
-# customer_df = generate_synthetic_customer_data(GURS_file_path, dataset_size=10000, seed=42)
-# # customer_df = pd.read_excel("src/processed_data/customer_data.xlsx")
-# print("Synthetic customer dataset generated")
-# customer_df.to_excel("src/processed_data/customer_data.xlsx", index=False)
+if __name__ == "__main__":
+    # Example usage
+    GURS_file_path = 'src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
+    customer_df = generate_synthetic_customer_data(GURS_file_path, dataset_size=10000, seed=42)
+    print("Synthetic customer dataset generated")
+    customer_df.to_excel("src/processed_data/customer_data.xlsx", index=False)
