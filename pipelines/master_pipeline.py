@@ -6,17 +6,6 @@ from pipelines.names_pipeline import run_name_pipeline
 from pipelines.email_pipeline import run_email_pipeline
 from pipelines.address_pipeline import run_address_pipeline
 from pipelines.phone_pipeline import run_phone_pipeline
-from utils.customer_data_generator import generate_synthetic_customer_data
-from utils.chaos_engineering import apply_errors
-
-def run_preparation_pipeline(GURS_file_path, dataset_size, seed):
-    # Create the synthetic customer data
-    df = generate_synthetic_customer_data(GURS_file_path, dataset_size, seed)
-    
-    # introduce errors into the dataset
-    df = apply_errors(df, seed)
-
-    return df
 
 def run_full_quality_pipeline(df, 
                               first_name_column, last_name_column, 
@@ -89,15 +78,9 @@ def run_full_quality_pipeline(df,
 
 if __name__ == "__main__":
     
-    path_to_gurs = 'src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
-    dataset_size = 10000
-    seed = 42
-    
-    df = run_preparation_pipeline(path_to_gurs, dataset_size, seed)
-    
     # Example usage
-    # customer_data = "src/processed_data/customer_data_with_errors.xlsx"
-    # df = pd.read_excel(customer_data)
+    customer_data = "src/processed_data/customer_data_with_errors.xlsx"
+    df = pd.read_excel(customer_data)
 
     run_full_quality_pipeline(df, 
                               first_name_column="FIRST_NAME", 
