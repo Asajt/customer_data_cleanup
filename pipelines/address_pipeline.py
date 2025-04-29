@@ -20,8 +20,9 @@ def load_gurs_data(path_to_gurs_RN_csv: str) -> pd.DataFrame:
     """
     
     # Load and prepare GURS data
+    print("Loading GURS data...")
+    
     gurs_df = pd.read_csv(path_to_gurs_RN_csv, usecols = ['ULICA_NAZIV','HS_STEVILKA','HS_DODATEK','POSTNI_OKOLIS_SIFRA','POSTNI_OKOLIS_NAZIV'])
-    print("GURS data loaded.")
     
     # Remove dvojezična imena from POSTNI_OKOLIS_NAZIV
     gurs_df['POSTNI_OKOLIS_NAZIV'] = gurs_df['POSTNI_OKOLIS_NAZIV'].str.split('-').str[0].str.strip()
@@ -34,13 +35,13 @@ def load_gurs_data(path_to_gurs_RN_csv: str) -> pd.DataFrame:
         gurs_df["POSTNI_OKOLIS_SIFRA"].fillna("").astype(str).str.strip() + " " +
         gurs_df["POSTNI_OKOLIS_NAZIV"].str.strip()
     )
-    print("GURS_FULL_ADDRESS created.")
     
     gurs_df = gurs_df[["GURS_FULL_ADDRESS"]]
     
     # Make a set of GURS_FULL_ADDRESS for faster lookup
     gurs_address_set = set(gurs_df['GURS_FULL_ADDRESS'].dropna().str.strip())
-    print("GURS_FULL_ADDRESS set created.")
+    
+    print("GURS data loaded and prepared.")
     
     return gurs_address_set
 
@@ -79,9 +80,7 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     # Apply validation
     df["FULL_ADDRESS_VALID"] = df["FULL_ADDRESS"].apply(lambda addr: validate_full_address(addr, gurs_address_set))
 
-    print('df after validation:')
-    print(df.head(5))
-    print('#' * 50)
+    print('Address validation completed.')
     
     ################################################################################
     # Step 2: Detect errors
@@ -94,9 +93,7 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
         axis=1
     )
     
-    print('df after detection:')
-    print(df.head(5))
-    print('#' * 50)
+    print('Address detection completed.')
     
     ################################################################################
     # Create columns to check if there are errors
@@ -104,10 +101,6 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     df[f'{street_number_column}_HAS_ERRORS'] = df[f"{street_number_column}_DETECTED_ERRORS"].apply(lambda x: len(x) > 0)
     df[f'{postal_code_column}_HAS_ERRORS'] = df[f"{postal_code_column}_DETECTED_ERRORS"].apply(lambda x: len(x) > 0)
     df[f'{postal_city_column}_HAS_ERRORS'] = df[f"{postal_city_column}_DETECTED_ERRORS"].apply(lambda x: len(x) > 0)
-    
-    print('df after adding detection bool:')
-    print(df.head(5))
-    print('#' * 50)
     
     ################################################################################
     # Step 3: Correct if errors detected
@@ -130,9 +123,7 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
         , axis=1
     )
     
-    print('df after correction:')
-    print(df.head(5))
-    print('#' * 50)
+    print('Address correction completed.')
     
     ################################################################################
     # Create columns to check which rows were corrected
@@ -140,10 +131,6 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     df[f"{street_number_column}_WAS_CORRECTED"] = df[f"{street_number_column}_CORRECTED"].notnull()
     df[f"{postal_code_column}_WAS_CORRECTED"] = df[f"{postal_code_column}_CORRECTED"].notnull()
     df[f"{postal_city_column}_WAS_CORRECTED"] = df[f"{postal_city_column}_CORRECTED"].notnull()
-    
-    print('df after adding correction bool:')
-    print(df.head(5))
-    print('#' * 50)
     
     ################################################################################
     # Step 4: Re-validate for corrected address
@@ -165,9 +152,7 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
         axis=1
     )
     
-    print('df after second validation:')
-    print(df.head(5))
-    print('#' * 50)
+    print('Address re-validation completed.')
     
     ################################################################################
     # Step 5: Assign status
@@ -184,6 +169,8 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     df[f"{street_number_column}_STATUS"] = df.apply(lambda row: status(row, street_number_column), axis=1)
     df[f"{postal_code_column}_STATUS"] = df.apply(lambda row: status(row, postal_code_column), axis=1)
     df[f"{postal_city_column}_STATUS"] = df.apply(lambda row: status(row, postal_city_column), axis=1)
+    
+    print('Address status assignment completed.')
     
     return df
 

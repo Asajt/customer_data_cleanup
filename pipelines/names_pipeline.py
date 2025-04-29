@@ -34,10 +34,8 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
         ),
         axis=1)
 
-    print('df after validation:')
-    print(df.head(5))
-    print('#' * 50)
-    
+    print('Name validation completed.')
+
     ################################################################################
     # Step 2: Detect name and surname errors
     df[[f"{first_name_column}_DETECTED_ERRORS", f"{last_name_column}_DETECTED_ERRORS"]] = df.apply(
@@ -45,18 +43,12 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
         axis=1
     )
     
-    print('df after detection:')
-    print(df.head(5))
-    print('#' * 50)
+    print('Name validation completed.')
     
     ################################################################################
     # Create columns to check if there are errors
     df[f'{first_name_column}_HAS_ERRORS'] = df[f"{first_name_column}_DETECTED_ERRORS"].apply(lambda x: len(x) > 0)
     df[f'{last_name_column}_HAS_ERRORS'] = df[f"{last_name_column}_DETECTED_ERRORS"].apply(lambda x: len(x) > 0)
-    
-    print('df after adding detection bool:')
-    print(df.head(5))
-    print('#' * 50)
     
     ################################################################################
     # Step 3: Correct if errors detected
@@ -72,20 +64,13 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
         , axis=1
     )
     
-    print('df after correction:')
-    print(df.head(5))
-    print('#' * 50)
+    print('Name correction completed.')
     
     ################################################################################
     # Create columns to check which rows were corrected
     df[f"{first_name_column}_WAS_CORRECTED"] = df[f"{first_name_column}_CORRECTED"].notnull()
     df[f"{last_name_column}_WAS_CORRECTED"] = df[f"{last_name_column}_CORRECTED"].notnull()
-    
-    print('df after adding correction bool:')
-    print(df.head(5))
-    print('#' * 50)
-    ################################################################################
-    
+
     ################################################################################
     # Step 4: Re-validate for corrected names
     df[f"{first_name_column}_VALID_AFTER_CORRECTION"] = df.apply(
@@ -100,10 +85,7 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
     axis=1
     )
     
-    print('df after second validation:')
-    print(df.head(5))
-    df.to_excel("src/processed_data/04_pipeline_names_5.xlsx", index=False)
-    print('#' * 50)
+    print('Name re-validation completed.')
     
     ################################################################################
     # Step 5: Assign status
@@ -118,6 +100,8 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
     
     df[f"{first_name_column}_STATUS"] = df.apply(lambda row: status(row, first_name_column), axis=1)
     df[f"{last_name_column}_STATUS"] = df.apply(lambda row: status(row, last_name_column), axis=1)
+    
+    print('Name status assignment completed.')
     
     return df
 

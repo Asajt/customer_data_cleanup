@@ -27,25 +27,17 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
     # Step 1: Validate emails
     df[f"{email_column}_VALID"] = df[email_column].apply(validate_email)
 
-    print('df after validation:')
-    print(df.head(5))
-    print('#' * 50)
+    print('Email validation completed.')
     
     ################################################################################
     # Step 2: Detect errors
     df[f"{email_column}_DETECTED_ERRORS"] = df[email_column].apply(detect_email_errors)
     
-    print('df after detection:')
-    print(df.head(5))
-    print('#' * 50)
+    print('Email detection completed.')
     
     ################################################################################
     # Create columns to check if there are errors
     df[f"{email_column}_HAS_ERRORS"] = df[f"{email_column}_DETECTED_ERRORS"].apply(lambda x: len(x) > 0)
-    
-    print('df after adding detection bool:')
-    print(df.head(5))
-    print('#' * 50)
     
     ################################################################################
     # Step 3: Correct if errors detected
@@ -58,13 +50,11 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
         , axis=1
     )
     
+    print('Email correction completed.')
+    
     ################################################################################
     # Check if the email was corrected
     df[f"{email_column}_WAS_CORRECTED"] = df[f"{email_column}_CORRECTED"].notnull()
-    
-    print('df after adding correction bool:')
-    print(df.head(5))
-    print('#' * 50)
     
     ################################################################################
     # Step 4: Re-validate for corrected emails
@@ -74,9 +64,7 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
         axis=1
     )
     
-    print('df after second validation:')
-    print(df.head(5))
-    print('#' * 50)
+    print('Email re-validation completed.')
     
     ################################################################################
     # Step 5: Assign status
@@ -90,6 +78,8 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
         return "INVALID"
     
     df[f"{email_column}_STATUS"] = df.apply(lambda row: status(row, email_column), axis=1)
+    
+    print('Email status assignment completed.')
     
     return df
 
