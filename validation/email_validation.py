@@ -1,6 +1,6 @@
 import pandas as pd
+import regex as re
 from tqdm import tqdm
-from email_validator import validate_email as email_validator, EmailNotValidError
 
 def validate_email(email) -> bool:
     """
@@ -12,13 +12,14 @@ def validate_email(email) -> bool:
     Returns:
         bool: True if the email is valid, False otherwise.
     """
-    try:
-        if not isinstance(email, str) or not email.strip():
-            return False
-        email_validator(email)
-        return True
-    except EmailNotValidError:
+
+    EMAIL_REGEX = re.compile(
+    r"^[a-zA-Z0-9._%+-]+@(?:gmail\.com|siol\.net|amis\.net|t-2\.net|email\.si|zvpl\.com|hotmail\.com|outlook\.com|yahoo\.com|guest\.arnes\.si|volja\.net|[a-zA-Z0-9-]+\.(?:si))$"
+    )
+    
+    if not isinstance(email, str) or not email.strip():
         return False
+    return bool(EMAIL_REGEX.match(email))
 
 if __name__ == "__main__":
     # Load customer data
