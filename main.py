@@ -23,6 +23,12 @@ run_full_quality_pipeline(df,
                               email_column="EMAIL", 
                               phone_column="PHONE_NUMBER")
 
+for col in df.columns:
+        if "ERRORS" in col and df[col].dtype == "object":
+            df[col] = df[col].apply(
+                lambda x: ", ".join(sorted(x)) if isinstance(x, (set, list)) else x
+            )
+
 # Save the processed data to an Excel file
 output_file_path = 'src/processed_data/final_customer_data.xlsx'
 df.to_excel(output_file_path, index=False)
