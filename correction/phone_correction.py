@@ -32,7 +32,7 @@ def split_into_set(detected_errors_column):
     else:
         return set()
 
-def correct_phone(phone, detected_phone_errors):
+def correct_phone(phone: str, detected_phone_errors: set) -> dict:
     """
     Corrects phone number based on detected errors.
 

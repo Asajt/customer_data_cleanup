@@ -6,7 +6,7 @@ from detection.phone_detection import detect_phone_errors
 from correction.phone_correction import correct_phone
 from validation.phone_validation import validate_phone
 
-def run_phone_pipeline(df: pd.DataFrame, phone_column) -> pd.DataFrame:
+def run_phone_pipeline(df: pd.DataFrame, phone_column: str) -> pd.DataFrame:
     """
     Run the phone pipeline on the given DataFrame.
 

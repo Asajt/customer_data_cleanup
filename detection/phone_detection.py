@@ -6,7 +6,7 @@ from utils.errors_utils import should_detect, load_error_config
 
 error_config = load_error_config()
 
-def detect_phone_errors(phone):
+def detect_phone_errors(phone: str) -> set:
     """Detects errors in phone numbers based on various criteria.
 
     This function checks for missing data, unnecessary spaces, invalid characters,

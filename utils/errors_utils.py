@@ -38,14 +38,14 @@ def ensure_config():
         config = load_error_config_from_excel(EXCEL_PATH)
         with open(JSON_PATH, "w", encoding="utf-8") as f:
             json.dump(config, f, indent=4, ensure_ascii=False)
-        print(f"✅ Config created at: {JSON_PATH}")
+        print(f"Config created at: {JSON_PATH}")
     else:
-        print(f"✅ Config already exists: {JSON_PATH}")
+        print(f"Config already exists: {JSON_PATH}")
 
 def load_error_config(path: str = JSON_PATH) -> dict:
     """Loads the final error config from a generated JSON file."""
     if not os.path.exists(path):
-        raise FileNotFoundError(f"❌ JSON config not found at: {path}")
+        raise FileNotFoundError(f"JSON config not found at: {path}")
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 

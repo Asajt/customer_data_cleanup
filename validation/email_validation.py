@@ -3,7 +3,7 @@ import regex as re
 
 def validate_email(email) -> bool:
     """
-    Validate an email address using the email-validator package.
+    Validate an email address against a predefined set of domains.
     
     Args:
         email (str): The email address to validate.
