@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import random
 import regex as re
 
 
@@ -24,7 +23,6 @@ def apply_errors(df, seed):
     """
     # Set random seed for reproducibility
     np.random.seed(seed)
-    random.seed(seed)
     
     df = df.astype(str)
     
@@ -44,16 +42,16 @@ def apply_errors(df, seed):
         if np.random.rand() < 0.15:
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 1101 - Missing Data
-            if random.random() < 0.05:
+            if np.random.rand() < 0.05:
                 missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
-                new_value = random.choice(missing_variants)
+                new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "1101")
 
             else:          
                 # ERROR 1102 - Unnecessary Spaces
-                if random.random() < 0.05:
-                    random_choice = random.choice(["leading", "trailing", "double"])  # Choose space type
+                if np.random.rand() < 0.05:
+                    random_choice = np.random.choice(["leading", "trailing", "double"])  # Choose space type
                     if random_choice == "leading":
                         new_value = " " + current_value  # Add 1 leading space
                     elif random_choice == "trailing":
@@ -66,7 +64,7 @@ def apply_errors(df, seed):
 
 
                 # ERROR 1103 - Invalid Characters (replace letters with numbers)
-                if random.random() < 0.02:
+                if np.random.rand() < 0.02:
                     if np.random.rand() < 0.5:
                         new_value = str(current_value).replace("a", "@").replace("o", "0").replace("e", "3").replace("i", "1")
                     else:
@@ -81,8 +79,8 @@ def apply_errors(df, seed):
                         current_value = new_value
 
                 # ERROR 1107 - Initials
-                if random.random() < 0.01:
-                    initials = ''.join([name[0].upper() + random.choice([".", ""]) for name in current_value.split()])
+                if np.random.rand() < 0.01:
+                    initials = ''.join([name[0].upper() + np.random.choice([".", ""]) for name in current_value.split()])
                     new_value = initials if len(current_value.split()) == 1 else current_value
                     if new_value != current_value:
                         log_error(df, index, "1107")
@@ -92,7 +90,7 @@ def apply_errors(df, seed):
                 name_parts = current_value.split()
                 if len(name_parts) == 2:
                     if np.random.rand() < 0.3:
-                        if random.random() < 0.5:
+                        if np.random.rand() < 0.5:
                             new_value = f"{name_parts[0][0].upper()}." + f" {name_parts[1]}"
                         else:
                             # Convert the second name to an initial
@@ -104,7 +102,7 @@ def apply_errors(df, seed):
                 
                 # ERROR 1105 - Duplicates
                 if np.random.rand() < 0.02:
-                    duplicate_type = random.choice(["full", "partial"])
+                    duplicate_type = np.random.choice(["full", "partial"])
                     if duplicate_type == "full":
                         new_value = f"{current_value} {current_value}"
                     else:
@@ -118,19 +116,19 @@ def apply_errors(df, seed):
                         current_value = new_value
                 
                 # ERROR 1104 - Formatting Issues
-                if random.random() < 0.03:
+                if np.random.rand() < 0.03:
                     if np.random.rand() < 0.5:
-                        new_value = random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
+                        new_value = np.random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
                     else:
                         # Randomly change the upper/lower case of letters
-                        new_value = ''.join(random.choice([char.upper(), char.lower()]) for char in current_value)  # FIXED
+                        new_value = ''.join(np.random.choice([char.upper(), char.lower()]) for char in current_value)  # FIXED
                     if new_value != current_value:
                         log_error(df, index, "1104")
                         current_value = new_value
                     
                 # ERROR 1106 - Two names in one field
-                if random.random() < 0.01:
-                    second_name = random.choice(["Marija", "Janez", "Ana", "Marko"])
+                if np.random.rand() < 0.01:
+                    second_name = np.random.choice(["Marija", "Janez", "Ana", "Marko"])
                     new_value = f"{current_value} in {second_name}"  # Two names in one field error
                     if new_value != current_value:
                         log_error(df, index, "1106")
@@ -138,7 +136,7 @@ def apply_errors(df, seed):
 
 
                 # ERROR 1108 - Replace š, č, ž, ć with s, c, z, c
-                if random.random() < 0.02:
+                if np.random.rand() < 0.02:
                     replacement_map = {"š": "s", "č": "c", "ž": "z", "ć": "c", "Š": "S", "Č": "C", "Ž": "Z", "Ć": "C"}
                     new_value = ''.join(replacement_map.get(char, char) for char in current_value)
                     if new_value != current_value:
@@ -155,17 +153,17 @@ def apply_errors(df, seed):
         if np.random.rand() < 0.20:  
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 1201 - Missing Data
-            if random.random() < 0.05:
+            if np.random.rand() < 0.05:
                 missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
-                new_value = random.choice(missing_variants)
+                new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "1201")
                 
             else:
 
                 # ERROR 1202 - Unnecessary Spaces
-                if random.random() < 0.04:
-                    random_choice = random.choice(["leading", "trailing", "double"])
+                if np.random.rand() < 0.04:
+                    random_choice = np.random.choice(["leading", "trailing", "double"])
                     if random_choice == "leading":
                         new_value = " " + current_value
                     elif random_choice == "trailing":
@@ -177,7 +175,7 @@ def apply_errors(df, seed):
                         current_value = new_value
 
                 # ERROR 1203 - Invalid Characters
-                if random.random() < 0.02:
+                if np.random.rand() < 0.02:
                     if np.random.rand() < 0.5:
                         new_value = str(current_value).replace("a", "@").replace("o", "0").replace("e", "3").replace("i", "1")
                     else:
@@ -193,7 +191,7 @@ def apply_errors(df, seed):
                 
                 # ERROR 1205 - Duplicates
                 if np.random.rand() < 0.01:
-                    duplicate_type = random.choice(["full", "partial"])
+                    duplicate_type = np.random.choice(["full", "partial"])
                     if duplicate_type == "full":
                         new_value = f"{current_value} {current_value}"
                     else:
@@ -207,18 +205,18 @@ def apply_errors(df, seed):
                         current_value = new_value
                         
                 # ERROR 1204 - Formatting Issues
-                if random.random() < 0.03:
+                if np.random.rand() < 0.03:
                     if np.random.rand() < 0.5:
-                        new_value = random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
+                        new_value = np.random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
                     else:
                         # Randomly change the upper/lower case of letters
-                        new_value = ''.join(random.choice([char.upper(), char.lower()]) for char in current_value)
+                        new_value = ''.join(np.random.choice([char.upper(), char.lower()]) for char in current_value)
                     if new_value != current_value:
                         log_error(df, index, "1204")
                         current_value = new_value
                     
                 # ERROR 1206 - Replace š, č, ž, ć with s, c, z, c
-                if random.random() < 0.02:
+                if np.random.rand() < 0.02:
                     replacement_map = {"š": "s", "č": "c", "ž": "z", "ć": "c", "Š": "S", "Č": "C", "Ž": "Z", "Ć": "C"}
                     new_value = ''.join(replacement_map.get(char, char) for char in current_value)
                     if new_value != current_value:
@@ -242,16 +240,16 @@ def apply_errors(df, seed):
         if np.random.rand() < 0.40:
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 2101 - Missing Data
-            if random.random() < 0.05:
+            if np.random.rand() < 0.05:
                 missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
-                new_value = random.choice(missing_variants)
+                new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "2101")
             else:
 
                 # ERROR 2102 - Unnecessary Spaces
-                if random.random() < 0.03:
-                    random_choice = random.choice(["leading", "trailing", "double"])
+                if np.random.rand() < 0.03:
+                    random_choice = np.random.choice(["leading", "trailing", "double"])
                     if random_choice == "leading":
                         new_value = " " + current_value
                     elif random_choice == "trailing":
@@ -263,13 +261,13 @@ def apply_errors(df, seed):
                         current_value = new_value
 
                 # ERROR 2103 - Invalid Characters
-                if random.random() < 0.10:
-                    if random.random() < 0.3:
+                if np.random.rand() < 0.10:
+                    if np.random.rand() < 0.3:
                         encoding_map = {"č": "/", "š": "∆", "ž": "?*"}
                         new_value = "".join(encoding_map.get(char, char) for char in current_value)
-                    elif random.random() < 0.5:
-                        if random.random() < 0.5:
-                            new_value = current_value.replace(".", ",", 1) if random.random() < 0.5 else current_value.replace(".", ",", 2) 
+                    elif np.random.rand() < 0.5:
+                        if np.random.rand() < 0.5:
+                            new_value = current_value.replace(".", ",", 1) if np.random.rand() < 0.5 else current_value.replace(".", ",", 2) 
                         else:
                             new_value = current_value.replace("@", "#")
                     if new_value != current_value:
@@ -279,14 +277,14 @@ def apply_errors(df, seed):
                 # ERROR 2104 - Formatting Issue
                 if np.random.rand() < 0.03:
                     new_value = current_value  # Start with the original value
-                    issue_type = random.choice(["missing_at", "double_dot", "missing_part"])
+                    issue_type = np.random.choice(["missing_at", "double_dot", "missing_part"])
                     if issue_type == "missing_at":
                         new_value = current_value.replace("@", "")
                     elif issue_type == "double_dot":
                         if "." in current_value.split("@")[-1]:  # Ensure there's a domain part
-                            new_value = current_value.replace(".", "..", 1) if random.random() < 0.5 else current_value.replace(".", "", 1)
+                            new_value = current_value.replace(".", "..", 1) if np.random.rand() < 0.5 else current_value.replace(".", "", 1)
                     elif issue_type == "missing_part":
-                        if random.random() < 0.5:
+                        if np.random.rand() < 0.5:
                             new_value = "@" + current_value.split("@")[-1]  # Remove username
                         else:
                             new_value = current_value.split("@")[0] + "@"  # Remove domain
@@ -296,17 +294,17 @@ def apply_errors(df, seed):
                     
                 # ERROR 2105 - Possibly Two Emails
                 if np.random.rand() < 0.01:
-                    usernames = random.choice(["tom", "majči", "novak.ana", "tclient", "admin"])
-                    extra_email = f"{usernames}{random.randint(1, 100)}@gmail.com"
+                    usernames = np.random.choice(["tom", "majči", "novak.ana", "tclient", "admin"])
+                    extra_email = f"{usernames}{np.random.randint(1, 100)}@gmail.com"
                     new_value = f"{current_value}, {extra_email}"    
                     if new_value != current_value:
                         log_error(df, index, "2105")
                         current_value = new_value
                     
                 # ERROR 2106 - Possibly Invalid Domain
-                if random.random() < 0.05:
+                if np.random.rand() < 0.05:
                     local_part = current_value.split("@")[0]
-                    new_value = f"{local_part}@{random.choice(invalid_domains)}"
+                    new_value = f"{local_part}@{np.random.choice(invalid_domains)}"
                     if new_value != current_value:
                         log_error(df, index, "2106")
                         current_value = new_value
@@ -323,17 +321,17 @@ def apply_errors(df, seed):
         if np.random.rand() < 0.40: 
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 3101 - Missing Data
-            if random.random() < 0.07:
+            if np.random.rand() < 0.07:
                 missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
-                new_value = random.choice(missing_variants)
+                new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "3101")
                 
             else:
 
                 # ERROR 3102 - Unnecessary Spaces
-                if random.random() < 0.03:
-                    random_choice = random.choice(["leading", "trailing", "double"])
+                if np.random.rand() < 0.03:
+                    random_choice = np.random.choice(["leading", "trailing", "double"])
                     if random_choice == "leading":
                         new_value = " " + current_value
                     elif random_choice == "trailing":
@@ -349,17 +347,17 @@ def apply_errors(df, seed):
                     if np.random.rand() < 0.5:
                         new_value = current_value.replace("0", "O").replace("1", "I")  # Replace digits with letters
                     else:
-                        for _ in range(random.randint(1, 2)):  # Replace 1 or 2 occurrences
-                            new_value = re.sub("0", "O", new_value, count=1) if "0" in new_value and random.random() < 0.5 else new_value
-                            new_value = re.sub("1", "I", new_value, count=1) if "1" in new_value and random.random() < 0.5 else new_value
+                        for _ in range(np.random.randint(1, 2)):  # Replace 1 or 2 occurrences
+                            new_value = re.sub("0", "O", new_value, count=1) if "0" in new_value and np.random.rand() < 0.5 else new_value
+                            new_value = re.sub("1", "I", new_value, count=1) if "1" in new_value and np.random.rand() < 0.5 else new_value
                     if new_value != current_value:
                         log_error(df, index, "3103")
                         current_value = new_value
 
                 # ERROR 3104 - Formatting Issues
                 if np.random.rand() < 0.50:
-                    if np.random.random() < 0.5:
-                        new_value = random.choice([
+                    if np.np.random.rand() < 0.5:
+                        new_value = np.random.choice([
                             current_value.replace("00386", "+386"),  
                             current_value.replace("00386", ""), 
                             current_value.replace("00386", "0"),
@@ -369,7 +367,7 @@ def apply_errors(df, seed):
                         new_value = current_value.replace("00386", "0")
                         pos1 = 3
                         pos2 = 6
-                        separator = random.choice(["-", " ", "/"])
+                        separator = np.random.choice(["-", " ", "/"])
                         new_value = new_value[:pos1] + separator + new_value[pos1:pos2] + separator + new_value[pos2:]
 
                     if new_value != current_value:
@@ -378,15 +376,15 @@ def apply_errors(df, seed):
 
                     
                 # ERROR 3105 - Too Many Digits
-                if random.random() < 0.02:
-                    new_value = current_value + str(random.randint(0, 9))  # Append a random digit
+                if np.random.rand() < 0.02:
+                    new_value = current_value + str(np.random.randint(0, 9))  # Append a random digit
                     if new_value != current_value:
                         log_error(df, index, "3105")
                         current_value = new_value
 
                 # ERROR 3106 - Too Few Digits
                 if np.random.rand() < 0.03:
-                    num_digits_to_remove = random.randint(1, 3)  # Remove 1 to 3 digits randomly
+                    num_digits_to_remove = np.random.randint(1, 3)  # Remove 1 to 3 digits randomly
                     new_value = current_value[:-num_digits_to_remove]
                     if new_value != current_value:
                         log_error(df, index, "3106")
@@ -394,7 +392,7 @@ def apply_errors(df, seed):
 
                 # ERROR 3107 - Two Phone Numbers
                 if np.random.rand() < 0.02:
-                    extra_number = f"0038631{random.randint(100000, 999999)}"
+                    extra_number = f"0038631{np.random.randint(100000, 999999)}"
                     new_value = f"{current_value}, {extra_number}"
                     if new_value != current_value:
                         log_error(df, index, "3107")
@@ -403,7 +401,7 @@ def apply_errors(df, seed):
                 # ERROR 3108 - Different country format
                 if np.random.rand() < 0.03:
                     alternative_country_codes = ["+385", "+49", "+33", "+44", "+30", "00385", "0049", "0033", "0044", "0030"]  # Croatia, Germany, France, UK, Greece
-                    new_country_code = random.choice(alternative_country_codes)
+                    new_country_code = np.random.choice(alternative_country_codes)
                     new_value = current_value.replace("00386", new_country_code)
                     if new_value != current_value:
                         log_error(df, index, "3108")
@@ -420,9 +418,9 @@ def apply_errors(df, seed):
         if np.random.rand() < 0.20:
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 4101 - Missing Data
-            if random.random() < 0.05:
+            if np.random.rand() < 0.05:
                 missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
-                new_value = random.choice(missing_variants)
+                new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "4101")
 
@@ -430,7 +428,7 @@ def apply_errors(df, seed):
                     
                 # ERROR 4102 - Unnecessary Spaces
                 if np.random.rand() < 0.05:
-                    random_choice = random.choice(["leading", "trailing", "double"])  # Choose space type
+                    random_choice = np.random.choice(["leading", "trailing", "double"])  # Choose space type
                     if random_choice == "leading":
                         new_value = " " + current_value  # Add 1 leading space
                     elif random_choice == "trailing":
@@ -445,7 +443,7 @@ def apply_errors(df, seed):
                 if np.random.rand() < 0.08:
                     invalid_chars = ["◊", "�", "ß", "ø", "ç", "@", "#", "%", "&", "*", "~", "^", "!", "?", "_", "|", "/", "\\", "="]
                     eligible_chars = ["č", "š", "ž", "ć", "Č", "Š", "Ž", "Ć"]
-                    new_value = ''.join(random.choice(invalid_chars) if char in eligible_chars else char for char in current_value)
+                    new_value = ''.join(np.random.choice(invalid_chars) if char in eligible_chars else char for char in current_value)
                     if new_value != current_value:
                         log_error(df, index, "4103")
                         current_value = new_value
@@ -460,7 +458,7 @@ def apply_errors(df, seed):
                 
                 # ERROR 4110 - Duplicates
                 if np.random.rand() < 0.01:
-                    duplicate_type = random.choice(["full", "partial"])
+                    duplicate_type = np.random.choice(["full", "partial"])
                     if duplicate_type == "full":
                         new_value = f"{current_value} {current_value}"
                     else:
@@ -474,12 +472,12 @@ def apply_errors(df, seed):
                         current_value = new_value
             
                 # ERROR 4104 - Formatting Issues
-                if random.random() < 0.03:
+                if np.random.rand() < 0.03:
                     if np.random.rand() < 0.5:
-                        new_value = random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
+                        new_value = np.random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
                     else:
                         # Randomly change the upper/lower case of letters
-                        new_value = ''.join(random.choice([char.upper(), char.lower()]) for char in current_value)
+                        new_value = ''.join(np.random.choice([char.upper(), char.lower()]) for char in current_value)
                     if new_value != current_value:
                         log_error(df, index, "4104")
                         current_value = new_value
@@ -505,8 +503,8 @@ def apply_errors(df, seed):
                 if np.random.rand() < 0.2:
                     house_number_options = [
                         str(df.at[index, "HOUSE_NUMBER"]),  # Actual house number
-                        str(random.randint(1, 999))]
-                    new_value = f"{current_value} {random.choice(house_number_options)}"
+                        str(np.random.randint(1, 999))]
+                    new_value = f"{current_value} {np.random.choice(house_number_options)}"
                     if new_value != current_value:
                         log_error(df, index, "4105")
                         current_value = new_value
@@ -518,7 +516,7 @@ def apply_errors(df, seed):
                 # ERROR 4106 - Contains Variation of BŠ
                 if np.random.rand() < 0.1:
                     terms = ("BŠ", "NH", "B$", "BS", "N.H.", "B.Š.")
-                    new_value = current_value + f" {random.choice(terms)}"
+                    new_value = current_value + f" {np.random.choice(terms)}"
                     if new_value != current_value:
                         log_error(df, index, "4106")
                         current_value = new_value
@@ -531,7 +529,7 @@ def apply_errors(df, seed):
 
                     for full, abbrs in abbreviation_map.items():
                         if full in current_value:  # If 'ulica' or 'cesta' exists
-                            chosen_abbr = random.choice(abbrs)  # Randomly select an abbreviation
+                            chosen_abbr = np.random.choice(abbrs)  # Randomly select an abbreviation
                             new_value = current_value.replace(full, chosen_abbr, 1)  # Replace first occurrence
                     if new_value != current_value:
                         log_error(df, index, "4107")
@@ -539,7 +537,7 @@ def apply_errors(df, seed):
 
                 # ERROR 4109 - Only Numbers
                 if np.random.rand() < 0.04:
-                    new_value = "".join([str(random.randint(1, 9)) for _ in range(3)])
+                    new_value = "".join([str(np.random.randint(1, 9)) for _ in range(3)])
                     if new_value != current_value:
                         log_error(df, index, "4109")
                         current_value = new_value
@@ -571,9 +569,9 @@ def apply_errors(df, seed):
             new_value = current_value  # Keep the original value until an error is applied
 
             # ERROR 4201 - Missing Data
-            if random.random() < 0.05:
+            if np.random.rand() < 0.05:
                 missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
-                new_value = random.choice(missing_variants)
+                new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "4201") 
 
@@ -581,7 +579,7 @@ def apply_errors(df, seed):
 
                 # ERROR 4202 - Unnecessary Spaces (Leading, Trailing, Double)
                 if np.random.rand() < 0.05:
-                    random_choice = random.choice(["leading", "trailing", "double"])  # Choose space type
+                    random_choice = np.random.choice(["leading", "trailing", "double"])  # Choose space type
                     if random_choice == "leading":
                         new_value = " " + current_value  # Add 1 leading space
                     elif random_choice == "trailing":
@@ -596,14 +594,14 @@ def apply_errors(df, seed):
                         
                 # ERROR 4203 - Contains Variation of BŠ & ERROR 4213 Contains BŠ as well as house number
                 if np.random.rand() < 0.08:
-                    new_value = random.choice(["BŠ", "NH", f"BŠ {current_value}", f"NH {current_value}"])
+                    new_value = np.random.choice(["BŠ", "NH", f"BŠ {current_value}", f"NH {current_value}"])
                     if new_value != current_value:
                         log_error(df, index, "4203")
                         current_value = new_value
 
                 # ERROR 4204 - No House Number
                 if np.random.rand() < 0.04:
-                    new_value = random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+                    new_value = np.random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
                     if new_value != current_value:
                         log_error(df, index, "4204")
                         current_value = new_value
@@ -616,10 +614,10 @@ def apply_errors(df, seed):
                     if match:
                         num_part, letter_part = match.groups()
                         if letter_part:  # If there is a letter, introduce a random separator
-                            separator = random.choice([" ", "-", "/"])
+                            separator = np.random.choice([" ", "-", "/"])
                             new_value = f"{num_part}{separator}{letter_part}"
                         else:  # If no letter part, introduce one and add a separator
-                            new_value = f"{num_part}{random.choice(['A', 'B'])}"
+                            new_value = f"{num_part}{np.random.choice(['A', 'B'])}"
                     if new_value != current_value:
                         log_error(df, index, "4205")
                         current_value = new_value
@@ -627,7 +625,7 @@ def apply_errors(df, seed):
                 # ERROR 4206 - Leading 0
                 if np.random.rand() < 0.05:
                     if not current_value.startswith("0"):  # Avoid adding if already has leading zero
-                        zeros_to_add = random.choice(["0", "00"])  # Randomly choose 1 or 2 zeros
+                        zeros_to_add = np.random.choice(["0", "00"])  # Randomly choose 1 or 2 zeros
                         new_value = zeros_to_add + current_value
                     if new_value != current_value:
                         log_error(df, index, "4206")
@@ -644,9 +642,9 @@ def apply_errors(df, seed):
                 roman_numerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"]
                 if any(roman in str(df.at[index, "STREET"]) for roman in roman_numerals):
                     if np.random.rand() < 0.4:
-                        roman_choice = random.choice(roman_numerals)
+                        roman_choice = np.random.choice(roman_numerals)
 
-                        if random.random() < 0.5:
+                        if np.random.rand() < 0.5:
                             new_value = f"{roman_choice} {current_value}"
                         else:
                             new_value = roman_choice
@@ -665,7 +663,7 @@ def apply_errors(df, seed):
 
                 # ERROR 4210 - More than one number present
                 if np.random.rand() < 0.01:
-                    new_value = current_value + f" {random.randint(1, 99)}"
+                    new_value = current_value + f" {np.random.randint(1, 99)}"
                     if new_value != current_value:
                         log_error(df, index, "4210")
                         current_value = new_value
@@ -673,14 +671,14 @@ def apply_errors(df, seed):
                 # ERROR 4211 - Does not start with digit
                 if np.random.rand() < 0.01:
                     prefixes = ["St.", "HS", "HŠ", "A", "B", "H", "št.", "Stanovanje", "st."]
-                    new_value = random.choice(prefixes) + " " + current_value
+                    new_value = np.random.choice(prefixes) + " " + current_value
                     if new_value != current_value:
                         log_error(df, index, "4211")
                         current_value = new_value
 
                 # ERROR 4212 - More than 4 digits
                 if np.random.rand() < 0.01 and current_value.isdigit() and 2 <= len(current_value) <= 3:
-                    new_value = current_value + str(random.randint(10, 99)) 
+                    new_value = current_value + str(np.random.randint(10, 99)) 
                     if new_value != current_value:
                         log_error(df, index, "4212")
                         current_value = new_value
@@ -698,9 +696,9 @@ def apply_errors(df, seed):
             new_value = current_value  # Keep the original value until an error is applied
             
             # ERROR 4301 - Missing Data
-            if random.random() < 0.05:
+            if np.random.rand() < 0.05:
                 missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
-                new_value = random.choice(missing_variants)
+                new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "4301")
 
@@ -708,7 +706,7 @@ def apply_errors(df, seed):
                     
                 # ERROR 4302 - Unnecessary Spaces (Leading, Trailing, Double)
                 if np.random.rand() < 0.05:
-                    random_choice = random.choice(["leading", "trailing", "double"])  # Choose space type
+                    random_choice = np.random.choice(["leading", "trailing", "double"])  # Choose space type
                     if random_choice == "leading":
                         new_value = " " + current_value  # Add 1 leading space
                     elif random_choice == "trailing":
@@ -721,21 +719,21 @@ def apply_errors(df, seed):
                     
                 # ERROR 4303 - Invalid Characters 
                 if np.random.rand() < 0.01:
-                    new_value = current_value.replace("0", random.choice(["-", "/", "*", "X"]), 1)
+                    new_value = current_value.replace("0", np.random.choice(["-", "/", "*", "X"]), 1)
                     if new_value != current_value:
                         log_error(df, index, "4303")
                         current_value = new_value
 
                 # ERROR 4304 - Less than 4 Digits (1%)
                 if np.random.rand() < 0.01:
-                    new_value = current_value[:random.randint(1, 3)]  # Trim to <4 digits
+                    new_value = current_value[:np.random.randint(1, 3)]  # Trim to <4 digits
                     if new_value != current_value:
                         log_error(df, index, "4304")
                         current_value = new_value
 
                 # ERROR 4305 - More than 4 Digits (1%)
                 if np.random.rand() < 0.01:
-                    new_value = current_value + str(random.randint(0, 9))  # Extend with extra digit
+                    new_value = current_value + str(np.random.randint(0, 9))  # Extend with extra digit
                     if new_value != current_value:
                         log_error(df, index, "4305")
                         current_value = new_value
@@ -743,12 +741,12 @@ def apply_errors(df, seed):
                 # ERROR 4306 - Contains Letters 
                 if np.random.rand() < 0.01:
                     postal_city = df.at[index, "POSTAL_CITY"] if "POSTAL_CITY" in df.columns else "Ljubljana"
-                    if random.random() < 0.9:
+                    if np.random.rand() < 0.9:
                         new_value = f"{current_value} {postal_city}"
-                    elif random.random() < 0.2:
-                        new_value = f"{random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ')}{current_value}"
+                    elif np.random.rand() < 0.2:
+                        new_value = f"{np.random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ')}{current_value}"
                     # Fallback if postal_city is missing or empty
-                    elif random.random() < 0.3:
+                    elif np.random.rand() < 0.3:
                         new_value = f"Ljubljana {current_value}"
                     if new_value != current_value:
                         log_error(df, index, "4306")
@@ -758,7 +756,7 @@ def apply_errors(df, seed):
                 
                 # ERROR 4307 - Invalid Value
                 if np.random.rand() < 0.02:
-                    new_value = random.choice(["ABC", "0000", "99999"])
+                    new_value = np.random.choice(["ABC", "0000", "99999"])
                     if new_value != current_value:
                         log_error(df, index, "4307")
                         current_value = new_value
@@ -775,9 +773,9 @@ def apply_errors(df, seed):
         if np.random.rand() < 0.08:
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 4401 - Missing Data
-            if random.random() < 0.05:
+            if np.random.rand() < 0.05:
                 missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
-                new_value = random.choice(missing_variants)
+                new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "4401")
 
@@ -785,7 +783,7 @@ def apply_errors(df, seed):
                     
                 # ERROR 4402 - Unnecessary Spaces (Leading, Trailing, Double)
                 if np.random.rand() < 0.05:
-                    random_choice = random.choice(["leading", "trailing", "double"])  # Choose space type
+                    random_choice = np.random.choice(["leading", "trailing", "double"])  # Choose space type
                     if random_choice == "leading":
                         new_value = " " + current_value  # Add 1 leading space
                     elif random_choice == "trailing":
@@ -801,14 +799,14 @@ def apply_errors(df, seed):
                 if np.random.rand() < 0.04:
                     invalid_chars = ["◊", "�", "ß", "ø", "ç", "@", "#", "%", "&", "*", "~", "^", "!", "?", "_", "|", "/", "\\", "="]
                     eligible_chars = ["č", "š", "ž", "ć", "Č", "Š", "Ž", "Ć"]
-                    new_value = ''.join(random.choice(invalid_chars) if char in eligible_chars else char for char in current_value)
+                    new_value = ''.join(np.random.choice(invalid_chars) if char in eligible_chars else char for char in current_value)
                     if new_value != current_value:
                         log_error(df, index, "4403") 
                         current_value = new_value
 
                 # ERROR 4407 - Duplicates
                 if np.random.rand() < 0.02:
-                    duplicate_type = random.choice(["full", "partial"])
+                    duplicate_type = np.random.choice(["full", "partial"])
                     new_value = current_value 
                     if duplicate_type == "full":
                         new_value = f"{current_value} {current_value}"
@@ -823,12 +821,12 @@ def apply_errors(df, seed):
                         current_value = new_value
 
                 # ERROR 4404 - Formatting Issues
-                if random.random() < 0.03:
+                if np.random.rand() < 0.03:
                     if np.random.rand() < 0.5:
-                        new_value = random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
+                        new_value = np.random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
                     else:
                         # Randomly change the upper/lower case of letters
-                        new_value = ''.join(random.choice([char.upper(), char.lower()]) for char in current_value)
+                        new_value = ''.join(np.random.choice([char.upper(), char.lower()]) for char in current_value)
                     if new_value != current_value:
                         log_error(df, index, "4404")
                         current_value = new_value
@@ -856,10 +854,10 @@ def apply_errors(df, seed):
                     'Postojna': 'PO',
                     'Slovenj Gradec': 'SG'
                 }
-                if random.random() < 0.07:  # 7% chance to apply
+                if np.random.rand() < 0.07:  # 7% chance to apply
                     if current_value in city_abbreviations:
                         abbr = city_abbreviations[current_value]
-                        use_dot = random.random() < 0.5  # 50% chance to add a dot
+                        use_dot = np.random.rand() < 0.5  # 50% chance to add a dot
                         new_value = f"{abbr}." if use_dot else abbr
                         if new_value != current_value:
                             log_error(df, index, "4406")

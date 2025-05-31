@@ -2,7 +2,6 @@ import pandas as pd
 import requests
 import numpy as np
 import unidecode
-import random 
 
 def fetch_GURS_data(file_path):
     """
@@ -132,7 +131,7 @@ def generate_slo_phone_number():
     
     return phone_number
 
-def generate_random_email(first_name, last_name):
+def generate_random_email(first_name, last_name, seed=42):
     """
     Generate a realistic random email based on the given first and last names.
 
@@ -148,6 +147,9 @@ def generate_random_email(first_name, last_name):
     str
         A randomly generated email address.
     """
+    
+    # Set random seed for reproducibility
+    np.random.seed(seed)
     
     domains = ['gmail.com', 'hotmail.com', 'yahoo.com', 'icloud.com', 'siol.net', 't-2.net', 'amis.net', 'guest.arnes.net']
     domain_weights = [0.4, 0.2, 0.2, 0.1, 0.05, 0.025, 0.015, 0.01]  # Weights for each domain
@@ -189,7 +191,6 @@ def generate_synthetic_customer_data(gurs_file_path, dataset_size = 10000, seed 
     
     # Set random seed for reproducibility
     np.random.seed(seed)
-    random.seed(seed)
 
     addresses = fetch_GURS_data(gurs_file_path)
     all_names, all_surnames = fetch_SURS_data()
