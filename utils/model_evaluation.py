@@ -1,46 +1,77 @@
 import pandas as pd
 
 # Load the dataset
-data = pd.read_excel('/mnt/data/final_customer_data.xlsx')
+data = pd.read_excel('./src/processed_data/final_customer_data.xlsx')
 
-# Helper to parse error strings into sets
+
+
+# --- Helpers ---
 def parse_errors(error_str):
-    if pd.isna(error_str):
+    if pd.isna(error_str) or str(error_str).strip() in ["set()", "[]", "{}"]:
         return set()
-    return set(str(error_str).replace(' ', '').split(','))
+    error_str = str(error_str).strip()
+    if error_str.startswith("{") or error_str.startswith("["):
+        error_str = error_str.strip("{}[]").replace("'", "")
+    return set(item.strip() for item in error_str.split(",") if item.strip())
 
-# Prepare columns
+# Parse sets
 data['INTRODUCED_ERRORS_SET'] = data['INTRODUCED_ERRORS'].apply(parse_errors)
-data['DETECTED_ERRORS_SET'] = data['PHONE_NUMBER_DETECTED_ERRORS'].apply(parse_errors)  # adjust if needed
 
-# Calculate TP, FP, FN
-def calculate_detection_metrics(row):
-    introduced = row['INTRODUCED_ERRORS_SET']
-    detected = row['DETECTED_ERRORS_SET']
-    tp = len(introduced & detected)
-    fp = len(detected - introduced)
-    fn = len(introduced - detected)
-    return pd.Series({'TP': tp, 'FP': fp, 'FN': fn})
+# Relevant columns
+detected_cols = [col for col in data.columns if col.endswith('_DETECTED_ERRORS')]
+corrected_cols = [col for col in data.columns if col.endswith('_CORRECTED_ERRORS')]
 
-metrics = data.apply(calculate_detection_metrics, axis=1)
+# Combine detected and corrected error sets
+def combine_errors(row, columns):
+    combined = set()
+    for col in columns:
+        combined |= parse_errors(row[col])
+    return combined
 
-# Summarize detection metrics
-TP_total = metrics['TP'].sum()
-FP_total = metrics['FP'].sum()
-FN_total = metrics['FN'].sum()
+data['ALL_DETECTED_ERRORS'] = data.apply(lambda row: combine_errors(row, detected_cols), axis=1)
+data['ALL_CORRECTED_ERRORS'] = data.apply(lambda row: combine_errors(row, corrected_cols), axis=1)
 
-precision = TP_total / (TP_total + FP_total) if (TP_total + FP_total) > 0 else 0
-recall = TP_total / (TP_total + FN_total) if (TP_total + FN_total) > 0 else 0
-f1_score = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+# Compute TP, FP, FN from actual set comparison
+def evaluate(actual, predicted):
+    tp = len(actual & predicted)           # Correctly found errors
+    fp = len(predicted - actual)           # Incorrectly flagged/corrected
+    fn = len(actual - predicted)           # Missed errors
+    return tp, fp, fn
 
-print("=== Error Detection Evaluation ===")
-print(f"Precision: {precision:.3f}")
-print(f"Recall: {recall:.3f}")
-print(f"F1 Score: {f1_score:.3f}")
+# Detection evaluation
+det_results = data.apply(lambda row: evaluate(row['INTRODUCED_ERRORS_SET'], row['ALL_DETECTED_ERRORS']), axis=1)
+det_df = pd.DataFrame(det_results.tolist(), columns=['TP', 'FP', 'FN'])
 
-# Overall record validation evaluation
-expected_status = data['INTRODUCED_ERRORS_SET'].apply(lambda x: 'VALID' if len(x) == 0 else 'INVALID')
-overall_accuracy = (data['OVERALL_STATUS'] == expected_status).mean()
+# Correction evaluation
+cor_results = data.apply(lambda row: evaluate(row['INTRODUCED_ERRORS_SET'], row['ALL_CORRECTED_ERRORS']), axis=1)
+cor_df = pd.DataFrame(cor_results.tolist(), columns=['TP', 'FP', 'FN'])
 
-print("\n=== Overall Record Status Evaluation ===")
-print(f"Overall Status Accuracy: {overall_accuracy:.3f}")
+# Metric summarization
+def summarize(df):
+    TP, FP, FN = df[['TP', 'FP', 'FN']].sum()
+    precision = TP / (TP + FP) if (TP + FP) else 0
+    recall = TP / (TP + FN) if (TP + FN) else 0
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0
+    return precision, recall, f1
+
+det_precision, det_recall, det_f1 = summarize(det_df)
+cor_precision, cor_recall, cor_f1 = summarize(cor_df)
+
+# Output results
+print("=== Detection Evaluation ===")
+print(f"Precision: {det_precision:.3f}")
+print(f"Recall:    {det_recall:.3f}")
+print(f"F1 Score:  {det_f1:.3f}")
+
+print("\n=== Correction Evaluation ===")
+print(f"Precision: {cor_precision:.3f}")
+print(f"Recall:    {cor_recall:.3f}")
+print(f"F1 Score:  {cor_f1:.3f}")
+
+# Optional: Overall status accuracy
+expected_status = data['INTRODUCED_ERRORS_SET'].apply(lambda x: 'VALID' if not x else 'INVALID')
+actual_status = data['OVERALL_STATUS'].replace('PARTIALLY_VALID', 'INVALID')
+accuracy = (expected_status == actual_status).mean()
+
+print("\n=== Overall Status Accuracy ===")
+print(f"Accuracy: {accuracy:.3f}")
