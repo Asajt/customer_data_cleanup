@@ -52,7 +52,7 @@ def detect_name_errors(name, surname):
         
             # 1103 Check for invalid characters
             skip_if_condition = not '1107' in name_errors
-            rule_condition = (not re.search(r'^[a-ž\s]+$', name, re.IGNORECASE))
+            rule_condition = (not re.search(r'^[a-zčćšžđ\s]+$', name, re.IGNORECASE))
             if should_detect('1103', error_config):
                 if skip_if_condition:
                     if rule_condition:
@@ -81,7 +81,7 @@ def detect_name_errors(name, surname):
                         name_errors.add('1105')
                         
             # 1104 Check for formatting issues
-            skip_if_condition = not '1106' in name_errors
+            skip_if_condition = not (any (code in name_errors for code in ["1106", "1103"]))
             cleaned_name = re.sub(r"[^a-zA-ZčćšžđČĆŠŽĐ\s]", "", name.strip(), flags=re.IGNORECASE)
             rule_condition = (not cleaned_name.istitle())
             if should_detect('1104', error_config):
@@ -104,18 +104,19 @@ def detect_name_errors(name, surname):
                 if rule_condition:
                     surname_errors.add('1202')
         
+            # 1203 Check for invalid characters
+            rule_condition = (not re.search(r'^[a-zčćšžđ\s]+$', surname, re.IGNORECASE))
+            if should_detect('1203', error_config):
+                if rule_condition:
+                    surname_errors.add('1203')
+        
             # 1204 Formatting Issue
             cleaned_surname = re.sub(r"[^a-zA-ZčćšžđČĆŠŽĐ\s]", "", surname.strip(), flags=re.IGNORECASE)
+            skip_if_condition = not '1203' in surname_errors
             rule_condition = (not cleaned_surname.istitle())
             if should_detect('1204', error_config):
                 if rule_condition:
                     surname_errors.add('1204')
-            
-            # 1203 Check for invalid characters
-            rule_condition = (not re.search(r'^[a-ž\s]+$', surname, re.IGNORECASE))
-            if should_detect('1203', error_config):
-                if rule_condition:
-                    surname_errors.add('1203')
             
             # 1205 Duplicates    
             surnames = surname.split()
