@@ -81,3 +81,37 @@ def test_surname_formatting(surname):
 def test_surname_duplicates():
     errors = get_surname_errors(surname="Novak Novak")
     assert "1205" in errors
+
+
+'''
+
+################# 1104
+# 1104 Check for formatting issues
+name = 'M0jc@'
+name = 'EL1Z@B3T@'
+name = 'Sn3ž@n@'
+name = 'D1mch3 M0jc'
+
+cleaned_name = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", "", name.strip(), flags=re.IGNORECASE)
+rule_condition = (not cleaned_name.istitle())
+
+################# 1107
+
+name = 'O. Marija'
+
+# 1107 Initials present
+# rule_condition = any(re.fullmatch(r"[A-ZČĆŠŽ]{1}\.?", word) for word in name.split())
+rule_condition = any(re.fullmatch(r"[A-ZČĆŠŽ]{1}\.?", word.strip()) for word in name.strip().split())
+
+################# 110 duplicates
+name = 'Marko in Marko'
+
+names = name.split()
+counts = {}
+for i in names:
+    if i not in counts:
+        counts[i] = 0
+    counts[i] += 1
+rule_condition = (any(count > 1 for count in counts.values()))
+
+'''
