@@ -43,7 +43,7 @@ def apply_errors(df, seed):
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 1101 - Missing Data
             if np.random.rand() < 0.05:
-                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                missing_variants = [None, "", "/", "//", "-", ".", "x"]
                 new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "1101")
@@ -154,7 +154,7 @@ def apply_errors(df, seed):
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 1201 - Missing Data
             if np.random.rand() < 0.05:
-                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                missing_variants = [None, "", "/", "//", "-", ".", "x"]
                 new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "1201")
@@ -241,7 +241,7 @@ def apply_errors(df, seed):
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 2101 - Missing Data
             if np.random.rand() < 0.05:
-                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                missing_variants = [None, "", "/", "//", "-", ".", "x"]
                 new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "2101")
@@ -322,7 +322,7 @@ def apply_errors(df, seed):
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 3101 - Missing Data
             if np.random.rand() < 0.07:
-                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                missing_variants = [None, "", "/", "//", "-", ".", "x"]
                 new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "3101")
@@ -356,7 +356,7 @@ def apply_errors(df, seed):
 
                 # ERROR 3104 - Formatting Issues
                 if np.random.rand() < 0.50:
-                    if np.np.random.rand() < 0.5:
+                    if np.random.rand() < 0.5:
                         new_value = np.random.choice([
                             current_value.replace("00386", "+386"),  
                             current_value.replace("00386", ""), 
@@ -419,7 +419,7 @@ def apply_errors(df, seed):
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 4101 - Missing Data
             if np.random.rand() < 0.05:
-                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                missing_variants = [None, "", "/", "//", "-", ".", "x"]
                 new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "4101")
@@ -570,7 +570,7 @@ def apply_errors(df, seed):
 
             # ERROR 4201 - Missing Data
             if np.random.rand() < 0.05:
-                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                missing_variants = [None, "", "/", "//", "-", ".", "x"]
                 new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "4201") 
@@ -601,7 +601,7 @@ def apply_errors(df, seed):
 
                 # ERROR 4204 - No House Number
                 if np.random.rand() < 0.04:
-                    new_value = np.random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+                    new_value = np.random.choice(list("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
                     if new_value != current_value:
                         log_error(df, index, "4204")
                         current_value = new_value
@@ -697,7 +697,7 @@ def apply_errors(df, seed):
             
             # ERROR 4301 - Missing Data
             if np.random.rand() < 0.05:
-                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                missing_variants = [None, "", "/", "//", "-", ".", "x"]
                 new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "4301")
@@ -744,7 +744,7 @@ def apply_errors(df, seed):
                     if np.random.rand() < 0.9:
                         new_value = f"{current_value} {postal_city}"
                     elif np.random.rand() < 0.2:
-                        new_value = f"{np.random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ')}{current_value}"
+                        new_value = f"{np.random.choice(list('ABCDEFGHIJKLMNOPQRSTUVWXYZ'))}{current_value}"
                     # Fallback if postal_city is missing or empty
                     elif np.random.rand() < 0.3:
                         new_value = f"Ljubljana {current_value}"
@@ -774,7 +774,7 @@ def apply_errors(df, seed):
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 4401 - Missing Data
             if np.random.rand() < 0.05:
-                missing_variants = [np.nan, "", "/", "//", "-", ".", "x"]
+                missing_variants = [None, "", "/", "//", "-", ".", "x"]
                 new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "4401")

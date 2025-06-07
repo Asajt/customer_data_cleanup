@@ -1,3 +1,4 @@
+import pandas as pd
 from pipelines.master_pipeline import run_full_quality_pipeline
 from utils.customer_data_generator import generate_synthetic_customer_data
 from utils.chaos_engineering import apply_errors
@@ -29,7 +30,19 @@ for col in df.columns:
                 lambda x: ", ".join(sorted(x)) if isinstance(x, (set, list)) else x
             )
 
-# Save the processed data to an Excel file
-output_file_path = 'src/processed_data/final_customer_data.xlsx'
-df.to_excel(output_file_path, index=False)
-print(f"Processed data saved to {output_file_path}")
+# Split the DataFrame into parts based on column prefixes
+names_df = df[["CUSTOMER_ID", "INTRODUCED_ERRORS"] + [col for col in df.columns if col.startswith(("FIRST_NAME", "LAST_NAME"))]]
+address_df = df[["CUSTOMER_ID", "INTRODUCED_ERRORS"] + [col for col in df.columns if col.startswith(("STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY"))]]
+email_df = df[["CUSTOMER_ID", "INTRODUCED_ERRORS"] + [col for col in df.columns if col.startswith("EMAIL")]]
+phone_df = df[["CUSTOMER_ID", "INTRODUCED_ERRORS"] + [col for col in df.columns if col.startswith("PHONE_NUMBER")]]
+
+# create a excel writer object
+with pd.ExcelWriter('src/processed_data/final_customer_data2.xlsx') as writer:
+    names_df.to_excel(  writer, sheet_name="Names", index=False)
+    address_df.to_excel(writer, sheet_name="Address", index=False)
+    email_df.to_excel(  writer, sheet_name="Email", index=False)
+    phone_df.to_excel(  writer, sheet_name="Phone", index=False)
+
+df.to_excel('src/processed_data/final_customer_data.xlsx', index=False)
+
+print(f"Processed data saved")
