@@ -1,82 +1,81 @@
 import pytest
-import pandas as pd
 from detection.address_detection import detect_address_errors
 
-@pytest.fixture
-def sample_data():
-    """Create test cases where each row corresponds to a specific error code."""
-    return pd.DataFrame({
-        "STREET": ["", "  Main St  ", "123Main", "BŠ Road", "Valid Street"],
-        "HOUSE_NUMBER": ["", "123", "BŠ", " 001", "A12"],
-        "POSTAL_CODE": ["", "ABCDE", "123", "99999", "1000"],
-        "POSTAL_CITY": ["", "Los Angeles ", "Paris123", "New York", "Valid City"]
-    })
+# === HELPERS ===
+def extract_street_errors(street, number="", zip="", city=""):
+    return detect_address_errors(street, number, zip, city)[0]
 
-def test_error_101_missing_street(sample_data):
-    """Test if error '101' is detected for missing street"""
-    df = detect_address_errors(sample_data)
-    assert "101" in df["DETECTED_STREET_ERRORS"][0]  # No information given
+def extract_number_errors(street="", number="", zip="", city=""):
+    return detect_address_errors(street, number, zip, city)[1]
 
-def test_error_102_extra_spaces(sample_data):
-    """Test if error '102' is detected for unnecessary spaces"""
-    df = detect_address_errors(sample_data)
-    assert "102" in df["DETECTED_STREET_ERRORS"][1]  # Leading/trailing spaces
+def extract_zipcode_errors(street="", number="", zip="", city=""):
+    return detect_address_errors(street, number, zip, city)[2]
 
-def test_error_110_street_starts_with_number(sample_data):
-    """Test if error '110' is detected for streets that start with a digit"""
-    df = detect_address_errors(sample_data)
-    assert "110" in df["DETECTED_STREET_ERRORS"][2]  # Starts with a digit
+def extract_city_errors(street="", number="", zip="", city=""):
+    return detect_address_errors(street, number, zip, city)[3]
 
-def test_error_103_contains_BŠ(sample_data):
-    """Test if error '103' is detected for 'BŠ' in street"""
-    df = detect_address_errors(sample_data)
-    assert "103" in df["DETECTED_STREET_ERRORS"][3]  # Contains 'BŠ'
+# === STREET TESTS ===
 
-def test_error_201_missing_house_number(sample_data):
-    """Test if error '201' is detected for missing house number"""
-    df = detect_address_errors(sample_data)
-    assert "201" in df["DETECTED_HOUSE_NUMBER_ERRORS"][0]  # No house number
+# 4103: Invalid characters in street
+@pytest.mark.parametrize("street", ["x", "!!", ".", "//"])
+def test_invalid_street_format(street):
+    errors = extract_street_errors(street)
+    assert "4103" in errors
 
-def test_error_206_leading_zero_house_number(sample_data):
-    """Test if error '206' is detected for house number with leading zero"""
-    df = detect_address_errors(sample_data)
-    assert "206" in df["DETECTED_HOUSE_NUMBER_ERRORS"][3]  # Leading zero
+# 4106: Street contains house number patterns
+@pytest.mark.parametrize("street", [
+    "Ulica  PRVOBORCEV N.H.",
+    "Sitarjevška cesta B.Š.",
+    "Pot k čuvajnici B.S.",
+])
+def test_house_number_patterns_in_street(street):
+    errors = extract_street_errors(street)
+    assert "4106" in errors
 
-def test_error_301_missing_postal_code(sample_data):
-    """Test if error '301' is detected for missing postal code"""
-    df = detect_address_errors(sample_data)
-    assert "301" in df["DETECTED_POSTAL_CODE_ERRORS"][0]  # No postal code
+# 4107: Invalid abbreviations
+@pytest.mark.parametrize("street", [
+    "Šaleška ce. B$",
+    "Ulica I.brigade VDV B.S.",
+])
+def test_invalid_street_abbreviations(street):
+    errors = extract_street_errors(street)
+    assert "4107" in errors
 
-def test_error_303_invalid_postal_code_characters(sample_data):
-    """Test if error '303' is detected for postal codes with letters"""
-    df = detect_address_errors(sample_data)
-    assert "303" in df["DETECTED_POSTAL_CODE_ERRORS"][1]  # Contains letters
+# 4101: Missing or very short street
+def test_street_missing_or_too_short():
+    assert "4101" in extract_street_errors("")
+    assert "4101" in extract_street_errors("A")
 
-def test_error_305_less_than_4_digits_postal_code(sample_data):
-    """Test if error '305' is detected for postal codes with less than 4 digits"""
-    df = detect_address_errors(sample_data)
-    assert "305" in df["DETECTED_POSTAL_CODE_ERRORS"][2]  # Less than 4 digits
+# 4104: Improper formatting (casing)
+def test_street_formatting_casing():
+    assert "4104" in extract_street_errors("pOd HruseVCO")
 
-def test_error_401_missing_city(sample_data):
-    """Test if error '401' is detected for missing city"""
-    df = detect_address_errors(sample_data)
-    assert "401" in df["DETECTED_CITY_ERRORS"][0]  # No city information
+# === STREET NUMBER TESTS ===
 
-def test_error_403_city_contains_digits(sample_data):
-    """Test if error '403' is detected for city names with digits"""
-    df = detect_address_errors(sample_data)
-    assert "403" in df["DETECTED_CITY_ERRORS"][2]  # Contains numbers
+# 4201: Missing street number
+def test_street_number_missing():
+    assert "4201" in extract_number_errors(number="")
 
-######### moji testi ##########
+# 4211: Street number does not start with digit
+def test_street_number_non_digit_start():
+    assert "4211" in extract_number_errors(number="HŠ 5")
 
-import re 
+# === ZIP CODE TESTS ===
 
-hn_patterns = ['BŠ', 'B.Š.', 'B. ŠT.', 'B.ŠT.', 'B$', 'BREZ ŠT.', 'BS', 'B.S.', 'NH', 'N.H.', 'BH', 'B.H.']
+# 4303: Invalid characters in ZIP
+def test_zipcode_invalid_chars():
+    assert "4303" in extract_zipcode_errors(zip="abs")
 
-street = 'Barletova ce.  B$'
-# 4106 Contains variation of BŠ
-rule_condition = any(re.search(re.escape(pattern), street, re.IGNORECASE) for pattern in hn_patterns)
-if rule_condition:
-    print("error")
-else:
-    print("ok")
+# 4304: ZIP too short
+def test_zipcode_too_short():
+    assert "4304" in extract_zipcode_errors(zip="123")
+
+# === CITY TESTS ===
+
+# 4405: City contains digits
+def test_city_with_digit():
+    assert "4405" in extract_city_errors(city="Ljubljana1")
+
+# 4401: Missing city
+def test_city_missing():
+    assert "4401" in extract_city_errors(city="")
