@@ -357,9 +357,16 @@ def detect_address_errors(street, street_number, zipcode, city):
                     if rule_condition:
                         city_errors.add('4403')  
             
+            # 4406 Check for invalid abbreviations
+            rule_condition = re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_city) + r')\.)\w+\.', city, flags=re.IGNORECASE)
+            if should_detect('4406', error_config):
+                if rule_condition:
+                    city_errors.add('4406') 
+                    
             # 4404 formatting issues
             cleaned_city = re.sub(r"[^a-zA-ZčćšžČĆŠŽ\s]", " ", city.strip(), flags=re.IGNORECASE)
             words = cleaned_city.strip().split()
+            skip_if_condition = not '4406' in city_errors
             rule_condition = bool(words) and ( # this ensures that if the string must containt at least one lettter to be evaluated 
                 not words[0].istitle() or #the frist word has to be in title case
                 any(not (word.islower() or word.istitle()) for word in words[1:]) # all other words can either be in title case or all lower case
@@ -367,12 +374,6 @@ def detect_address_errors(street, street_number, zipcode, city):
             if should_detect('4404', error_config):
                 if rule_condition:
                     city_errors.add('4404')
-            
-            # 4406 Check for invalid abbreviations
-            rule_condition = re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_city) + r')\.)\w+\.', city, flags=re.IGNORECASE)
-            if should_detect('4406', error_config):
-                if rule_condition:
-                    city_errors.add('4406') 
                 
             # 4407 Check for (consecutive) duplicates
             if city:
