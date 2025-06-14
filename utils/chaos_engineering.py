@@ -457,20 +457,21 @@ def apply_errors(df, seed):
                             current_value = new_value
                 
                 # ERROR 4110 - Duplicates
-                if np.random.rand() < 0.01:
-                    duplicate_type = np.random.choice(["full", "partial"])
-                    if duplicate_type == "full":
-                        new_value = f"{current_value} {current_value}"
-                    else:
-                        words = current_value.split()
-                        if len(words) > 1:
-                            new_value = " ".join(words + [words[-1]])
-                        else:
+                if "4102" not in df.at[index, "INTRODUCED_ERRORS"]:
+                    if np.random.rand() < 0.01:
+                        duplicate_type = np.random.choice(["full", "partial"])
+                        if duplicate_type == "full":
                             new_value = f"{current_value} {current_value}"
-                    if new_value != current_value:
-                        log_error(df, index, "4110")
-                        current_value = new_value
-            
+                        else:
+                            words = current_value.split()
+                            if len(words) > 1:
+                                new_value = " ".join(words + [words[-1]])
+                            else:
+                                new_value = f"{current_value} {current_value}"
+                        if new_value != current_value:
+                            log_error(df, index, "4110")
+                            current_value = new_value
+                
                 # ERROR 4104 - Formatting Issues
                 if np.random.rand() < 0.03:
                     if np.random.rand() < 0.5:
@@ -536,12 +537,12 @@ def apply_errors(df, seed):
                         current_value = new_value
 
                 # ERROR 4109 - Only Numbers
-                if np.random.rand() < 0.04:
-                    if "4102" not in df.at[index, "INTRODUCED_ERRORS"]:
-                        new_value = "".join([str(np.random.randint(1, 9)) for _ in range(3)])
-                        if new_value != current_value:
-                            log_error(df, index, "4109")
-                            current_value = new_value
+                if "4102" not in df.at[index, "INTRODUCED_ERRORS"]:
+                    if np.random.rand() < 0.04:
+                            new_value = "".join([str(np.random.randint(1, 9)) for _ in range(3)])
+                            if new_value != current_value:
+                                log_error(df, index, "4109")
+                                current_value = new_value
 
                 # ERROR 4113 - Invalid Digit in Street
                 if re.search(r'\d+\.', current_value):
