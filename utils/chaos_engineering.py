@@ -634,13 +634,21 @@ def apply_errors(df, seed):
                     # ERROR 4203 - Contains Variation of BŠ & ERROR 4213 Contains BŠ as well as house number
                     if "4202" not in df.at[index, "INTRODUCED_ERRORS"]:
                         if np.random.rand() < 0.08:
-                            new_value = np.random.choice(["BŠ", "NH", f"BŠ {current_value}", f"NH {current_value}"])
+                            new_value = np.random.choice(["BŠ", "NH"])
                             if new_value != current_value:
                                 log_error(df, index, "4203")
                                 current_value = new_value
+                                
+                    # ERROR 4203 - Contains Variation of BŠ & ERROR 4213 Contains BŠ as well as house number
+                    if "4202" not in df.at[index, "INTRODUCED_ERRORS"]:
+                        if np.random.rand() < 0.08:
+                            new_value = np.random.choice([f"BŠ {current_value}", f"NH {current_value}"])
+                            if new_value != current_value:
+                                log_error(df, index, "4213")
+                                current_value = new_value
 
                     # ERROR 4204 - No House Number
-                    if "4202" not in df.at[index, "INTRODUCED_ERRORS"]:
+                    if not any(e in df.at[index, "INTRODUCED_ERRORS"] for e in ["4202", "4203", "4213"]):
                         if np.random.rand() < 0.04:
                             new_value = np.random.choice(list("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
                             if new_value != current_value:
@@ -672,28 +680,32 @@ def apply_errors(df, seed):
                             log_error(df, index, "4206")
                             current_value = new_value
 
-                    # ERROR 4207 - Spacing Between Components
+                    # ERROR 4207 - Spacing Between Components (insert whitespace between digit and letter)
                     if "4202" not in df.at[index, "INTRODUCED_ERRORS"]:
                         if np.random.rand() < 0.20:
-                            new_value = current_value.replace(" ", "").replace(".", "").replace("/", "")
-                            if new_value != current_value:
-                                log_error(df, index, "4207")
-                                current_value = new_value
+                            # Insert a space between the last digit and the first letter (e.g., '12A' -> '12 A')
+                            match = re.match(r"^(\d+)([A-Za-z]+)$", current_value)
+                            if match:
+                                new_value = f"{match.group(1)} {match.group(2)}"
+                                if new_value != current_value:
+                                    log_error(df, index, "4207")
+                                    current_value = new_value
 
                     # ERROR 4208 - Contains Roman Numerals (1%)
-                    roman_numerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"]
-                    if any(roman in str(df.at[index, "STREET"]) for roman in roman_numerals):
-                        if np.random.rand() < 0.4:
-                            roman_choice = np.random.choice(roman_numerals)
+                    if not any(e in df.at[index, "INTRODUCED_ERRORS"] for e in ["4203", "4213"]):
+                        roman_numerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"]
+                        if any(roman in str(df.at[index, "STREET"]) for roman in roman_numerals):
+                            if np.random.rand() < 0.4:
+                                roman_choice = np.random.choice(roman_numerals)
 
-                            if np.random.rand() < 0.5:
-                                new_value = f"{roman_choice} {current_value}"
-                            else:
-                                new_value = roman_choice
+                                if np.random.rand() < 0.5:
+                                    new_value = f"{roman_choice} {current_value}"
+                                else:
+                                    new_value = roman_choice
 
-                            if new_value != current_value:
-                                log_error(df, index, "4208")
-                                current_value = new_value
+                                if new_value != current_value:
+                                    log_error(df, index, "4208")
+                                    current_value = new_value
 
                     # ERROR 4209 - Ends with full stop
                     if np.random.rand() < 0.01:
