@@ -3,11 +3,16 @@ import numpy as np
 import regex as re
 
 
-# HELPER FUNCTION: LOG ERRORS
+# HELPER FUNCTION: LOG ERRORS (ordered)
 def log_error(df, row_id, error_id):
-    """ Append error ID to INTRODUCED_ERRORS column """
-    if df.at[row_id, "INTRODUCED_ERRORS"]:
-        df.at[row_id, "INTRODUCED_ERRORS"] += f", {error_id}"
+    """ Append error ID to INTRODUCED_ERRORS column, keeping them sorted """
+    current = df.at[row_id, "INTRODUCED_ERRORS"]
+    if current:
+        errors = [e.strip() for e in current.split(",") if e.strip()]
+        if error_id not in errors:
+            errors.append(str(error_id))
+        errors = sorted(errors, key=lambda x: int(x))
+        df.at[row_id, "INTRODUCED_ERRORS"] = ", ".join(errors)
     else:
         df.at[row_id, "INTRODUCED_ERRORS"] = str(error_id)
 
