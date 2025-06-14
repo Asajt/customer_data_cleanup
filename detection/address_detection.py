@@ -233,8 +233,9 @@ def detect_address_errors(street, street_number, zipcode, city):
                 not re.search(r'^\s', street_number) and \
                 not any(re.match(rf"^{re.escape(p)}", street_number) for p in roman_numbers + hn_patterns)
             if should_detect('4211', error_config):
-                if rule_condition:
-                    street_number_errors.add('4211')  # Street number error: does not start with digit
+                if skip_if_condition:
+                    if rule_condition:
+                        street_number_errors.add('4211')  # Street number error: does not start with digit
             
            # 4206 Leading 0
             skip_if_condition = not '4204' in street_number_errors
