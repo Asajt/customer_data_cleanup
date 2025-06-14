@@ -1,9 +1,19 @@
 import pandas as pd
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from utils.errors_utils import should_detect, load_error_config, should_correct
 
+error_config = load_error_config()
 # Load the dataset
 data = pd.read_excel('./src/processed_data/final_customer_data.xlsx')
 
-
+# Determine which errors should be detected/corrected based on config
+def filter_errors(error_set, mode='detect'):
+    if mode == 'detect':
+        return set(e for e in error_set if should_detect(str(e), error_config))
+    elif mode == 'correct':
+        return set(e for e in error_set if should_correct(str(e), error_config))
+    return set()
 
 # --- Helpers ---
 def parse_errors(error_str):
@@ -16,6 +26,9 @@ def parse_errors(error_str):
 
 # Parse sets
 data['INTRODUCED_ERRORS_SET'] = data['INTRODUCED_ERRORS'].apply(parse_errors)
+# Filter for only the errors that should be detected or corrected as per the config
+data['INTRODUCED_ERRORS_SET_DETECT'] = data['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'detect'))
+data['INTRODUCED_ERRORS_SET_CORRECT'] = data['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'correct'))
 
 # Relevant columns
 detected_cols = [col for col in data.columns if col.endswith('_DETECTED_ERRORS')]
@@ -39,11 +52,11 @@ def evaluate(actual, predicted):
     return tp, fp, fn
 
 # Detection evaluation
-det_results = data.apply(lambda row: evaluate(row['INTRODUCED_ERRORS_SET'], row['ALL_DETECTED_ERRORS']), axis=1)
+det_results = data.apply(lambda row: evaluate(row['INTRODUCED_ERRORS_SET_DETECT'], row['ALL_DETECTED_ERRORS']), axis=1)
 det_df = pd.DataFrame(det_results.tolist(), columns=['TP', 'FP', 'FN'])
 
 # Correction evaluation
-cor_results = data.apply(lambda row: evaluate(row['INTRODUCED_ERRORS_SET'], row['ALL_CORRECTED_ERRORS']), axis=1)
+cor_results = data.apply(lambda row: evaluate(row['INTRODUCED_ERRORS_SET_CORRECT'], row['ALL_CORRECTED_ERRORS']), axis=1)
 cor_df = pd.DataFrame(cor_results.tolist(), columns=['TP', 'FP', 'FN'])
 
 # Metric summarization
