@@ -100,8 +100,8 @@ def validate_names(first_name=None, last_name=None):
     if all_names is None or all_surnames is None:
         raise ValueError("Failed to fetch SURS data.")
     
-    first_name_valid = None
-    last_name_valid = None
+    first_name_valid = False
+    last_name_valid = False
 
     if first_name:
         first_name_valid = not all_names[all_names["value"] == first_name].empty
