@@ -43,11 +43,11 @@ def ensure_config():
         print(f"Config already exists: {JSON_PATH}")
 
 def load_error_config(path: str = JSON_PATH) -> dict:
-    """Loads the final error config from a generated JSON file."""
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"JSON config not found at: {path}")
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    """Always regenerate and load the error config from Excel."""
+    config = load_error_config_from_excel(EXCEL_PATH)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(config, f, indent=4, ensure_ascii=False)
+    return config
 
 def should_detect(code, config):
     return config.get(code, {}).get("detect", True)
