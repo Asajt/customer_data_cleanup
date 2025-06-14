@@ -338,12 +338,12 @@ def apply_errors(df, seed):
                             log_error(df, index, "2105")
                             current_value = new_value
                         
-                    # ERROR 2106 - Possibly Invalid Domain
+                    # ERROR 2107 - Possibly Invalid Domain
                     if np.random.rand() < 0.05:
                         local_part = current_value.split("@")[0]
                         new_value = f"{local_part}@{np.random.choice(invalid_domains)}"
                         if new_value != current_value:
-                            log_error(df, index, "2106")
+                            log_error(df, index, "2107")
                             current_value = new_value
                 
             df.at[index, "EMAIL"] = new_value  # Apply error to the column
@@ -519,7 +519,7 @@ def apply_errors(df, seed):
                             log_error(df, index, "4104")
                             current_value = new_value
 
-                    # ERROR 4111 - Starts with Digit
+                    # ERROR 4111 & 4112 - Starts with Digit & Ends with Digit
                     if re.search(r'\d+', current_value):
                         if np.random.rand() < 0.08:
                             match = re.search(r'\d', current_value) 
@@ -631,7 +631,7 @@ def apply_errors(df, seed):
                             log_error(df, index, "4202")
                             current_value = new_value
                             
-                    # ERROR 4203 - Contains Variation of BŠ & ERROR 4213 Contains BŠ as well as house number
+                    # ERROR 4203 - Contains Variation of BŠ 
                     if "4202" not in df.at[index, "INTRODUCED_ERRORS"]:
                         if np.random.rand() < 0.08:
                             new_value = np.random.choice(["BŠ", "NH"])
@@ -639,7 +639,7 @@ def apply_errors(df, seed):
                                 log_error(df, index, "4203")
                                 current_value = new_value
                                 
-                    # ERROR 4203 - Contains Variation of BŠ & ERROR 4213 Contains BŠ as well as house number
+                    # ERROR 4213 Contains BŠ as well as house number
                     if "4202" not in df.at[index, "INTRODUCED_ERRORS"]:
                         if np.random.rand() < 0.08:
                             new_value = np.random.choice([f"BŠ {current_value}", f"NH {current_value}"])
@@ -775,6 +775,18 @@ def apply_errors(df, seed):
                         if new_value != current_value:
                             log_error(df, index, "4303")
                             current_value = new_value
+                    if np.random.rand() < 0.01:
+                        postal_city = df.at[index, "POSTAL_CITY"] if "POSTAL_CITY" in df.columns else "Ljubljana"
+                        if np.random.rand() < 0.9:
+                            new_value = f"{current_value} {postal_city}"
+                        elif np.random.rand() < 0.2:
+                            new_value = f"{np.random.choice(list('ABCDEFGHIJKLMNOPQRSTUVWXYZ'))}{current_value}"
+                        # Fallback if postal_city is missing or empty
+                        elif np.random.rand() < 0.3:
+                            new_value = f"Ljubljana {current_value}"
+                        if new_value != current_value:
+                            log_error(df, index, "4303")
+                            current_value = new_value
 
                     # ERROR 4304 - Less than 4 Digits (1%)
                     if np.random.rand() < 0.01:
@@ -790,21 +802,7 @@ def apply_errors(df, seed):
                             log_error(df, index, "4305")
                             current_value = new_value
 
-                    # ERROR 4306 - Contains Letters 
-                    if np.random.rand() < 0.01:
-                        postal_city = df.at[index, "POSTAL_CITY"] if "POSTAL_CITY" in df.columns else "Ljubljana"
-                        if np.random.rand() < 0.9:
-                            new_value = f"{current_value} {postal_city}"
-                        elif np.random.rand() < 0.2:
-                            new_value = f"{np.random.choice(list('ABCDEFGHIJKLMNOPQRSTUVWXYZ'))}{current_value}"
-                        # Fallback if postal_city is missing or empty
-                        elif np.random.rand() < 0.3:
-                            new_value = f"Ljubljana {current_value}"
-                        if new_value != current_value:
-                            log_error(df, index, "4306")
-                            current_value = new_value
-
-                    # ERROR 4307 - Invalid Value
+                    # ERROR 4306 - Invalid Value
                     if np.random.rand() < 0.02:
                         new_value = np.random.choice(["ABC", "0000", "99999"])
                         if new_value != current_value:
