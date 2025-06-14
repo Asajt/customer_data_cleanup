@@ -339,13 +339,14 @@ def apply_errors(df, seed):
                             current_value = new_value
                         
                     # ERROR 2107 - Possibly Invalid Domain
-                    if np.random.rand() < 0.05:
-                        local_part = current_value.split("@")[0]
-                        new_value = f"{local_part}@{np.random.choice(invalid_domains)}"
-                        if new_value != current_value:
-                            log_error(df, index, "2107")
-                            current_value = new_value
-                
+                    if "2102" not in df.at[index, "INTRODUCED_ERRORS"]:
+                        if np.random.rand() < 0.05:
+                            local_part = current_value.split("@")[0]
+                            new_value = f"{local_part}@{np.random.choice(invalid_domains)}"
+                            if new_value != current_value:
+                                log_error(df, index, "2107")
+                                current_value = new_value
+                    
             df.at[index, "EMAIL"] = new_value  # Apply error to the column
 
 
