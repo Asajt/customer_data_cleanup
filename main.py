@@ -32,7 +32,7 @@ for col in df.columns:
 
 # Split the DataFrame into parts based on column prefixes
 names_df = df[["CUSTOMER_ID", "INTRODUCED_ERRORS"] + [col for col in df.columns if col.startswith(("FIRST_NAME", "LAST_NAME"))]]
-address_df = df[["CUSTOMER_ID", "INTRODUCED_ERRORS"] + [col for col in df.columns if col.startswith(("STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY"))]]
+address_df = df[["CUSTOMER_ID", "INTRODUCED_ERRORS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_VALID_AFTER_CORRECTION"] + [col for col in df.columns if col.startswith(("STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY"))]]
 email_df = df[["CUSTOMER_ID", "INTRODUCED_ERRORS"] + [col for col in df.columns if col.startswith("EMAIL")]]
 phone_df = df[["CUSTOMER_ID", "INTRODUCED_ERRORS"] + [col for col in df.columns if col.startswith("PHONE_NUMBER")]]
 
