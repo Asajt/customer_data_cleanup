@@ -604,26 +604,28 @@ def apply_errors(df, seed):
                             current_value = new_value
 
                     # ERROR 4204 - No House Number
-                    if np.random.rand() < 0.04:
-                        new_value = np.random.choice(list("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
-                        if new_value != current_value:
-                            log_error(df, index, "4204")
-                            current_value = new_value
+                    if "4202" not in df.at[index, "INTRODUCED_ERRORS"]:
+                        if np.random.rand() < 0.04:
+                            new_value = np.random.choice(list("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
+                            if new_value != current_value:
+                                log_error(df, index, "4204")
+                                current_value = new_value
 
                     # ERROR 4205 - Invalid Combination
-                    if np.random.rand() < 0.20:
-                        # Identify number and letter parts using regex
-                        match = re.match(r"(\d+)([A-Za-z]?)", current_value)  # Extract number and optional letter
-                        if match:
-                            num_part, letter_part = match.groups()
-                            if letter_part:  # If there is a letter, introduce a random separator
-                                separator = np.random.choice([" ", "-", "/"])
-                                new_value = f"{num_part}{separator}{letter_part}"
-                            else:  # If no letter part, introduce one and add a separator
-                                new_value = f"{num_part}{np.random.choice(['A', 'B'])}"
-                        if new_value != current_value:
-                            log_error(df, index, "4205")
-                            current_value = new_value
+                    if "4202" not in df.at[index, "INTRODUCED_ERRORS"]:
+                        if np.random.rand() < 0.20:
+                            # Identify number and letter parts using regex
+                            match = re.match(r"(\d+)([A-Za-z]?)", current_value)  # Extract number and optional letter
+                            if match:
+                                num_part, letter_part = match.groups()
+                                if letter_part:  # If there is a letter, introduce a random separator
+                                    separator = np.random.choice([" ", "-", "/"])
+                                    new_value = f"{num_part}{separator}{letter_part}"
+                                else:  # If no letter part, introduce one and add a separator
+                                    new_value = f"{num_part}{np.random.choice(['A', 'B'])}"
+                            if new_value != current_value:
+                                log_error(df, index, "4205")
+                                current_value = new_value
 
                     # ERROR 4206 - Leading 0
                     if np.random.rand() < 0.05:
@@ -635,11 +637,12 @@ def apply_errors(df, seed):
                             current_value = new_value
 
                     # ERROR 4207 - Spacing Between Components
-                    if np.random.rand() < 0.20:
-                        new_value = current_value.replace(" ", "").replace(".", "").replace("/", "")
-                        if new_value != current_value:
-                            log_error(df, index, "4207")
-                            current_value = new_value
+                    if "4202" not in df.at[index, "INTRODUCED_ERRORS"]:
+                        if np.random.rand() < 0.20:
+                            new_value = current_value.replace(" ", "").replace(".", "").replace("/", "")
+                            if new_value != current_value:
+                                log_error(df, index, "4207")
+                                current_value = new_value
 
                     # ERROR 4208 - Contains Roman Numerals (1%)
                     roman_numerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"]
