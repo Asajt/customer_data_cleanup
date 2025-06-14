@@ -47,8 +47,8 @@ def apply_errors(df, seed):
                 new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "1101")
-
-                else:          
+            
+            if "1101" not in df.at[index, "INTRODUCED_ERRORS"]:
                     # ERROR 1102 - Unnecessary Spaces
                     if np.random.rand() < 0.05:
                         random_choice = np.random.choice(["leading", "trailing", "double"])  # Choose space type
@@ -61,7 +61,6 @@ def apply_errors(df, seed):
                         if new_value != current_value:
                             log_error(df, index, "1102")
                             current_value = new_value
-
 
                     # ERROR 1103 - Invalid Characters (replace letters with numbers)
                     if np.random.rand() < 0.02:
@@ -98,7 +97,6 @@ def apply_errors(df, seed):
                     if new_value != current_value:
                         log_error(df, index, "1107")
                         current_value = new_value
-                        
                     
                     # ERROR 1105 - Duplicates
                     if np.random.rand() < 0.02:
@@ -134,7 +132,6 @@ def apply_errors(df, seed):
                             log_error(df, index, "1106")
                             current_value = new_value
 
-
                     # ERROR 1108 - Replace š, č, ž, ć with s, c, z, c
                     if np.random.rand() < 0.02:
                         replacement_map = {"š": "s", "č": "c", "ž": "z", "ć": "c", "Š": "S", "Č": "C", "Ž": "Z", "Ć": "C"}
@@ -159,7 +156,7 @@ def apply_errors(df, seed):
                 if new_value != current_value:
                     log_error(df, index, "1201")
                 
-                else:
+            if "1201" not in df.at[index, "INTRODUCED_ERRORS"]:
 
                     # ERROR 1202 - Unnecessary Spaces
                     if np.random.rand() < 0.04:
@@ -224,7 +221,7 @@ def apply_errors(df, seed):
                             current_value = new_value
                         
             df.at[index, "LAST_NAME"] = new_value  # Apply error to the column
-            
+
 
         # ============================
         # **EMAIL ERRORS**
@@ -236,7 +233,6 @@ def apply_errors(df, seed):
         "sioln.et", "sio.net", "sloveniamali.com", "email.si", "t-2.nt", "amis.nte"
         ]
         
-        
         if np.random.rand() < 0.40:
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 2101 - Missing Data
@@ -245,7 +241,8 @@ def apply_errors(df, seed):
                 new_value = np.random.choice(missing_variants)
                 if new_value != current_value:
                     log_error(df, index, "2101")
-                else:
+
+            if "2101" not in df.at[index, "INTRODUCED_ERRORS"]:
 
                     # ERROR 2102 - Unnecessary Spaces
                     if np.random.rand() < 0.03:
@@ -312,7 +309,6 @@ def apply_errors(df, seed):
             df.at[index, "EMAIL"] = new_value  # Apply error to the column
 
 
-
         # ============================
         # **PHONE_NUMBER ERRORS**
         # ============================
@@ -327,7 +323,7 @@ def apply_errors(df, seed):
                 if new_value != current_value:
                     log_error(df, index, "3101")
                 
-                else:
+            if "3101" not in df.at[index, "INTRODUCED_ERRORS"]:
 
                     # ERROR 3102 - Unnecessary Spaces
                     if np.random.rand() < 0.03:
@@ -374,7 +370,6 @@ def apply_errors(df, seed):
                             log_error(df, index, "3104")
                             current_value = new_value
 
-                        
                     # ERROR 3105 - Too Many Digits
                     if np.random.rand() < 0.02:
                         new_value = current_value + str(np.random.randint(0, 9))  # Append a random digit
@@ -409,6 +404,7 @@ def apply_errors(df, seed):
                 
             df.at[index, "PHONE_NUMBER"] = new_value  # Apply error to the column
         
+        
         # ============================
         # **STREET ERRORS**
         # ============================
@@ -424,7 +420,7 @@ def apply_errors(df, seed):
                 if new_value != current_value:
                     log_error(df, index, "4101")
 
-                else:
+            if "4101" not in df.at[index, "INTRODUCED_ERRORS"]:
                         
                     # ERROR 4102 - Unnecessary Spaces
                     if np.random.rand() < 0.05:
@@ -561,6 +557,7 @@ def apply_errors(df, seed):
      
             df.at[index, "STREET"] = new_value  # Apply error to the column
 
+
         # ============================
         # **HOUSE_NUMBER ERRORS**
         # ============================
@@ -577,7 +574,7 @@ def apply_errors(df, seed):
                 if new_value != current_value:
                     log_error(df, index, "4201") 
 
-                else:
+            if "4201" not in df.at[index, "INTRODUCED_ERRORS"]:
 
                     # ERROR 4202 - Unnecessary Spaces (Leading, Trailing, Double)
                     if np.random.rand() < 0.05:
@@ -607,7 +604,6 @@ def apply_errors(df, seed):
                         if new_value != current_value:
                             log_error(df, index, "4204")
                             current_value = new_value
-
 
                     # ERROR 4205 - Invalid Combination
                     if np.random.rand() < 0.20:
@@ -655,7 +651,6 @@ def apply_errors(df, seed):
                                 log_error(df, index, "4208")
                                 current_value = new_value
 
-
                     # ERROR 4209 - Ends with full stop
                     if np.random.rand() < 0.01:
                         new_value = current_value + '.'
@@ -684,7 +679,6 @@ def apply_errors(df, seed):
                         if new_value != current_value:
                             log_error(df, index, "4212")
                             current_value = new_value
-                
 
             df.at[index, "HOUSE_NUMBER"] = new_value  # Apply error to the column
 
@@ -704,7 +698,7 @@ def apply_errors(df, seed):
                 if new_value != current_value:
                     log_error(df, index, "4301")
 
-                else:
+            if "4301" not in df.at[index, "INTRODUCED_ERRORS"]:
                         
                     # ERROR 4302 - Unnecessary Spaces (Leading, Trailing, Double)
                     if np.random.rand() < 0.05:
@@ -760,9 +754,9 @@ def apply_errors(df, seed):
                         if new_value != current_value:
                             log_error(df, index, "4307")
                             current_value = new_value
-
                 
             df.at[index, "POSTAL_CODE"] = new_value  # Apply error to the column
+            
             
         # ============================
         # **POSTAL_CITY ERRORS**
@@ -779,7 +773,7 @@ def apply_errors(df, seed):
                 if new_value != current_value:
                     log_error(df, index, "4401")
 
-                else:
+            if "4401" not in df.at[index, "INTRODUCED_ERRORS"]:
                         
                     # ERROR 4402 - Unnecessary Spaces (Leading, Trailing, Double)
                     if np.random.rand() < 0.05:
