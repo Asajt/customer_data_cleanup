@@ -44,3 +44,4 @@ pip-delete-this-directory.txt
 
 # macOS system files
 .DS_Store
+src/raw_data/user_error_config.json
