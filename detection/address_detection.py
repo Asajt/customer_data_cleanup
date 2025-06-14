@@ -253,13 +253,13 @@ def detect_address_errors(street, street_number, zipcode, city):
                     if rule_condition:
                         street_number_errors.add('4210')
             
-            # 4207 Spacing / invalid characters between components
+            # 4205 Invalid combination
             # skip_if_condition = not any(code in street_number_errors for code in ["4203", "4210", "4208", "4211"])
             rule_condition = re.search(r'(\d+)(\/|(\s\/)|(\s\/\s)|\s|\.|\,|\-)([a-zA-ZččšžĆČŠŽ]{1,2})$', street_number)
-            if should_detect('4207', error_config):
+            if should_detect('4205', error_config):
                 # if skip_if_condition:
                     if rule_condition:
-                        street_number_errors.add('4207')
+                        street_number_errors.add('4205')
                         
             # 4212 More than 4 digits
             skip_if_condition = not '4206' in street_number_errors
@@ -269,13 +269,13 @@ def detect_address_errors(street, street_number, zipcode, city):
                     if rule_condition:
                         street_number_errors.add('4212') 
                         
-            # 4205 Invalid combination
+            # 4207 Spacing / invalid characters between components
             skip_if_condition = not street_number_errors
             rule_condition = not re.search(r'^\d{1,3}[A-Za-zČčŠšŽž]{0,2}$', street_number)
-            if should_detect('4205', error_config):
+            if should_detect('4207', error_config):
                 if skip_if_condition:
                     if rule_condition:
-                        street_number_errors.add('4205') 
+                        street_number_errors.add('4207') 
 
     # Zipcode errors     
     # 4301 Check for missing data
