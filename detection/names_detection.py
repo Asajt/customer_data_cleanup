@@ -73,12 +73,10 @@ def detect_name_errors(name, surname):
                 if i not in counts:
                     counts[i] = 0
                 counts[i] += 1
-            skip_if_condition = not '1106' in name_errors
             rule_condition = (any(count > 1 for count in counts.values()))
             if should_detect('1105', error_config):
-                if skip_if_condition:
-                    if rule_condition:
-                        name_errors.add('1105')
+                if rule_condition:
+                    name_errors.add('1105')
                         
             # 1104 Check for formatting issues
             skip_if_condition = not (any (code in name_errors for code in ["1106", "1103"]))
