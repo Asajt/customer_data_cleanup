@@ -175,7 +175,7 @@ def detect_address_errors(street, street_number, zipcode, city):
     # 4201 Check for missing data
     rule_condition = (
         street_number.strip() == "" or
-        ('//' in street_number) or ('x' in street_number)
+        ('//' in street_number) or ('x' in street_number) or
         (len(street_number.strip()) == 1 and not re.search(r'[a-zA-Z0-9]', street_number))
     )
     if should_detect('4201', error_config):
