@@ -55,7 +55,7 @@ def detect_address_errors(street, street_number, zipcode, city):
     # 4101 Check for missing data
     rule_condition = (street.strip() == "" 
                       or len(street.strip()) <= 1 
-                      or '//' in street)
+                      or '//' in street or ('x' in street))
     if should_detect('4101', error_config):
         if rule_condition:
             street_errors.add('4101') 
@@ -281,7 +281,7 @@ def detect_address_errors(street, street_number, zipcode, city):
     # 4301 Check for missing data
     rule_condition = (
         zipcode.strip() == "" or
-        ('//' in zipcode) or
+        ('//' in zipcode) or ('x' in zipcode) or
         (len(zipcode.strip()) == 1 and not re.search(r'[a-zA-Z0-9]', zipcode))
     )
     if should_detect('4301', error_config):
@@ -330,7 +330,7 @@ def detect_address_errors(street, street_number, zipcode, city):
     # 4401 Check for missing data
     rule_condition = (city.strip() == "" 
                       or len(city.strip()) <= 1 
-                      or '//' in city)
+                      or '//' in city or ('x' in city))
     if should_detect('4401', error_config):
         if rule_condition:
             city_errors.add('4401')
@@ -387,8 +387,6 @@ def detect_address_errors(street, street_number, zipcode, city):
                             break 
                         prev_comp = comp
             
-            # 4408 replacing ščž with scz
-
     return (
         sorted(street_errors),
         sorted(street_number_errors),
