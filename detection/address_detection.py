@@ -364,7 +364,7 @@ def detect_address_errors(street, street_number, zipcode, city):
                 )
             if should_detect('4404', error_config):
                 if rule_condition:
-                    street_errors.add('4404')
+                    city_errors.add('4404')
             
             # 4406 Check for invalid abbreviations
             rule_condition = re.search(r'\b(?!(?:' + '|'.join(allowed_abbreviations_city) + r')\.)\w+\.', city, flags=re.IGNORECASE)
