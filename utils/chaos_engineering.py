@@ -3,9 +3,10 @@ import numpy as np
 import regex as re
 
 
-# HELPER FUNCTION: LOG ERRORS (ordered)
+# HELPER FUNCTION: LOG ERRORS (ordered, attribute-specific)
 def log_error(df, row_id, error_id):
-    """ Append error ID to INTRODUCED_ERRORS column, keeping them sorted """
+    """ Append error ID to INTRODUCED_ERRORS and attribute-specific error columns, keeping them sorted """
+    # General error log
     current = df.at[row_id, "INTRODUCED_ERRORS"]
     if current:
         errors = [e.strip() for e in current.split(",") if e.strip()]
@@ -15,6 +16,31 @@ def log_error(df, row_id, error_id):
         df.at[row_id, "INTRODUCED_ERRORS"] = ", ".join(errors)
     else:
         df.at[row_id, "INTRODUCED_ERRORS"] = str(error_id)
+
+    # Attribute-specific log
+    attr_map = {
+        "11": "FIRST_NAME_INTRO_ERRORS",
+        "12": "LAST_NAME_INTRO_ERRORS",
+        "21": "EMAIL_INTRO_ERRORS",
+        "31": "PHONE_NUMBER_INTRO_ERRORS",
+        "41": "STREET_INTRO_ERRORS",
+        "42": "HOUSE_NUMBER_INTRO_ERRORS",
+        "43": "POSTAL_CODE_INTRO_ERRORS",
+        "44": "POSTAL_CITY_INTRO_ERRORS"
+    }
+    # Use the first 1 or 2 digits to determine attribute
+    attr_prefix = error_id[:2] if error_id[:2] in attr_map else error_id[:1]
+    attr_col = attr_map.get(attr_prefix)
+    if attr_col and attr_col in df.columns:
+        current_attr = df.at[row_id, attr_col]
+        if current_attr:
+            errors_attr = [e.strip() for e in current_attr.split(",") if e.strip()]
+            if error_id not in errors_attr:
+                errors_attr.append(str(error_id))
+            errors_attr = sorted(errors_attr, key=lambda x: int(x))
+            df.at[row_id, attr_col] = ", ".join(errors_attr)
+        else:
+            df.at[row_id, attr_col] = str(error_id)
 
 def apply_errors(df, seed):
     """
@@ -31,7 +57,16 @@ def apply_errors(df, seed):
     
     df = df.astype(str)
     
-    df['INTRODUCED_ERRORS'] = ""  # Initialize the error tracking column
+    # Initialize the error tracking column
+    df['FIRST_NAME_INTRO_ERRORS'] = ""  
+    df['LAST_NAME_INTRO_ERRORS'] = ""
+    df['EMAIL_INTRO_ERRORS'] = ""
+    df['PHONE_NUMBER_INTRO_ERRORS'] = ""
+    df['STREET_INTRO_ERRORS'] = ""
+    df['HOUSE_NUMBER_INTRO_ERRORS'] = ""
+    df['POSTAL_CODE_INTRO_ERRORS'] = ""
+    df['POSTAL_CITY_INTRO_ERRORS'] = ""
+    df['INTRODUCED_ERRORS'] = ""  # General error tracking column    
 
     roman_numbers = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'
                 , 'XI', 'XII', 'XIII', 'XIV','XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'
@@ -597,11 +632,12 @@ def apply_errors(df, seed):
                             current_value = new_value
                             
                     # ERROR 4203 - Contains Variation of BŠ & ERROR 4213 Contains BŠ as well as house number
-                    if np.random.rand() < 0.08:
-                        new_value = np.random.choice(["BŠ", "NH", f"BŠ {current_value}", f"NH {current_value}"])
-                        if new_value != current_value:
-                            log_error(df, index, "4203")
-                            current_value = new_value
+                    if "4202" not in df.at[index, "INTRODUCED_ERRORS"]:
+                        if np.random.rand() < 0.08:
+                            new_value = np.random.choice(["BŠ", "NH", f"BŠ {current_value}", f"NH {current_value}"])
+                            if new_value != current_value:
+                                log_error(df, index, "4203")
+                                current_value = new_value
 
                     # ERROR 4204 - No House Number
                     if "4202" not in df.at[index, "INTRODUCED_ERRORS"]:
@@ -875,8 +911,16 @@ def apply_errors(df, seed):
 
             df.at[index, "POSTAL_CITY"] = new_value  # Apply error to the column
 
-    return df[["CUSTOMER_ID", "FIRST_NAME", "LAST_NAME", "EMAIL", "PHONE_NUMBER",
-            "STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY", "INTRODUCED_ERRORS"]]
+    return df[["CUSTOMER_ID", 
+               "FIRST_NAME", "FIRST_NAME_INTRO_ERRORS", 
+               "LAST_NAME", "LAST_NAME_INTRO_ERRORS", 
+               "EMAIL", "EMAIL_INTRO_ERRORS",
+               "PHONE_NUMBER", "PHONE_NUMBER_INTRO_ERRORS",
+               "STREET", "STREET_INTRO_ERRORS",
+               "HOUSE_NUMBER", "HOUSE_NUMBER_INTRO_ERRORS",
+               "POSTAL_CODE",  "POSTAL_CODE_INTRO_ERRORS", 
+               "POSTAL_CITY", "POSTAL_CITY_INTRO_ERRORS",
+               "INTRODUCED_ERRORS"]]
 
 if __name__ == "__main__":
     # Load the dataset (replace with your file path)
