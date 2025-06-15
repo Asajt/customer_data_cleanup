@@ -31,13 +31,17 @@ for col in df.columns:
             )
 
 # Split the DataFrame into parts based on column prefixes
+overview_df = df[["CUSTOMER_ID", "FIRST_NAME_STATUS", "LAST_NAME_STATUS", "STREET_STATUS",
+                  "HOUSE_NUMBER_STATUS", "POSTAL_CODE_STATUS", "POSTAL_CITY_STATUS", 
+                  "EMAIL_STATUS", "PHONE_NUMBER_STATUS", "OVERALL_STATUS"]]
 names_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith(("FIRST_NAME", "LAST_NAME"))]]
-address_df = df[["CUSTOMER_ID", "FULL_ADDRESS_VALID", "FULL_ADDRESS_VALID_AFTER_CORRECTION"] + [col for col in df.columns if col.startswith(("STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY"))]]
+address_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED", "FULL_ADDRESS_VALID_AFTER_CORRECTION"] + [col for col in df.columns if col.startswith(("STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY"))]]
 email_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith("EMAIL")]]
 phone_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith("PHONE_NUMBER")]]
 
 # create a excel writer object
 with pd.ExcelWriter('src/processed_data/final_customer_data2.xlsx') as writer:
+    overview_df.to_excel(writer, sheet_name="Overview", index=False)
     names_df.to_excel(  writer, sheet_name="Names", index=False)
     address_df.to_excel(writer, sheet_name="Address", index=False)
     email_df.to_excel(  writer, sheet_name="Email", index=False)
