@@ -71,11 +71,14 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
     def status(row, column):
         if row[f"{column}_VALID"]:
             return "VALID"
-        if row[f"{column}_HAS_ERRORS"] and len(row[f"{column}_DETECTED_ERRORS"]) == len(row[f"{column}_CORRECTED_ERRORS"]):
-            return "CORRECTED" if row[f"{column}_VALID_AFTER_CORRECTION"] else "PARTIALLY_CORRECTED"
-        if row[f"{column}_HAS_ERRORS"] and len(row[f"{column}_CORRECTED_ERRORS"]) == 0:
-            return "DETECTED"
-        return "INVALID"
+        elif not row[f"{column}_HAS_ERRORS"]:
+            return "UNDETECTED ERRORS"
+        elif row[f"{column}_UNCORRECTED_ERRORS"]:
+            return "UNCORRECTED ERRORS"
+        elif row[f"{column}_VALID_AFTER_CORRECTION"]:
+            return "CORRECTED"
+        else:
+            return "INVALID AFTER CORRECTIONS"
     
     df[f"{email_column}_STATUS"] = df.apply(lambda row: status(row, email_column), axis=1)
     
