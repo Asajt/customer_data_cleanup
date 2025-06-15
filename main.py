@@ -7,9 +7,12 @@ GURS_file_path = 'src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
 dataset_size = 10000
 seed = 42
 
+def escape_excel_formulas(df):
+    return df.apply(lambda col: col.map(lambda x: f"'{x}" if isinstance(x, str) and x.startswith("=") else x))
+
 # generate synthetic customer data
 df = generate_synthetic_customer_data(GURS_file_path, dataset_size, seed)
-    
+
 # introduce errors into the dataset
 df = apply_errors(df, seed)
 
@@ -38,6 +41,13 @@ names_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith(("F
 address_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED", "FULL_ADDRESS_VALID_AFTER_CORRECTION"] + [col for col in df.columns if col.startswith(("STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY"))]]
 email_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith("EMAIL")]]
 phone_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith("PHONE_NUMBER")]]
+
+# Escape Excel formulas in the DataFrames
+overview_df = escape_excel_formulas(overview_df)
+names_df    = escape_excel_formulas(names_df)
+address_df  = escape_excel_formulas(address_df)
+email_df    = escape_excel_formulas(email_df)
+phone_df    = escape_excel_formulas(phone_df)
 
 # create a excel writer object
 with pd.ExcelWriter('src/processed_data/final_customer_data2.xlsx') as writer:
