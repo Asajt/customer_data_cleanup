@@ -451,15 +451,6 @@ def apply_errors(df, seed):
                         if new_value != current_value:
                             log_error(df, index, "3107")
                             current_value = new_value
-
-                    # ERROR 3108 - Different country format
-                    if np.random.rand() < 0.03:
-                        alternative_country_codes = ["+385", "+49", "+33", "+44", "+30", "00385", "0049", "0033", "0044", "0030"]  # Croatia, Germany, France, UK, Greece
-                        new_country_code = np.random.choice(alternative_country_codes)
-                        new_value = current_value.replace("00386", new_country_code)
-                        if new_value != current_value:
-                            log_error(df, index, "3108")
-                            current_value = new_value
                 
             df.at[index, "PHONE_NUMBER"] = new_value  # Apply error to the column
         
