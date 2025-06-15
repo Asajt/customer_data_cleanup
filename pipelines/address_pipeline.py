@@ -4,46 +4,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_root)
 from detection.address_detection import detect_address_errors
 from correction.address_correction import correct_address
-from validation.address_validation import validate_full_address
-
-def load_gurs_data(path_to_gurs_RN_csv: str) -> pd.DataFrame:
-    """
-    Load GURS RN data from a CSV file and prepare it for validation.
-    This function loads the GURS RN data, cleans the POSTNI_OKOLIS_NAZIV column,
-    and creates a full address column for validation.
-
-    Args:
-        path_to_gurs_RN_csv (str): Path to the GURS RN CSV file.
-
-    Returns:
-        pd.DataFrame: DataFrame containing the cleaned GURS RN data.
-    """
-    
-    # Load and prepare GURS data
-    print("Loading GURS data...")
-    
-    gurs_df = pd.read_csv(path_to_gurs_RN_csv, usecols = ['ULICA_NAZIV','HS_STEVILKA','HS_DODATEK','POSTNI_OKOLIS_SIFRA','POSTNI_OKOLIS_NAZIV'])
-    
-    # Remove dvojezična imena from POSTNI_OKOLIS_NAZIV
-    gurs_df['POSTNI_OKOLIS_NAZIV'] = gurs_df['POSTNI_OKOLIS_NAZIV'].str.split('-').str[0].str.strip()
-    print("POSTNI_OKOLIS_NAZIV cleaned.")
-    
-    gurs_df["GURS_FULL_ADDRESS"] = (
-        gurs_df["ULICA_NAZIV"].str.strip() + " " +
-        gurs_df["HS_STEVILKA"].fillna("").astype(str).str.strip() +
-        gurs_df["HS_DODATEK"].fillna("").astype(str).str.strip() + ", " +
-        gurs_df["POSTNI_OKOLIS_SIFRA"].fillna("").astype(str).str.strip() + " " +
-        gurs_df["POSTNI_OKOLIS_NAZIV"].str.strip()
-    )
-    
-    gurs_df = gurs_df[["GURS_FULL_ADDRESS"]]
-    
-    # Make a set of GURS_FULL_ADDRESS for faster lookup
-    gurs_address_set = set(gurs_df['GURS_FULL_ADDRESS'].dropna().str.strip())
-    
-    print("GURS data loaded and prepared.")
-    
-    return gurs_address_set
+from validation.address_validation import validate_full_address, normalize_text, load_gurs_data
 
 def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, postal_code_column, postal_city_column) -> pd.DataFrame:
     """
@@ -68,6 +29,9 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     ################################################################################
     # Step 1: Validate address
     # Create FULL_ADDRESS
+    for col in ["STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY"]:
+        df[col] = df[col].apply(normalize_text)
+        
     df["FULL_ADDRESS"] = (
         df[street_column].str.strip() + " " +
         df[street_number_column].str.strip() + ", " +
