@@ -38,8 +38,7 @@ def detect_phone_errors(phone: str) -> set:
             # 3107 Check for two phone numbers
             rule_condition = (len(re.findall(r"\d{6,}", phone)) > 1
                               or re.search(",", phone)
-                              or re.search(";", phone)
-                            )
+                              or re.search(";", phone))
             if should_detect('3107', error_config):
                 if rule_condition:
                     phone_errors.add('3107')
@@ -53,7 +52,7 @@ def detect_phone_errors(phone: str) -> set:
                         phone_errors.add('3103')
                     
             # 3105 Check for too many digits      
-            skip_if_condition = not '3107' in phone_errors              
+            skip_if_condition = not '3107' in phone_errors
             digit_count = len(re.findall(r"\d", phone))
             if phone.strip().startswith("00386"):
                 rule_condition = digit_count > 13
@@ -91,10 +90,9 @@ def detect_phone_errors(phone: str) -> set:
                     phone_errors.add("3106")
             
             # 3104 Check for formatting issues
-            skip_if_condition = not phone_errors
+            skip_if_condition = not '3103' in phone_errors
             rule_condition = (not re.search(r'^00386[1-7][0-9]{7}$', phone.strip()) or
-                              not phone.strip()
-                              )
+                              not phone.strip())
             if should_detect('3104', error_config):
                 if skip_if_condition:
                     if rule_condition:
