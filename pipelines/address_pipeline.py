@@ -134,12 +134,16 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     
     ################################################################################
     # Step 4: Re-validate for corrected address
-    # Create FULL_ADDRESS
+    # Create FULL_ADDRESS out of corrected columns and if not corrected, the original columns
     df["FULL_ADDRESS_CORRECTED"] = (
-        df[f"{street_column}_CORRECTED"].str.strip() + " " +
-        df[f"{street_number_column}_CORRECTED"].str.strip() + ", " +
-        df[f"{postal_code_column}_CORRECTED"].str.strip() + " " +
-        df[f"{postal_city_column}_CORRECTED"].str.strip())
+        df[f"{street_column}_CORRECTED"].fillna(df[street_column]).str.strip() + " " +
+        df[f"{street_number_column}_CORRECTED"].fillna(df[street_number_column]).str.strip() + ", " +
+        df[f"{postal_code_column}_CORRECTED"].fillna(df[postal_code_column]).str.strip() + " " +
+        df[f"{postal_city_column}_CORRECTED"].fillna(df[postal_city_column]).str.strip()
+    )
+    # TEST: filter for rows where full addreess corrected is not null
+    # df_filtered = df[df["FULL_ADDRESS_CORRECTED"].notnull()]
+    # print(df_filtered["FULL_ADDRESS_CORRECTED"].head())
     
     # Apply validation only if at least one of the components was corrected
     df["FULL_ADDRESS_VALID_AFTER_CORRECTION"] = df.apply(
