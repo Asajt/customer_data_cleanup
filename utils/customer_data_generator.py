@@ -153,9 +153,9 @@ def generate_random_email(first_name, last_name, seed=42):
     
     domains = ['gmail.com', 'hotmail.com', 'yahoo.com', 'icloud.com', 'siol.net', 't-2.net', 'amis.net', 'guest.arnes.net']
     domain_weights = [0.4, 0.2, 0.2, 0.1, 0.05, 0.025, 0.015, 0.01]  # Weights for each domain
-    # Clean up names
-    clean_first_name = unidecode.unidecode(first_name).lower()
-    clean_last_name = unidecode.unidecode(last_name).lower()
+    # Clean and sanitize names
+    clean_first_name = unidecode.unidecode(first_name).lower().replace(" ", "")
+    clean_last_name = unidecode.unidecode(last_name).lower().replace(" ", "")
     # Choose a random format for the email
     formats = [
         f"{clean_first_name}.{clean_last_name}",
