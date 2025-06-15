@@ -49,8 +49,8 @@ def detect_email_errors(email):
                     email_errors.add('2105')
 
             # Check for invalid characters (2103)
-            skip_if_condition = not (any (code in email_errors for code in ["2102", "2105"]))
-            rule_condition = re.search(r"[^a-zA-Z0-9@_.+\-]", email)  # disallow anything not in the basic set
+            skip_if_condition = not (any (code in email_errors for code in ["2105"]))
+            rule_condition = re.search(r"[^a-zA-Z0-9@_.+\-\s]", email)  # disallow anything not in the basic set
             if should_detect('2103', error_config):
                 if skip_if_condition:
                     if rule_condition:
