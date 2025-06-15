@@ -269,7 +269,7 @@ def apply_errors(df, seed):
         current_value = df.at[index, "EMAIL"]
         
         invalid_domains = [
-        "gmial.com", "gmaiul.com", "gmail.cm", "telemac.com", "hot*mail.com",
+        "gmial.com", "gmaiul.com", "gmail.cm", "telemac.com", "hotmmail.com",
         "sioln.et", "sio.net", "sloveniamali.com", "email.si", "t-2.nt", "amis.nte"
         ]
         
@@ -316,15 +316,30 @@ def apply_errors(df, seed):
                         new_value = current_value  # Start with the original value
                         issue_type = np.random.choice(["missing_at", "double_dot", "missing_part"])
                         if issue_type == "missing_at":
-                            new_value = current_value.replace("@", "")
-                        elif issue_type == "double_dot":
-                            if "." in current_value.split("@")[-1]:  # Ensure there's a domain part
-                                new_value = current_value.replace(".", "..", 1) if np.random.rand() < 0.5 else current_value.replace(".", "", 1)
-                        elif issue_type == "missing_part":
-                            if np.random.rand() < 0.5:
-                                new_value = "@" + current_value.split("@")[-1]  # Remove username
+                            if "@" in current_value: # Remove the '@' symbol if present, or randomly drop it
+                                new_value = current_value.replace("@", "", 1)
                             else:
-                                new_value = current_value.split("@")[0] + "@"  # Remove domain
+                                if np.random.rand() < 0.3:
+                                    insert_pos = np.random.randint(1, len(current_value))
+                                    new_value = current_value[:insert_pos] + "@" + current_value[insert_pos:]
+                        elif issue_type == "double_dot": # Add or remove dots in the domain part
+                            if "@" in current_value:
+                                local, domain = current_value.split("@", 1)
+                                if "." in domain:
+                                    if np.random.rand() < 0.5: # Add double dot
+                                        domain = domain.replace(".", "..", 1)
+                                    else: # Remove a dot
+                                        domain = domain.replace(".", "", 1)
+                                    new_value = f"{local}@{domain}"
+                        elif issue_type == "missing_part": # Remove username or domain part
+                            if "@" in current_value:
+                                local, domain = current_value.split("@", 1)
+                                if np.random.rand() < 0.5:
+                                    new_value = "@" + domain # Remove username
+                                else:
+                                    new_value = local + "@" # Remove domain
+                            else:
+                                pass # If already malformed, just leave as is
                         if new_value != current_value:
                             log_error(df, index, "2104")
                             current_value = new_value
@@ -339,12 +354,15 @@ def apply_errors(df, seed):
                             current_value = new_value
                         
                     # ERROR 2107 - Possibly Invalid Domain
-                    if "2102" not in df.at[index, "INTRODUCED_ERRORS"]:
+                    if (
+                        "2102" not in df.at[index, "INTRODUCED_ERRORS"]
+                        and "2103" not in df.at[index, "INTRODUCED_ERRORS"]
+                        and "2104" not in df.at[index, "INTRODUCED_ERRORS"]
+                    ):
                         if np.random.rand() < 0.05:
                             local_part = current_value.split("@")[0]
                             new_value = f"{local_part}@{np.random.choice(invalid_domains)}"
                             if new_value != current_value:
-                                log_error(df, index, "2107")
                                 current_value = new_value
                     
             df.at[index, "EMAIL"] = new_value  # Apply error to the column
