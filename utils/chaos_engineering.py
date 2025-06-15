@@ -401,6 +401,17 @@ def apply_errors(df, seed):
                     if np.random.rand() < 0.04:
                         if np.random.rand() < 0.5:
                             new_value = current_value.replace("0", "O").replace("1", "I")  # Replace digits with letters
+                        elif current_value.startswith("00386"):
+                            new_value = current_value.replace("00386", "0")
+                            pos1 = 3
+                            pos2 = 6
+                            separator = np.random.choice(["-", " ", "/"])
+                            new_value = new_value[:pos1] + separator + new_value[pos1:pos2] + separator + new_value[pos2:]
+                        elif current_value.startswith("00386"):
+                            new_value = np.random.choice([
+                                current_value.replace("00386", "+386"),
+                                current_value.replace("00386", "+00386")
+                            ])
                         else:
                             for _ in range(np.random.randint(1, 2)):  # Replace 1 or 2 occurrences
                                 new_value = re.sub("0", "O", new_value, count=1) if "0" in new_value and np.random.rand() < 0.5 else new_value
@@ -413,18 +424,10 @@ def apply_errors(df, seed):
                     if np.random.rand() < 0.50:
                         if np.random.rand() < 0.5:
                             new_value = np.random.choice([
-                                current_value.replace("00386", "+386"),  
+                                current_value.replace("00386", "386"),
                                 current_value.replace("00386", ""), 
                                 current_value.replace("00386", "0"),
-                                current_value.replace("00386", "+00386")
                             ])
-                        elif current_value.startswith("00386"):
-                            new_value = current_value.replace("00386", "0")
-                            pos1 = 3
-                            pos2 = 6
-                            separator = np.random.choice(["-", " ", "/"])
-                            new_value = new_value[:pos1] + separator + new_value[pos1:pos2] + separator + new_value[pos2:]
-
                         if new_value != current_value:
                             log_error(df, index, "3104")
                             current_value = new_value
