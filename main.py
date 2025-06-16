@@ -34,11 +34,12 @@ for col in df.columns:
             )
 
 # Split the DataFrame into parts based on column prefixes
-overview_df = df[["CUSTOMER_ID", "FIRST_NAME_STATUS", "LAST_NAME_STATUS", "STREET_STATUS",
-                  "HOUSE_NUMBER_STATUS", "POSTAL_CODE_STATUS", "POSTAL_CITY_STATUS", 
+overview_df = df[["CUSTOMER_ID", "FIRST_NAME_STATUS", "LAST_NAME_STATUS", "FULL_ADDRESS_STATUS",
                   "EMAIL_STATUS", "PHONE_NUMBER_STATUS", "OVERALL_STATUS"]]
 names_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith(("FIRST_NAME", "LAST_NAME"))]]
-address_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED", "FULL_ADDRESS_VALID_AFTER_CORRECTION"] + [col for col in df.columns if col.startswith(("STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY"))]]
+address_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED"] 
+                + [col for col in df.columns if col.startswith(("STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY"))]
+                + ["FULL_ADDRESS_VALID_AFTER_CORRECTION", "FULL_ADDRESS_STATUS"]]
 email_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith("EMAIL")]]
 phone_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith("PHONE_NUMBER")]]
 
