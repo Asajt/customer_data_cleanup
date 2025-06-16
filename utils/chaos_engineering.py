@@ -461,12 +461,24 @@ def apply_errors(df, seed):
         # **ADDRESS ERRORS**
         # ================================================================================================================
         # To make errors more interconnected and realistic, randomly decide if this row will have address errors at all
+
         address_error_chance = np.random.rand()
+
+        # Raise base chance to introduce address errors
         if address_error_chance < 0.20:
-            street_error_chance = np.random.rand() < 0.20
-            house_number_error_chance = np.random.rand() < 0.20 if not street_error_chance or np.random.rand() < 0.5 else False
-            postal_code_error_chance = np.random.rand() < 0.10 if not (street_error_chance or house_number_error_chance) or np.random.rand() < 0.5 else False
-            postal_city_error_chance = np.random.rand() < 0.10 if not (street_error_chance or house_number_error_chance or postal_code_error_chance) or np.random.rand() < 0.5 else False
+            mode = np.random.rand()
+            
+            if mode < 0.7: # isolated errors
+                component = np.random.choice(["street", "house_number", "postal_code", "postal_city"])
+                street_error_chance = component == "street"
+                house_number_error_chance = component == "house_number"
+                postal_code_error_chance = component == "postal_code"
+                postal_city_error_chance = component == "postal_city"
+            else: # interconnected errors
+                street_error_chance = np.random.rand() < 0.6
+                house_number_error_chance = np.random.rand() < (0.5 if street_error_chance else 0.2)
+                postal_code_error_chance = np.random.rand() < (0.4 if house_number_error_chance or street_error_chance else 0.1)
+                postal_city_error_chance = np.random.rand() < (0.4 if postal_code_error_chance else 0.1)
 
         if address_error_chance:
             
