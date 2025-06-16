@@ -60,7 +60,13 @@ phone_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith("PH
 # Escape Excel formulas in the DataFrames
 overview_df = escape_excel_formulas(overview_df)
 names_df    = escape_excel_formulas(names_df)
+first_name_df = escape_excel_formulas(first_name_df)
+last_name_df = escape_excel_formulas(last_name_df)
 address_df  = escape_excel_formulas(address_df)
+street_df   = escape_excel_formulas(street_df)
+house_number_df = escape_excel_formulas(house_number_df)
+postal_code_df = escape_excel_formulas(postal_code_df)
+postal_city_df = escape_excel_formulas(postal_city_df)
 email_df    = escape_excel_formulas(email_df)
 phone_df    = escape_excel_formulas(phone_df)
 
@@ -68,7 +74,13 @@ phone_df    = escape_excel_formulas(phone_df)
 with pd.ExcelWriter('src/processed_data/final_customer_data2.xlsx') as writer:
     overview_df.to_excel(writer, sheet_name="Overview", index=False)
     names_df.to_excel(  writer, sheet_name="Names", index=False)
+    first_name_df.to_excel(writer, sheet_name="First Name", index=False)
+    last_name_df.to_excel( writer, sheet_name="Last Name", index=False)
     address_df.to_excel(writer, sheet_name="Address", index=False)
+    street_df.to_excel( writer, sheet_name="Street", index=False)
+    house_number_df.to_excel(writer, sheet_name="House Number", index=False)
+    postal_code_df.to_excel(writer, sheet_name="Postal Code", index=False)
+    postal_city_df.to_excel(writer, sheet_name="Postal City", index=False)
     email_df.to_excel(  writer, sheet_name="Email", index=False)
     phone_df.to_excel(  writer, sheet_name="Phone", index=False)
 
