@@ -91,10 +91,10 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     
     ################################################################################
     # Create columns to check which rows were corrected
-    df[f"{street_column}_WAS_CORRECTED"] = df[f"{street_column}_CORRECTED"].notnull()
-    df[f"{street_number_column}_WAS_CORRECTED"] = df[f"{street_number_column}_CORRECTED"].notnull()
-    df[f"{postal_code_column}_WAS_CORRECTED"] = df[f"{postal_code_column}_CORRECTED"].notnull()
-    df[f"{postal_city_column}_WAS_CORRECTED"] = df[f"{postal_city_column}_CORRECTED"].notnull()
+    df[f"{street_column}_WAS_CORRECTED"] = (df[f"{street_column}_CORRECTED"].notnull() | df[f"{street_column}_CORRECTED_ERRORS"].apply(lambda x: len(x) > 0))
+    df[f"{street_number_column}_WAS_CORRECTED"] = (df[f"{street_number_column}_CORRECTED"].notnull() | df[f"{street_number_column}_CORRECTED_ERRORS"].apply(lambda x: len(x) > 0))
+    df[f"{postal_code_column}_WAS_CORRECTED"] = (df[f"{postal_code_column}_CORRECTED"].notnull() | df[f"{postal_code_column}_CORRECTED_ERRORS"].apply(lambda x: len(x) > 0))
+    df[f"{postal_city_column}_WAS_CORRECTED"] = (df[f"{postal_city_column}_CORRECTED"].notnull() | df[f"{postal_city_column}_CORRECTED_ERRORS"].apply(lambda x: len(x) > 0))
     
     ################################################################################
     # Step 4: Re-validate for corrected address

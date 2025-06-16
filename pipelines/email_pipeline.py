@@ -54,7 +54,7 @@ def run_email_pipeline(df: pd.DataFrame, email_column) -> pd.DataFrame:
     
     ################################################################################
     # Check if the email was corrected
-    df[f"{email_column}_WAS_CORRECTED"] = df[f"{email_column}_CORRECTED"].notnull()
+    df[f"{email_column}_WAS_CORRECTED"] = (df[f"{email_column}_CORRECTED"].notnull() | df[f"{email_column}_CORRECTED_ERRORS"].apply(lambda x: len(x) > 0))
     
     ################################################################################
     # Step 4: Re-validate for corrected emails

@@ -55,7 +55,7 @@ def run_phone_pipeline(df: pd.DataFrame, phone_column: str) -> pd.DataFrame:
     
     ################################################################################
     # Create columns to check which rows were corrected 
-    df[f"{phone_column}_WAS_CORRECTED"] = df[f"{phone_column}_CORRECTED"].notnull()
+    df[f"{phone_column}_WAS_CORRECTED"] = (df[f"{phone_column}_CORRECTED"].notnull() | df[f"{phone_column}_CORRECTED_ERRORS"].apply(lambda x: len(x) > 0))
     
     ################################################################################
     # Step 4: Re-validate for corrected phones

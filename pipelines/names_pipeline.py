@@ -68,8 +68,8 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
     
     ################################################################################
     # Create columns to check which rows were corrected
-    df[f"{first_name_column}_WAS_CORRECTED"] = df[f"{first_name_column}_CORRECTED"].notnull()
-    df[f"{last_name_column}_WAS_CORRECTED"] = df[f"{last_name_column}_CORRECTED"].notnull()
+    df[f"{first_name_column}_WAS_CORRECTED"] = (df[f"{first_name_column}_CORRECTED"].notnull() | df[f"{first_name_column}_CORRECTED_ERRORS"].apply(lambda x: len(x) > 0))
+    df[f"{last_name_column}_WAS_CORRECTED"] = (df[f"{last_name_column}_CORRECTED"].notnull() | df[f"{last_name_column}_CORRECTED_ERRORS"].apply(lambda x: len(x) > 0))
 
     ################################################################################
     # Step 4: Re-validate for corrected names
