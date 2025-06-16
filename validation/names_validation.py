@@ -112,9 +112,11 @@ def validate_names(first_name=None, last_name=None):
     if first_name and last_name:
         return first_name_valid, last_name_valid
     elif first_name:
-        return first_name_valid
+        return first_name_valid, False
     elif last_name:
-        return last_name_valid
+        return False, last_name_valid
+    else:
+        return False, False  
 
 if __name__ == "__main__":
     customer_data = "src/processed_data/customer_data_with_errors.xlsx"
