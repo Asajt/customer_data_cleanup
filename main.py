@@ -37,6 +37,8 @@ for col in df.columns:
 overview_df = df[["CUSTOMER_ID", "FIRST_NAME_STATUS", "LAST_NAME_STATUS", "FULL_ADDRESS_STATUS",
                   "EMAIL_STATUS", "PHONE_NUMBER_STATUS", "OVERALL_STATUS"]]
 names_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith(("FIRST_NAME", "LAST_NAME"))]]
+first_name_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith(("FIRST_NAME"))]]
+last_name_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith(("LAST_NAME"))]]
 address_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED"] 
                 + [col for col in df.columns if col.startswith(("STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY"))]
                 + ["FULL_ADDRESS_VALID_AFTER_CORRECTION", "FULL_ADDRESS_STATUS"]]
