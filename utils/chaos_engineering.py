@@ -118,7 +118,7 @@ def apply_errors(df, seed):
                         current_value = new_value
 
                 # ERROR 1107 - Initials
-                if np.random.rand() < 0.05:
+                if isinstance(current_value, str) and np.random.rand() < 0.05:
                     initials = ''.join([name[0].upper() + np.random.choice([".", ""]) for name in current_value.split()])
                     new_value = initials if len(current_value.split()) == 1 else current_value
                     if new_value != current_value:
@@ -154,7 +154,7 @@ def apply_errors(df, seed):
                         current_value = new_value
                 
                 # ERROR 1104 - Formatting Issues
-                if np.random.rand() < 0.03:
+                if isinstance(current_value, str) and np.random.rand() < 0.03:
                     if np.random.rand() < 0.5:
                         new_value = np.random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
                     else:
@@ -173,7 +173,7 @@ def apply_errors(df, seed):
                         current_value = new_value
 
                 # ERROR 1108 - Replace š, č, ž, ć with s, c, z, c
-                if np.random.rand() < 0.06:
+                if isinstance(current_value, str) and np.random.rand() < 0.06:
                     replacement_map = {"š": "s", "č": "c", "ž": "z", "ć": "c", "Š": "S", "Č": "C", "Ž": "Z", "Ć": "C"}
                     new_value = ''.join(replacement_map.get(char, char) for char in current_value)
                     if new_value != current_value:
@@ -242,7 +242,7 @@ def apply_errors(df, seed):
                         current_value = new_value
                         
                 # ERROR 1204 - Formatting Issues
-                if np.random.rand() < 0.03:
+                if isinstance(current_value, str) and np.random.rand() < 0.03:
                     if np.random.rand() < 0.5:
                         new_value = np.random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
                     else:
@@ -253,7 +253,7 @@ def apply_errors(df, seed):
                         current_value = new_value
                     
                 # ERROR 1206 - Replace š, č, ž, ć with s, c, z, c
-                if np.random.rand() < 0.06:
+                if isinstance(current_value, str) and np.random.rand() < 0.06:
                     replacement_map = {"š": "s", "č": "c", "ž": "z", "ć": "c", "Š": "S", "Č": "C", "Ž": "Z", "Ć": "C"}
                     new_value = ''.join(replacement_map.get(char, char) for char in current_value)
                     if new_value != current_value:
@@ -461,12 +461,16 @@ def apply_errors(df, seed):
         # To make errors more interconnected and realistic, randomly decide if this row will have address errors at all
 
         address_error_chance = np.random.rand()
+    
+        street_error_chance = False
+        house_number_error_chance = False
+        postal_code_error_chance = False
+        postal_city_error_chance = False
 
-        # Raise base chance to introduce address errors
-        if address_error_chance < 0.20:
+        if address_error_chance < 0.40:
             mode = np.random.rand()
             
-            if mode < 0.7: # isolated errors
+            if mode < 0.8: # isolated errors
                 component = np.random.choice(["street", "house_number", "postal_code", "postal_city"])
                 street_error_chance = component == "street"
                 house_number_error_chance = component == "house_number"
@@ -508,7 +512,7 @@ def apply_errors(df, seed):
                             current_value = new_value                    
                 
                 # ERROR 4103 - Invalid Characters
-                if np.random.rand() < 0.03:
+                if isinstance(current_value, str) and np.random.rand() < 0.03:
                     invalid_chars = ["◊", "�", "ß", "ø", "ç", "@", "#", "%", "&", "*", "~", "^", "!", "?", "_", "|", "/", "\\", "="]
                     eligible_chars = ["č", "š", "ž", "ć", "Č", "Š", "Ž", "Ć"]
                     new_value = ''.join(np.random.choice(invalid_chars) if char in eligible_chars else char for char in current_value)
@@ -541,7 +545,7 @@ def apply_errors(df, seed):
                             current_value = new_value
                 
                 # ERROR 4104 - Formatting Issues
-                if np.random.rand() < 0.04:
+                if isinstance(current_value, str) and np.random.rand() < 0.04:
                     if np.random.rand() < 0.5:
                         new_value = np.random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
                     else:
@@ -620,7 +624,7 @@ def apply_errors(df, seed):
                         current_value = new_value
 
                 # ERROR 4114 - Replace š, č, ž, ć with s, c, z, c
-                if np.random.rand() < 0.04:
+                if isinstance(current_value, str) and np.random.rand() < 0.04:
                     replacement_map = {"š": "s", "č": "c", "ž": "z", "ć": "c", "Š": "S", "Č": "C", "Ž": "Z", "Ć": "C"}
                     new_value = ''.join(replacement_map.get(char, char) for char in current_value)
                     if new_value != current_value:
@@ -874,7 +878,7 @@ def apply_errors(df, seed):
 
                     # ERROR 4403 - Invalid Characters (anything other than letters, BUT check for numbers is in contains digits)
                     # anything other than letters contained in the GURS postal city field or anything other than numbers (since containning digits is a seperate error)
-                    if np.random.rand() < 0.03:
+                    if isinstance(current_value, str) and np.random.rand() < 0.03:
                         invalid_chars = ["◊", "�", "ß", "ø", "ç", "@", "#", "%", "&", "*", "~", "^", "!", "?", "_", "|", "/", "\\", "="]
                         eligible_chars = ["č", "š", "ž", "ć", "Č", "Š", "Ž", "Ć"]
                         new_value = ''.join(np.random.choice(invalid_chars) if char in eligible_chars else char for char in current_value)
@@ -899,7 +903,7 @@ def apply_errors(df, seed):
                             current_value = new_value
 
                     # ERROR 4404 - Formatting Issues
-                    if np.random.rand() < 0.03:
+                    if isinstance(current_value, str) and np.random.rand() < 0.03:
                         if np.random.rand() < 0.5:
                             new_value = np.random.choice([current_value.upper(), current_value.lower(), current_value.capitalize()])
                         else:
@@ -942,7 +946,7 @@ def apply_errors(df, seed):
                                 current_value = new_value
 
                     # ERROR 4408 - Replace š, č, ž, ć with s, c, z, c
-                    if np.random.rand() < 0.08:
+                    if isinstance(current_value, str) and np.random.rand() < 0.08:
                         replacement_map = {"š": "s", "č": "c", "ž": "z", "ć": "c", "Š": "S", "Č": "C", "Ž": "Z", "Ć": "C"}
                         new_value = ''.join(replacement_map.get(char, char) for char in current_value)
                         if new_value != current_value:
