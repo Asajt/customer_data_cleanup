@@ -105,9 +105,6 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
         df[f"{postal_code_column}_CORRECTED"].fillna(df[postal_code_column]).str.strip() + " " +
         df[f"{postal_city_column}_CORRECTED"].fillna(df[postal_city_column]).str.strip()
     )
-    # TEST: filter for rows where full addreess corrected is not null
-    # df_filtered = df[df["FULL_ADDRESS_CORRECTED"].notnull()]
-    # print(df_filtered["FULL_ADDRESS_CORRECTED"].head())
     
     # Apply validation only if at least one of the components was corrected
     df["FULL_ADDRESS_VALID_AFTER_CORRECTION"] = df.apply(
@@ -124,23 +121,30 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     
     ################################################################################
     # Step 5: Assign status
-    def status(row, column):
+    def status(row):
         if row[f"FULL_ADDRESS_VALID"]:
             return "VALID"
-        elif not row[f"{column}_HAS_ERRORS"]:
+        elif not any([
+            row.get("STREET_HAS_ERRORS", False),
+            row.get("HOUSE_NUMBER_HAS_ERRORS", False),
+            row.get("POSTAL_CODE_HAS_ERRORS", False),
+            row.get("POSTAL_CITY_HAS_ERRORS", False)
+            ]):
             return "UNDETECTED ERRORS"
-        elif row[f"{column}_UNCORRECTED_ERRORS"]:
+        elif not any([
+            row.get("STREET_UNCORRECTED_ERRORS", False),
+            row.get("HOUSE_NUMBER_UNCORRECTED_ERRORS", False),
+            row.get("POSTAL_CODE_UNCORRECTED_ERRORS", False),
+            row.get("POSTAL_CITY_UNCORRECTED_ERRORS", False)
+            ]):
             return "UNCORRECTED ERRORS"
         elif row[f"FULL_ADDRESS_VALID_AFTER_CORRECTION"]:
             return "CORRECTED"
         else:
             return "INVALID AFTER CORRECTIONS"
     
-    df[f"{street_column}_STATUS"] = df.apply(lambda row: status(row, street_column), axis=1)
-    df[f"{street_number_column}_STATUS"] = df.apply(lambda row: status(row, street_number_column), axis=1)
-    df[f"{postal_code_column}_STATUS"] = df.apply(lambda row: status(row, postal_code_column), axis=1)
-    df[f"{postal_city_column}_STATUS"] = df.apply(lambda row: status(row, postal_city_column), axis=1)
-    
+    df["FULL_ADDRESS_STATUS"] = df.apply(status, axis=1)
+
     print('Address status assignment completed.')
     
     return df
