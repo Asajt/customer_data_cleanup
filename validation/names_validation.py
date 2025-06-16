@@ -73,7 +73,7 @@ def fetch_SURS_data():
     print("SURS data extracted")
     return all_names, all_surnames
 
-def validate_names(first_name=None, last_name=None):
+def validate_names(first_name=None, last_name=None) -> tuple:
     """
     Validate first and last names against SURS data.
     
@@ -116,33 +116,29 @@ def validate_names(first_name=None, last_name=None):
     elif last_name:
         return False, last_name_valid
     else:
-        return False, False  
+        return False, False
 
 if __name__ == "__main__":
     customer_data = "src/processed_data/customer_data_with_errors.xlsx"
-    customer_data = "src/processed_data/04_pipeline_names_4.xlsx"
+    # customer_data = "src/processed_data/04_pipeline_names_4.xlsx"
     
     df = pd.read_excel(customer_data)
 
     # Apply validation and expand results into two new columns
-    # df[["FIRST_NAME_VALID", "LAST_NAME_VALID"]] = df.apply(
-    #     lambda row: pd.Series(
-    #         validate_names(first_name=row["FIRST_NAME"], last_name=row["LAST_NAME"])
-    #     ),
-    #     axis=1)
+    df["FIRST_NAME_VALID"] = df.apply(
+    lambda row: validate_names(first_name=row["FIRST_NAME"])[0],
+    axis=1)
     
     # Apply validation and expand results into two new columns
-    # df["FIRST_NAME_VALID"] = df.apply(
+    df["LAST_NAME_VALID"] = df.apply(
+        lambda row: validate_names(last_name=row["LAST_NAME"])[1],
+        axis=1)
+
+    # df["corrected_first_name_VALID"] = df.apply(
     #     lambda row: pd.Series(
-    #         validate_names(first_name=row["FIRST_NAME"])
+    #         validate_names(first_name=row["corrected_first_name"])
     #     ),
     #     axis=1)
-
-    df["corrected_first_name_VALID"] = df.apply(
-        lambda row: pd.Series(
-            validate_names(first_name=row["corrected_first_name"])
-        ),
-        axis=1)
     
     df.to_excel("src/processed_data/01_validated_names_test2.xlsx", index=False)
 
