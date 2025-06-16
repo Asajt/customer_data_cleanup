@@ -80,7 +80,7 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
     )
     
     df[f"{last_name_column}_VALID_AFTER_CORRECTION"] = df.apply(
-    lambda row: validate_names(first_name=row[f"{last_name_column}_CORRECTED"]) 
+    lambda row: validate_names(last_name=row[f"{last_name_column}_CORRECTED"]) 
     if row[f"{last_name_column}_WAS_CORRECTED"] else None,
     axis=1
     )
