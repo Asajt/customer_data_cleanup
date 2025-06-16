@@ -31,16 +31,16 @@ def load_error_config_from_excel(path=EXCEL_PATH) -> dict:
 
 def ensure_config():
     """
-    Generates the JSON config from Excel
+    Always generate the JSON config from Excel and overwrite the existing file, even if it already exists.
     """
-    if not os.path.exists(JSON_PATH):
-        print("🔄 Generating JSON config from Excel...")
-        config = load_error_config_from_excel(EXCEL_PATH)
-        with open(JSON_PATH, "w", encoding="utf-8") as f:
-            json.dump(config, f, indent=4, ensure_ascii=False)
-        print(f"Config created at: {JSON_PATH}")
-    else:
-        print(f"Config already exists: {JSON_PATH}")
+    print("Generating JSON config from Excel...")
+    config = load_error_config_from_excel(EXCEL_PATH)
+    with open(JSON_PATH, "w", encoding="utf-8") as f:
+        json.dump(config, f, indent=4, ensure_ascii=False)
+    print(f"Config created at: {JSON_PATH}")
+
+load_error_config_from_excel(path=EXCEL_PATH)
+ensure_config()
 
 def load_error_config(path: str = JSON_PATH) -> dict:
     """Always regenerate and load the error config from Excel."""
