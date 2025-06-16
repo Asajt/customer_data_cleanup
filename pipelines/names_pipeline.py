@@ -74,15 +74,17 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
     ################################################################################
     # Step 4: Re-validate for corrected names
     df[f"{first_name_column}_VALID_AFTER_CORRECTION"] = df.apply(
-        lambda row: validate_names(first_name=row[f"{first_name_column}_CORRECTED"]) 
-        if row[f"{first_name_column}_WAS_CORRECTED"] else None,
+        lambda row: validate_names(first_name=row[f"{first_name_column}_CORRECTED"])[0]
+        if row.get(f"{first_name_column}_WAS_CORRECTED") and pd.notna(row.get(f"{first_name_column}_CORRECTED"))
+        else None,
         axis=1
     )
-    
+
     df[f"{last_name_column}_VALID_AFTER_CORRECTION"] = df.apply(
-    lambda row: validate_names(last_name=row[f"{last_name_column}_CORRECTED"]) 
-    if row[f"{last_name_column}_WAS_CORRECTED"] else None,
-    axis=1
+        lambda row: validate_names(last_name=row[f"{last_name_column}_CORRECTED"])[1]
+        if row.get(f"{last_name_column}_WAS_CORRECTED") and pd.notna(row.get(f"{last_name_column}_CORRECTED"))
+        else None,
+        axis=1
     )
     
     print('Name re-validation completed.')
@@ -122,8 +124,16 @@ if __name__ == "__main__":
     df = run_name_pipeline(df, "FIRST_NAME", "LAST_NAME")
 
     # choose the columns to keep
-    # columns_to_keep = [ ]
-    # df = df[columns_to_keep]
+    columns_to_keep = ["CUSTOMER_ID", 
+                        "FIRST_NAME", "FIRST_NAME_INTRO_ERRORS", "FIRST_NAME_VALID", 
+                        "FIRST_NAME_DETECTED_ERRORS", "FIRST_NAME_HAS_ERRORS", 
+                        "FIRST_NAME_CORRECTED", "FIRST_NAME_CORRECTED_ERRORS", "FIRST_NAME_UNCORRECTED_ERRORS", "FIRST_NAME_WAS_CORRECTED",  "FIRST_NAME_VALID_AFTER_CORRECTION", 
+                        "FIRST_NAME_STATUS",
+                        "LAST_NAME", "LAST_NAME_INTRO_ERRORS", "LAST_NAME_VALID", 
+                        "LAST_NAME_DETECTED_ERRORS", "LAST_NAME_HAS_ERRORS",
+                        "LAST_NAME_CORRECTED", "LAST_NAME_CORRECTED_ERRORS", "LAST_NAME_UNCORRECTED_ERRORS", "LAST_NAME_WAS_CORRECTED", "LAST_NAME_VALID_AFTER_CORRECTION", 
+                        "LAST_NAME_STATUS"]
+    df = df[columns_to_keep]
 
     # Save updated file
     df.to_excel("src/processed_data/05_names.xlsx", index=False)
