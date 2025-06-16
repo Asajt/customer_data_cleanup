@@ -52,10 +52,7 @@ def run_full_quality_pipeline(df,
         statuses = [
             row[f"{first_name_column}_STATUS"],
             row[f"{last_name_column}_STATUS"],
-            row[f"{street_column}_STATUS"],
-            row[f"{street_number_column}_STATUS"],
-            row[f"{postal_code_column}_STATUS"],
-            row[f"{postal_city_column}_STATUS"],
+            row[f"FULL_ADDRESS_STATUS"],
             row[f"{email_column}_STATUS"],
             row[f"{phone_column}_STATUS"]
         ]
