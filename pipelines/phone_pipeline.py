@@ -70,13 +70,18 @@ def run_phone_pipeline(df: pd.DataFrame, phone_column: str) -> pd.DataFrame:
     ################################################################################    
     # Step 5: Assign status
     def status(row, column):
-        if row[f"{column}_VALID"]:
+        detected_errors = row.get(f"{column}_DETECTED_ERRORS", [])
+
+        # Check for MISSING DATA based on error code ending
+        if any(str(error).endswith("01") for error in detected_errors):
+            return "MISSING DATA"
+        elif row.get(f"{column}_VALID"):
             return "VALID"
-        elif not row[f"{column}_HAS_ERRORS"]:
+        elif not row.get(f"{column}_HAS_ERRORS", False):
             return "UNDETECTED ERRORS"
-        elif row[f"{column}_UNCORRECTED_ERRORS"]:
+        elif row.get(f"{column}_UNCORRECTED_ERRORS"):
             return "UNCORRECTED ERRORS"
-        elif row[f"{column}_VALID_AFTER_CORRECTION"]:
+        elif row.get(f"{column}_VALID_AFTER_CORRECTION"):
             return "CORRECTED"
         else:
             return "INVALID AFTER CORRECTIONS"

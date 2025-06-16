@@ -121,7 +121,14 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     
     ################################################################################
     # Step 5: Assign status
-    def status(row):
+    def status(row):        
+        columns = ["STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY"]
+
+        # Check if any component has a detected error ending in '01'
+        for col in columns:
+            detected_errors = row.get(f"{col}_DETECTED_ERRORS", [])
+            if any(str(err).endswith("01") for err in detected_errors):
+                return "MISSING DATA"
         if row[f"FULL_ADDRESS_VALID"]:
             return "VALID"
         elif not any([
