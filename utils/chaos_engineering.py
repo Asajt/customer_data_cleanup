@@ -79,7 +79,7 @@ def apply_errors(df, seed):
         # **FIRST_NAME ERRORS**
         # ============================
         current_value = df.at[index, "FIRST_NAME"]
-        if np.random.rand() < 0.20:
+        if np.random.rand() < 0.30:
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 1101 - Missing Data
             if np.random.rand() < 0.05:
@@ -187,7 +187,7 @@ def apply_errors(df, seed):
         # ============================
         current_value = df.at[index, "LAST_NAME"]
         
-        if np.random.rand() < 0.20:  
+        if np.random.rand() < 0.30:  
             new_value = current_value  # Keep the original value until an error is applied
             # ERROR 1201 - Missing Data
             if np.random.rand() < 0.05:
