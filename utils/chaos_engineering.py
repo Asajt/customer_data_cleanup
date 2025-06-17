@@ -361,6 +361,7 @@ def apply_errors(df, seed):
                         local_part = current_value.split("@")[0]
                         new_value = f"{local_part}@{np.random.choice(invalid_domains)}"
                         if new_value != current_value:
+                            log_error(df, index, "2107")
                             current_value = new_value
                     
             df.at[index, "EMAIL"] = new_value  # Apply error to the column
