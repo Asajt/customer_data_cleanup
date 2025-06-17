@@ -124,31 +124,32 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     def status(row):        
         columns = ["STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY"]
 
-        # Check if any component has a detected error ending in '01'
+        # Check for missing data
         for col in columns:
             detected_errors = row.get(f"{col}_DETECTED_ERRORS", [])
             if any(str(err).endswith("01") for err in detected_errors):
                 return "MISSING DATA"
-        if row[f"FULL_ADDRESS_VALID"]:
+        
+        if row.get("FULL_ADDRESS_VALID"):
             return "VALID"
         elif not any([
             row.get("STREET_HAS_ERRORS", False),
             row.get("HOUSE_NUMBER_HAS_ERRORS", False),
             row.get("POSTAL_CODE_HAS_ERRORS", False),
             row.get("POSTAL_CITY_HAS_ERRORS", False)
-            ]):
+        ]):
             return "UNDETECTED ERRORS"
-        elif not any([
+        elif any([
             row.get("STREET_UNCORRECTED_ERRORS", False),
             row.get("HOUSE_NUMBER_UNCORRECTED_ERRORS", False),
             row.get("POSTAL_CODE_UNCORRECTED_ERRORS", False),
             row.get("POSTAL_CITY_UNCORRECTED_ERRORS", False)
-            ]):
+        ]):
             return "UNCORRECTED ERRORS"
-        elif row[f"FULL_ADDRESS_VALID_AFTER_CORRECTION"]:
+        if row.get("FULL_ADDRESS_VALID_AFTER_CORRECTION"):
             return "CORRECTED"
-        else:
-            return "INVALID AFTER CORRECTIONS"
+        return "INVALID AFTER CORRECTIONS"
+
     
     df["FULL_ADDRESS_STATUS"] = df.apply(status, axis=1)
 
