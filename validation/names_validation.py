@@ -86,8 +86,9 @@ def validate_names(first_name=None, last_name=None) -> tuple:
             - first_name_valid (bool): True if the first name is valid, False otherwise.
             - last_name_valid (bool): True if the last name is valid, False otherwise.
     """
-    if first_name is None and last_name is None:
-        raise ValueError("At least one of first_name or last_name must be provided.")
+    # Handle missing values gracefully
+    if (first_name is None or str(first_name).strip() == "") and (last_name is None or str(last_name).strip() == ""):
+        return False, False
     
     # Fetch SURS data only once
     if not hasattr(validate_names, "all_names"):
