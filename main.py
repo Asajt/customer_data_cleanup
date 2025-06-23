@@ -2,6 +2,7 @@ import pandas as pd
 from pipelines.master_pipeline import run_full_quality_pipeline
 from utils.customer_data_generator import generate_synthetic_customer_data
 from utils.chaos_engineering import apply_errors
+import time
 
 GURS_file_path = 'src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
 dataset_size = 10000
@@ -16,6 +17,7 @@ df = generate_synthetic_customer_data(GURS_file_path, dataset_size, seed)
 # introduce errors into the dataset
 df = apply_errors(df, seed)
 
+start_time = time.time()
 # Run the full quality pipeline
 run_full_quality_pipeline(df, 
                               first_name_column="FIRST_NAME", 
@@ -26,6 +28,9 @@ run_full_quality_pipeline(df,
                               postal_city_column="POSTAL_CITY", 
                               email_column="EMAIL", 
                               phone_column="PHONE_NUMBER")
+end_time = time.time()
+elapsed_time = end_time - start_time
+print(f"Full quality pipeline executed in {elapsed_time:.2f} seconds for {dataset_size} rows.")
 
 for col in df.columns:
         if "ERRORS" in col and df[col].dtype == "object":
