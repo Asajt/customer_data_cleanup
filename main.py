@@ -7,6 +7,7 @@ import time
 GURS_file_path = 'src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
 dataset_size = 10000
 seed = 42
+time_measurement = True
 
 def escape_excel_formulas(df):
     return df.apply(lambda col: col.map(lambda x: f"'{x}" if isinstance(x, str) and x.startswith("=") else x))
@@ -32,63 +33,64 @@ end_time = time.time()
 elapsed_time = end_time - start_time
 print(f"Full quality pipeline executed in {elapsed_time:.2f} seconds for {dataset_size} rows.")
 
-for col in df.columns:
-        if "ERRORS" in col and df[col].dtype == "object":
-            df[col] = df[col].apply(
-                lambda x: ", ".join(sorted(x)) if isinstance(x, (set, list)) else x
-            )
+if time_measurement == False:
+    for col in df.columns:
+            if "ERRORS" in col and df[col].dtype == "object":
+                df[col] = df[col].apply(
+                    lambda x: ", ".join(sorted(x)) if isinstance(x, (set, list)) else x
+                )
 
-# Split the DataFrame into parts based on column prefixes
-overview_df = df[["CUSTOMER_ID", "FIRST_NAME_STATUS", "LAST_NAME_STATUS", "FULL_ADDRESS_STATUS",
-                  "EMAIL_STATUS", "PHONE_NUMBER_STATUS", "OVERALL_STATUS"]]
-names_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith(("FIRST_NAME", "LAST_NAME"))]]
-first_name_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith(("FIRST_NAME"))]]
-last_name_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith(("LAST_NAME"))]]
-address_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED"] 
-                + [col for col in df.columns if col.startswith(("STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY"))]
-                + ["FULL_ADDRESS_VALID_AFTER_CORRECTION", "FULL_ADDRESS_STATUS"]]
-street_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED"] 
-                + [col for col in df.columns if col.startswith(("STREET"))]
-                + ["FULL_ADDRESS_VALID_AFTER_CORRECTION", "FULL_ADDRESS_STATUS"]]
-house_number_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED"] 
-                + [col for col in df.columns if col.startswith(("HOUSE_NUMBER"))]
-                + ["FULL_ADDRESS_VALID_AFTER_CORRECTION", "FULL_ADDRESS_STATUS"]]
-postal_code_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED"] 
-                + [col for col in df.columns if col.startswith(("POSTAL_CODE"))]
-                + ["FULL_ADDRESS_VALID_AFTER_CORRECTION", "FULL_ADDRESS_STATUS"]]
-postal_city_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED"] 
-                + [col for col in df.columns if col.startswith(("POSTAL_CITY"))]
-                + ["FULL_ADDRESS_VALID_AFTER_CORRECTION", "FULL_ADDRESS_STATUS"]]
-email_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith("EMAIL")]]
-phone_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith("PHONE_NUMBER")]]
+    # Split the DataFrame into parts based on column prefixes
+    overview_df = df[["CUSTOMER_ID", "FIRST_NAME_STATUS", "LAST_NAME_STATUS", "FULL_ADDRESS_STATUS",
+                    "EMAIL_STATUS", "PHONE_NUMBER_STATUS", "OVERALL_STATUS"]]
+    names_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith(("FIRST_NAME", "LAST_NAME"))]]
+    first_name_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith(("FIRST_NAME"))]]
+    last_name_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith(("LAST_NAME"))]]
+    address_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED"] 
+                    + [col for col in df.columns if col.startswith(("STREET", "HOUSE_NUMBER", "POSTAL_CODE", "POSTAL_CITY"))]
+                    + ["FULL_ADDRESS_VALID_AFTER_CORRECTION", "FULL_ADDRESS_STATUS"]]
+    street_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED"] 
+                    + [col for col in df.columns if col.startswith(("STREET"))]
+                    + ["FULL_ADDRESS_VALID_AFTER_CORRECTION", "FULL_ADDRESS_STATUS"]]
+    house_number_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED"] 
+                    + [col for col in df.columns if col.startswith(("HOUSE_NUMBER"))]
+                    + ["FULL_ADDRESS_VALID_AFTER_CORRECTION", "FULL_ADDRESS_STATUS"]]
+    postal_code_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED"] 
+                    + [col for col in df.columns if col.startswith(("POSTAL_CODE"))]
+                    + ["FULL_ADDRESS_VALID_AFTER_CORRECTION", "FULL_ADDRESS_STATUS"]]
+    postal_city_df = df[["CUSTOMER_ID", "FULL_ADDRESS", "FULL_ADDRESS_VALID", "FULL_ADDRESS_CORRECTED"] 
+                    + [col for col in df.columns if col.startswith(("POSTAL_CITY"))]
+                    + ["FULL_ADDRESS_VALID_AFTER_CORRECTION", "FULL_ADDRESS_STATUS"]]
+    email_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith("EMAIL")]]
+    phone_df = df[["CUSTOMER_ID"] + [col for col in df.columns if col.startswith("PHONE_NUMBER")]]
 
-# Escape Excel formulas in the DataFrames
-overview_df = escape_excel_formulas(overview_df)
-names_df    = escape_excel_formulas(names_df)
-first_name_df = escape_excel_formulas(first_name_df)
-last_name_df = escape_excel_formulas(last_name_df)
-address_df  = escape_excel_formulas(address_df)
-street_df   = escape_excel_formulas(street_df)
-house_number_df = escape_excel_formulas(house_number_df)
-postal_code_df = escape_excel_formulas(postal_code_df)
-postal_city_df = escape_excel_formulas(postal_city_df)
-email_df    = escape_excel_formulas(email_df)
-phone_df    = escape_excel_formulas(phone_df)
+    # Escape Excel formulas in the DataFrames
+    overview_df = escape_excel_formulas(overview_df)
+    names_df    = escape_excel_formulas(names_df)
+    first_name_df = escape_excel_formulas(first_name_df)
+    last_name_df = escape_excel_formulas(last_name_df)
+    address_df  = escape_excel_formulas(address_df)
+    street_df   = escape_excel_formulas(street_df)
+    house_number_df = escape_excel_formulas(house_number_df)
+    postal_code_df = escape_excel_formulas(postal_code_df)
+    postal_city_df = escape_excel_formulas(postal_city_df)
+    email_df    = escape_excel_formulas(email_df)
+    phone_df    = escape_excel_formulas(phone_df)
 
-# create a excel writer object
-with pd.ExcelWriter('src/processed_data/final_customer_data2.xlsx') as writer:
-    overview_df.to_excel(writer, sheet_name="Overview", index=False)
-    names_df.to_excel(  writer, sheet_name="Names", index=False)
-    first_name_df.to_excel(writer, sheet_name="First Name", index=False)
-    last_name_df.to_excel( writer, sheet_name="Last Name", index=False)
-    address_df.to_excel(writer, sheet_name="Address", index=False)
-    street_df.to_excel( writer, sheet_name="Street", index=False)
-    house_number_df.to_excel(writer, sheet_name="House Number", index=False)
-    postal_code_df.to_excel(writer, sheet_name="Postal Code", index=False)
-    postal_city_df.to_excel(writer, sheet_name="Postal City", index=False)
-    email_df.to_excel(  writer, sheet_name="Email", index=False)
-    phone_df.to_excel(  writer, sheet_name="Phone", index=False)
+    # create a excel writer object
+    with pd.ExcelWriter('src/processed_data/final_customer_data2.xlsx') as writer:
+        overview_df.to_excel(writer, sheet_name="Overview", index=False)
+        names_df.to_excel(  writer, sheet_name="Names", index=False)
+        first_name_df.to_excel(writer, sheet_name="First Name", index=False)
+        last_name_df.to_excel( writer, sheet_name="Last Name", index=False)
+        address_df.to_excel(writer, sheet_name="Address", index=False)
+        street_df.to_excel( writer, sheet_name="Street", index=False)
+        house_number_df.to_excel(writer, sheet_name="House Number", index=False)
+        postal_code_df.to_excel(writer, sheet_name="Postal Code", index=False)
+        postal_city_df.to_excel(writer, sheet_name="Postal City", index=False)
+        email_df.to_excel(  writer, sheet_name="Email", index=False)
+        phone_df.to_excel(  writer, sheet_name="Phone", index=False)
 
-df.to_excel('src/processed_data/final_customer_data.xlsx', index=False)
+    df.to_excel('src/processed_data/final_customer_data.xlsx', index=False)
 
-print(f"Processed data saved")
+    print(f"Processed data saved")
