@@ -24,7 +24,7 @@ logs/
 debug.log
 
 # Data files (prevent committing large datasets, modify as needed)
-data/raw_data/
+data/raw/
 data/processed/
 data/*.csv
 data/*.xlsx
@@ -44,5 +44,5 @@ pip-delete-this-directory.txt
 
 # macOS system files
 .DS_Store
-data/src/raw_data/user_error_config.json
-src/raw_data/user_error_config.xlsx
+src/raw_data/
+src/cache/
