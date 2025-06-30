@@ -14,7 +14,7 @@ def load_error_config_from_excel(path=EXCEL_PATH) -> dict:
 
     df = pd.read_excel(path, sheet_name="Sheet1")
 
-    required_columns = {"error_code", "error_message", "detect", "correct"}
+    required_columns = {"error_code", "error_message", "detect", "correct", "dq_dimension"}
     if not required_columns.issubset(df.columns):
         raise ValueError(f"Excel must contain columns: {required_columns}")
 
@@ -25,6 +25,7 @@ def load_error_config_from_excel(path=EXCEL_PATH) -> dict:
             "error_message": row["error_message"],
             "detect": bool(row["detect"]),
             "correct": bool(row["correct"]),
+            "dq_dimension": row["dq_dimension"]
         }
 
     return config
