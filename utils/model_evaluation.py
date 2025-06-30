@@ -11,6 +11,7 @@ data = pd.read_excel('./src/processed_data/final_customer_data.xlsx')
 # -------------------------------------------------------------------------------------------------------------------
 # --- Helpers ---
 # -------------------------------------------------------------------------------------------------------------------
+
 def filter_errors(error_set, mode='detect'):
     if mode == 'detect':
         return set(e for e in error_set if should_detect(str(e), error_config))
@@ -55,13 +56,13 @@ detected_cols = [col for col in data.columns if col.endswith('_DETECTED_ERRORS')
 corrected_cols = [col for col in data.columns if col.endswith('_CORRECTED_ERRORS')]
 
 # Combine detected and corrected error sets
-
 data['ALL_DETECTED_ERRORS'] = data.apply(lambda row: combine_errors(row, detected_cols), axis=1)
 data['ALL_CORRECTED_ERRORS'] = data.apply(lambda row: combine_errors(row, corrected_cols), axis=1)
 
 # -------------------------------------------------------------------------------------------------------------------
 # --- Counting Errors ---
 # -------------------------------------------------------------------------------------------------------------------
+print("==================================== Errors Counts ====================================")
 # Based on the column ALL_DETECTED_ERRORS provide general stats on detected errors per error code in the whole dataset
 def count_errors(errors_set):
     error_counts = {}
@@ -74,21 +75,32 @@ def count_errors(errors_set):
 # Count all detected and corrected errors
 data['ALL_DETECTED_ERRORS_COUNT'] = data['ALL_DETECTED_ERRORS'].apply(count_errors)
 data['ALL_CORRECTED_ERRORS_COUNT'] = data['ALL_CORRECTED_ERRORS'].apply(count_errors)
+data['INTRODUCED_ERRORS_COUNT'] = data['INTRODUCED_ERRORS_SET'].apply(count_errors)
 
 # Aggregate error counts
 detected_error_counts = Counter()
 data['ALL_DETECTED_ERRORS_COUNT'].apply(detected_error_counts.update)
-
 corrected_error_counts = Counter()
 data['ALL_CORRECTED_ERRORS_COUNT'].apply(corrected_error_counts.update)
+introduced_error_counts = Counter()
+data['INTRODUCED_ERRORS_COUNT'].apply(introduced_error_counts.update)
 
-print("=== Detected Errors Counts ===")
-for error, count in detected_error_counts.items():
-    print(f"{error}: {count}")
+error_comparison = pd.DataFrame({
+    "Introduced": pd.Series(introduced_error_counts),
+    "Detected": pd.Series(detected_error_counts),
+    "Corrected": pd.Series(corrected_error_counts)
+}).fillna(0).astype(int)
+
+error_comparison["Detection Rate (%)"] = (error_comparison["Detected"] / error_comparison["Introduced"]) * 100
+error_comparison["Correction Rate (%)"] = (error_comparison["Corrected"] / error_comparison["Introduced"]) * 100
+error_comparison = error_comparison.round(2)
+
+print(error_comparison.to_string(index=True))
 
 # -------------------------------------------------------------------------------------------------------------------
 # --- Counting Status ---
 # -------------------------------------------------------------------------------------------------------------------
+print("==================================== Status Counts ====================================")
 # Based on the final status of the row, provide counts of different statuses
 def count_statuses(series):
     return series.value_counts().to_dict()
@@ -115,8 +127,57 @@ for col, status_dict in status_counts_by_column.items():
         print(f"  {status}: {count}")
 
 # -------------------------------------------------------------------------------------------------------------------
+# --- DQ Dimension Improvements ---
+# -------------------------------------------------------------------------------------------------------------------
+print("==================================== DQ Dimension Improvements ====================================")
+# Convert error_config to DataFrame
+error_config_df = pd.DataFrame.from_dict(error_config, orient='index')
+error_config_df.index.name = 'error_code'
+error_config_df.reset_index(inplace=True)
+
+# Map error codes to DQ dimensions
+dq_mapping = {
+    row["error_code"]: row["dq_dimension"]
+    for _, row in error_config_df.iterrows()
+    if pd.notna(row["dq_dimension"])
+}
+
+def map_errors_to_dimensions(error_sets):
+    dq_counter = Counter()
+    for error_set in error_sets:
+        for code in error_set:
+            dq = dq_mapping.get(code)
+            if dq:
+                dq_counter[dq] += 1
+    return dq_counter
+
+# Summarize introduced DQ problems (before cleaning)
+introduced_dq_counts = map_errors_to_dimensions(data['INTRODUCED_ERRORS_SET'])
+
+# Summarize corrected DQ problems (after cleaning)
+corrected_dq_counts = map_errors_to_dimensions(data['ALL_CORRECTED_ERRORS'])
+
+# Create summary DataFrame
+dq_summary = pd.DataFrame({
+    "Introduced Errors": introduced_dq_counts,
+    "Corrected Errors": corrected_dq_counts
+}).fillna(0)
+
+# Add correction rate
+dq_summary["Correction Rate (%)"] = (
+    dq_summary["Corrected Errors"] / dq_summary["Introduced Errors"]
+) * 100
+dq_summary = dq_summary.round(2)
+
+# Sort by correction rate or total introduced
+dq_summary = dq_summary.sort_values(by="Correction Rate (%)", ascending=False)
+
+print(dq_summary.to_string(index=True))
+
+# -------------------------------------------------------------------------------------------------------------------
 # --- Confussion matrix ---
 # -------------------------------------------------------------------------------------------------------------------
+print("==================================== Confusion Matrix ====================================")
 # Compute TP, FP, FN from actual set comparison
 def evaluate(actual, predicted):
     tp = len(actual & predicted)
@@ -135,6 +196,7 @@ cor_df = pd.DataFrame(cor_results.tolist(), columns=['TP', 'FP', 'FN'])
 # -------------------------------------------------------------------------------------------------------------------
 # --- Precision, recall & F1 score ---
 # -------------------------------------------------------------------------------------------------------------------
+print("==================================== Precision, Recall & F1 Score ====================================")
 def summarize(df):
     TP, FP, FN = df[['TP', 'FP', 'FN']].sum()
     precision = TP / (TP + FP) if (TP + FP) else 0
