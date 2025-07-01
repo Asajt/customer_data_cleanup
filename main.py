@@ -58,12 +58,6 @@ if evaluate_model:
     # -------------------------------------------------------------------------------------------------------------------
     # --- Helpers ---
     # -------------------------------------------------------------------------------------------------------------------
-    def filter_errors(error_set, mode='detect'):
-        if mode == 'detect':
-            return set(e for e in error_set if should_detect(str(e), error_config))
-        elif mode == 'correct':
-            return set(e for e in error_set if should_correct(str(e), error_config))
-        return set()
 
     def parse_errors(error_str):
         if error_str is None:
@@ -81,6 +75,12 @@ if evaluate_model:
         error_str = error_str.strip("{}[]").replace("'", "")
         return set(item.strip() for item in error_str.split(",") if item.strip())
 
+    def combine_errors(row, columns):
+            combined = set()
+            for col in columns:
+                combined |= parse_errors(row[col])
+            return combined
+
     def count_errors(errors_set):
         error_counts = {}
         for error in errors_set:
@@ -88,12 +88,13 @@ if evaluate_model:
                 error_counts[error] = 0
             error_counts[error] += 1
         return error_counts
-
-    def combine_errors(row, columns):
-        combined = set()
-        for col in columns:
-            combined |= parse_errors(row[col])
-        return combined
+    
+    def filter_errors(error_set, mode='detect'):
+        if mode == 'detect':
+            return set(e for e in error_set if should_detect(str(e), error_config))
+        elif mode == 'correct':
+            return set(e for e in error_set if should_correct(str(e), error_config))
+        return set()
     
     def count_statuses(series):
         return series.value_counts()
@@ -106,20 +107,6 @@ if evaluate_model:
                 if dq:
                     dq_counter[dq] += 1
         return dq_counter
-    
-    # Compute TP, FP, FN from actual set comparison
-    def evaluate(actual, predicted):
-        tp = len(actual & predicted)
-        fp = len(predicted - actual)
-        fn = len(actual - predicted)
-        return tp, fp, fn
-    
-    def summarize(df):
-        TP, FP, FN = df[['TP', 'FP', 'FN']].sum()
-        precision = TP / (TP + FP) if (TP + FP) else 0
-        recall = TP / (TP + FN) if (TP + FN) else 0
-        f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0
-        return precision, recall, f1
     
     def evaluate_performance(true_col, pred_col):
         accuracy = accuracy_score(true_col, pred_col)

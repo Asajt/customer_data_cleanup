@@ -2,346 +2,421 @@
     "1101": {
         "error_message": "NAME: Missing Data",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Completness"
     },
     "1102": {
         "error_message": "NAME: Unnecessary Spaces",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "1103": {
         "error_message": "NAME: Invalid Characters",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "1104": {
         "error_message": "NAME: Formatting Issue",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "1105": {
         "error_message": "NAME: Duplicates",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Uniqueness"
     },
     "1106": {
         "error_message": "NAME: Two names in one field",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "1107": {
         "error_message": "NAME: Initials present",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "1108": {
-        "error_message": "NAME: replacing šćčž to scz",
-        "detect": true,
-        "correct": true
+        "error_message": "NAME: Diacritic Loss",
+        "detect": false,
+        "correct": false,
+        "dq_dimension": "Accuracy"
     },
     "1201": {
         "error_message": "SURNAME: Missing Data",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Completness"
     },
     "1202": {
         "error_message": "SURNAME: Unnecessary Spaces",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "1203": {
         "error_message": "SURNAME: Invalid Characters",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "1204": {
         "error_message": "SURNAME: Formatting Issue",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "1205": {
         "error_message": "SURNAME: Duplicates",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Uniqueness"
     },
     "1206": {
-        "error_message": "SURNAME: replacing šćčž to scz",
-        "detect": true,
-        "correct": true
+        "error_message": "SURNAME: Diacritic Loss",
+        "detect": false,
+        "correct": false,
+        "dq_dimension": "Accuracy"
     },
     "2101": {
         "error_message": "EMAIL: Missing Data",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Completness"
     },
     "2102": {
         "error_message": "EMAIL: Unnecessary Spaces",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "2103": {
         "error_message": "EMAIL: Invalid Characters",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "2104": {
         "error_message": "EMAIL: Formatting Issue",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "2105": {
         "error_message": "EMAIL: Possibly Two Emails",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "2106": {
-        "error_message": "EMAIL: Possibly Invalid domain",
+        "error_message": "EMAIL:  Invalid domain structure",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
+    },
+    "2107": {
+        "error_message": "EMAIL: Possibly invalid domain",
+        "detect": true,
+        "correct": false,
+        "dq_dimension": "Validity"
+    },
+    "2000": {
+        "error_message": "EMAIL: Fallback error",
+        "detect": true,
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "3101": {
         "error_message": "PHONE: Missing Data",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Completness"
     },
     "3102": {
         "error_message": "PHONE: Unnecessary Spaces",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "3103": {
         "error_message": "PHONE: Invalid characters",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "3104": {
         "error_message": "PHONE: Formatting Issue",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "3105": {
         "error_message": "PHONE: Too many digits",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "3106": {
         "error_message": "PHONE: Too little digits",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "3107": {
         "error_message": "PHONE: Two phone numbers",
         "detect": true,
-        "correct": true
-    },
-    "3108": {
-        "error_message": "PHONE: Different country format",
-        "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "4101": {
         "error_message": "STREET_NAME: Missing Data",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Completness"
     },
     "4102": {
         "error_message": "STREET_NAME: Unnecessary Spaces",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4103": {
         "error_message": "STREET_NAME: Invalid characters",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "4104": {
         "error_message": "STREET_NAME: Formatting Issue",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "4105": {
         "error_message": "STREET_NAME: Contains house number",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4106": {
         "error_message": "STREET_NAME: Contains variation of BŠ",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4107": {
         "error_message": "STREET_NAME: Invalid abbreviations",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4108": {
         "error_message": "STREET_NAME: No space after full stop",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4109": {
         "error_message": "STREET_NAME: Only numbers",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "4110": {
         "error_message": "STREET_NAME: Duplicates",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Uniqueness"
     },
     "4111": {
         "error_message": "STREET_NAME: Starts with number",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "4112": {
-        "error_message": "STREET_NAME: Cannot contain digit at the end",
+        "error_message": "STREET_NAME: Ends with number",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "4113": {
-        "error_message": "STREET_NAME: Invalid digit in Street",
+        "error_message": "STREET_NAME: Invalid digit",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "4114": {
-        "error_message": "STREET_NAME: replacing šćčž to scz",
-        "detect": true,
-        "correct": true
+        "error_message": "STREET_NAME: Diacritic Loss",
+        "detect": false,
+        "correct": false,
+        "dq_dimension": "Accuracy"
     },
     "4201": {
         "error_message": "HOUSE_NUMBER: Missing Data",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Completness"
     },
     "4202": {
         "error_message": "HOUSE_NUMBER: Unnecessary spaces",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4203": {
         "error_message": "HOUSE_NUMBER: Contains variation of BŠ",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Completness"
     },
     "4204": {
         "error_message": "HOUSE_NUMBER: No house number",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Completness"
     },
     "4205": {
         "error_message": "HOUSE_NUMBER: invalid combination",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4206": {
         "error_message": "HOUSE_NUMBER: Leading 0",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4207": {
         "error_message": "HOUSE_NUMBER: Spacing between components",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4208": {
         "error_message": "HOUSE_NUMBER: Contains roman numerals",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4209": {
         "error_message": "HOUSE_NUMBER: Ends with full stop",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4210": {
         "error_message": "HOUSE_NUMBER: More than one number present",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "4211": {
         "error_message": "HOUSE_NUMBER: Does not start with digit",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "4212": {
         "error_message": "HOUSE_NUMBER: More than 4 digits",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
+    },
+    "4213": {
+        "error_message": "HOUSE_NUMBER: Contains BŠ as well as number ",
+        "detect": true,
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4301": {
         "error_message": "ZIPCODE: Missing Data",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Completness"
     },
     "4302": {
         "error_message": "ZIPCODE: Unnecessary Spaces",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4303": {
         "error_message": "ZIPCODE: invalid characters",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4304": {
         "error_message": "ZIPCODE: Less than 4",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "4305": {
         "error_message": "ZIPCODE: More than 4",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "4306": {
-        "error_message": "ZIPCODE: Contains Letters",
-        "detect": true,
-        "correct": true
-    },
-    "4307": {
         "error_message": "ZIPCODE: Invalid Value",
         "detect": true,
-        "correct": true
+        "correct": false,
+        "dq_dimension": "Validity"
     },
     "4401": {
         "error_message": "POSTAL_CITY: Missing Data",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Completness"
     },
     "4402": {
         "error_message": "POSTAL_CITY: Unnecessary Spaces",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4403": {
         "error_message": "POSTAL_CITY: Invalid characters",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4404": {
         "error_message": "POSTAL_CITY: Formatting Issue",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4405": {
         "error_message": "POSTAL_CITY: Contains digits",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4406": {
         "error_message": "POSTAL_CITY: Invalid abbreviations",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Validity"
     },
     "4407": {
         "error_message": "POSTAL_CITY: Duplicates",
         "detect": true,
-        "correct": true
+        "correct": true,
+        "dq_dimension": "Uniqueness"
     },
     "4408": {
-        "error_message": "POSTAL_CITY: replacing šćčž to scz",
-        "detect": true,
-        "correct": true
+        "error_message": "POSTAL_CITY: Diacritic Loss",
+        "detect": false,
+        "correct": false,
+        "dq_dimension": "Accuracy"
     }
 }
