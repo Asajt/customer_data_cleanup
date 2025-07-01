@@ -44,7 +44,7 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     # Apply validation
     df["FULL_ADDRESS_VALID"] = df["FULL_ADDRESS"].apply(lambda addr: validate_full_address(addr, gurs_address_set))
 
-    print('Address validation completed.')
+    print('AP: Address validation completed.')
     
     ################################################################################
     # Step 2: Detect errors
@@ -57,7 +57,7 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
         axis=1
     )
     
-    print('Address detection completed.')
+    print('AP: Address detection completed.')
     
     ################################################################################
     # Create columns to check if there are errors
@@ -87,7 +87,7 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
         , axis=1
     )
     
-    print('Address correction completed.')
+    print('AP: Address correction completed.')
     
     ################################################################################
     # Create columns to check which rows were corrected
@@ -117,7 +117,7 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
         axis=1
     )
     
-    print('Address re-validation completed.')
+    print('AP: Address re-validation completed.')
     
     ################################################################################
     # Step 5: Assign status
@@ -153,7 +153,7 @@ def run_address_pipeline(df: pd.DataFrame, street_column, street_number_column, 
     
     df["FULL_ADDRESS_STATUS"] = df.apply(status, axis=1)
 
-    print('Address status assignment completed.')
+    print('AP: Address status assignment completed.')
     
     return df
 

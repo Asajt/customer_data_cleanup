@@ -34,18 +34,18 @@ def run_full_quality_pipeline(df,
         pd.DataFrame: Updated DataFrame with additional columns for detected errors, corrections, and validation status.
     """
     df = run_name_pipeline(df, first_name_column, last_name_column)
-    print('Name pipeline done')
+    print('MP: Name pipeline done')
     
     df = run_email_pipeline(df, email_column)
-    print('Email pipeline done')
+    print('MP: Email pipeline done')
     
     df = run_address_pipeline(df, 
                               street_column, street_number_column, 
                               postal_code_column, postal_city_column)
-    print('Address pipeline done')
+    print('MP: Address pipeline done')
     
     df = run_phone_pipeline(df, phone_column)
-    print('Phone pipeline done')
+    print('MP: Phone pipeline done')
     
     # Step 5: Assign overall status based on individual statuses
     def overall_status(row):
@@ -71,7 +71,7 @@ def run_full_quality_pipeline(df,
     
     df["OVERALL_STATUS"] = df.apply(lambda row: overall_status(row), axis=1)
     
-    print('Overall status assigned')
+    print('MP: Overall status assigned')
     
     return df
 

@@ -34,7 +34,7 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
         ),
         axis=1)
 
-    print('Name validation completed.')
+    print('NP: Name validation completed.')
 
     ################################################################################
     # Step 2: Detect name and surname errors
@@ -43,7 +43,7 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
         axis=1
     )
     
-    print('Name error detection completed.')
+    print('NP: Name error detection completed.')
     
     ################################################################################
     # Create columns to check if there are errors
@@ -64,7 +64,7 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
         , axis=1
     )
     
-    print('Name correction completed.')
+    print('NP: Name correction completed.')
     
     ################################################################################
     # Create columns to check which rows were corrected
@@ -87,7 +87,7 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
         axis=1
     )
     
-    print('Name re-validation completed.')
+    print('NP: Name re-validation completed.')
     
     ################################################################################
     # Step 5: Assign status
@@ -111,7 +111,7 @@ def run_name_pipeline(df: pd.DataFrame, first_name_column, last_name_column) -> 
     df[f"{first_name_column}_STATUS"] = df.apply(lambda row: status(row, first_name_column), axis=1)
     df[f"{last_name_column}_STATUS"] = df.apply(lambda row: status(row, last_name_column), axis=1)
     
-    print('Name status assignment completed.')
+    print('NP: Name status assignment completed.')
     
     return df
 

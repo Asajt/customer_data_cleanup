@@ -34,7 +34,7 @@ def fetch_GURS_data(file_path):
 
     addresses['ST_STANOVANJA'] = addresses['ST_STANOVANJA'].astype('Int64')
 
-    print("GURS data extracted")
+    print("SD: GURS data extracted")
     return addresses
 
 def fetch_SURS_data():
@@ -104,7 +104,7 @@ def fetch_SURS_data():
     all_names = calculate_frequencies(all_names)
     all_surnames = calculate_frequencies(all_surnames)
     
-    print("SURS data extracted")
+    print("SD: SURS data extracted")
     return all_names, all_surnames
   
 def generate_slo_phone_number():

@@ -28,13 +28,13 @@ def run_phone_pipeline(df: pd.DataFrame, phone_column: str) -> pd.DataFrame:
     # Step 1: Validate phones
     df[f"{phone_column}_VALID"] = df[phone_column].apply(validate_phone)
 
-    print('Phone validation completed.')
+    print('PP: Phone validation completed.')
     
     ################################################################################
     # Step 2: Detect errors
     df[f"{phone_column}_DETECTED_ERRORS"] = df[phone_column].apply(detect_phone_errors)
     
-    print('Phone detection completed.')
+    print('PP: Phone detection completed.')
     
     ################################################################################
     # Create columns to check if there are errors
@@ -51,7 +51,7 @@ def run_phone_pipeline(df: pd.DataFrame, phone_column: str) -> pd.DataFrame:
         , axis=1
     )
     
-    print('Phone correction completed.')
+    print('PP: Phone correction completed.')
     
     ################################################################################
     # Create columns to check which rows were corrected 
@@ -65,7 +65,7 @@ def run_phone_pipeline(df: pd.DataFrame, phone_column: str) -> pd.DataFrame:
         axis=1
     )
     
-    print('Phone re-validation completed.')
+    print('PP: Phone re-validation completed.')
 
     ################################################################################    
     # Step 5: Assign status
@@ -88,7 +88,7 @@ def run_phone_pipeline(df: pd.DataFrame, phone_column: str) -> pd.DataFrame:
     
     df[f"{phone_column}_STATUS"] = df.apply(lambda row: status(row, phone_column), axis=1)
     
-    print('Phone status assignment completed.')
+    print('PP: Phone status assignment completed.')
     
     return df
 
