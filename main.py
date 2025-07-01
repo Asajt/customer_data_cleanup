@@ -14,9 +14,11 @@ GURS_file_path = 'src/raw_data/RN_SLO_NASLOVI_register_naslovov_20240929.csv'
 dataset_size = 10000
 seed = 7 #42
 cache_path = f"src/cache/final_customer_data_{dataset_size}_{seed}.parquet"
-time_measurement = False
-evaluate_model = True
-generate_report = True
+
+time_measurement = True
+cache_result = False
+evaluate_model = False
+generate_report = False
 
 ###################################################### Main execution ######################################################
 
@@ -46,9 +48,10 @@ else:
     end_time = time.time()
     elapsed_time = end_time - start_time
     # Cache DataFrame for future fast loading
-    cache_path = f"src/cache/final_customer_data_{dataset_size}_{seed}.parquet"
-    df.to_parquet(cache_path, index=False)
-    print(f"Cached DataFrame saved to {cache_path}")
+    if cache_result:
+        cache_path = f"src/cache/final_customer_data_{dataset_size}_{seed}.parquet"
+        df.to_parquet(cache_path, index=False)
+        print(f"Cached DataFrame saved to {cache_path}")
     print(f"Full quality pipeline executed in {elapsed_time:.2f} seconds for {dataset_size} rows.")
 
 ############################################################################################################
