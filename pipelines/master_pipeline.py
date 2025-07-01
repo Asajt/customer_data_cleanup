@@ -59,15 +59,17 @@ def run_full_quality_pipeline(df,
         
         if all(status == "VALID" for status in statuses):
             return "VALID"
-        if any(status == "INVALID" for status in statuses):
-            return "INVALID"
-        if any(status == "CORRECTED" for status in statuses):
+        elif all(status in {"VALID", "CORRECTED"} for status in statuses):
             return "CORRECTED"
-        if any(status == "UNCORRECTED" for status in statuses):
-            return "UNCORRECTED"
-        return "PARTIALLY_VALID"
+        elif any(status in {"MISSING DATA", "UNCORRECTED ERRORS"} for status in statuses):
+            return "DETECTED ERRORS"
+        elif any(status == "UNDETECTED ERRORS" for status in statuses):
+            return "UNDETECTED ERRORS"
+        elif any(status == "INVALID AFTER CORRECTIONS" for status in statuses):
+            return "INVALID AFTER CORRECTIONS"
+        return "UNKNOWN STATUS"
     
-    df["OVERALL_STATUS"] = df.apply(overall_status, axis=1)
+    df["OVERALL_STATUS"] = df.apply(lambda row: overall_status(row), axis=1)
     
     print('Overall status assigned')
     
