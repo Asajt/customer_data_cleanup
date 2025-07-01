@@ -120,24 +120,32 @@ if evaluate_model:
         recall = TP / (TP + FN) if (TP + FN) else 0
         f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0
         return precision, recall, f1
+    
+    def evaluate_performance(true_col, pred_col):
+        accuracy = accuracy_score(true_col, pred_col)
+        precision = precision_score(true_col, pred_col)
+        recall = recall_score(true_col, pred_col)
+        f1 = f1_score(true_col, pred_col)
+        cm = confusion_matrix(true_col, pred_col)
+        report = classification_report(true_col, pred_col, target_names=["No Error", "Error"])
+        
+        return accuracy, precision, recall, f1, cm, report
 
     # -------------------------------------------------------------------------------------------------------------------
     # --- Preprocessing ---
     # -------------------------------------------------------------------------------------------------------------------
-    # Parse sets
+    # Parse sets and combine errors
     df['INTRODUCED_ERRORS_SET'] = df['INTRODUCED_ERRORS'].apply(parse_errors)
-
+    
+    detected_cols = [col for col in df.columns if col.endswith('_DETECTED_ERRORS')]
+    corrected_cols = [col for col in df.columns if col.endswith('_CORRECTED_ERRORS')]
+    df['ALL_DETECTED_ERRORS'] = df.apply(lambda row: combine_errors(row, detected_cols), axis=1)
+    df['ALL_CORRECTED_ERRORS'] = df.apply(lambda row: combine_errors(row, corrected_cols), axis=1)
+    
     # Filter for only the errors that should be detected or corrected as per the config
     df['INTRODUCED_ERRORS_SET_DETECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'detect'))
     df['INTRODUCED_ERRORS_SET_CORRECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'correct'))
 
-    # Relevant columns
-    detected_cols = [col for col in df.columns if col.endswith('_DETECTED_ERRORS')]
-    corrected_cols = [col for col in df.columns if col.endswith('_CORRECTED_ERRORS')]
-
-    df['ALL_DETECTED_ERRORS'] = df.apply(lambda row: combine_errors(row, detected_cols), axis=1)
-    df['ALL_CORRECTED_ERRORS'] = df.apply(lambda row: combine_errors(row, corrected_cols), axis=1)
-    
     # -------------------------------------------------------------------------------------------------------------------
     # --- Counting Errors ---
     # -------------------------------------------------------------------------------------------------------------------
@@ -174,71 +182,70 @@ if evaluate_model:
     print("\n==================================== Level 1: Overall row status ====================================")
     
     # check column introduced_errors and if its not empty then assig true to column has_intro_errors    
-    df['HAS_INTRODUCED_ERRORS'] = df['INTRODUCED_ERRORS_SET'].apply(lambda x: len(x) > 0)
-    df['HAS_DETECTED_ERRORS'] = df['ALL_DETECTED_ERRORS'].apply(lambda x: len(x) > 0)
-    df['HAS_CORRECTED_ERRORS'] = df['ALL_CORRECTED_ERRORS'].apply(lambda x: len(x) > 0)
+    df['HAS_INTRODUCED'] = df['INTRODUCED_ERRORS_SET'].apply(lambda x: len(x) > 0)
+    df['HAS_DETECTED'] = df['ALL_DETECTED_ERRORS'].apply(lambda x: len(x) > 0)
+    df['HAS_CORRECTED'] = df['ALL_CORRECTED_ERRORS'].apply(lambda x: len(x) > 0)
     
-    def evaluate_performance(true_col, pred_col):
-        accuracy = accuracy_score(true_col, pred_col)
-        precision = precision_score(true_col, pred_col)
-        recall = recall_score(true_col, pred_col)
-        f1 = f1_score(true_col, pred_col)
-        cm = confusion_matrix(true_col, pred_col)
-        report = classification_report(true_col, pred_col, target_names=["No Error", "Error"])
-        
-        return accuracy, precision, recall, f1, cm, report
+    true_col = df['HAS_INTRODUCED']
+    pred_col_det = df['HAS_DETECTED']
+    pred_col_corr = df['HAS_CORRECTED']
     
     # Check for detection
-    true_col = df['HAS_INTRODUCED_ERRORS']
-    pred_col = df['HAS_DETECTED_ERRORS']
-    
-    accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col, pred_col)
-    print(f"Accuracy: {accuracy:.3f}")
-    print(f"Precision: {precision:.3f}")
-    print(f"Recall: {recall:.3f}")
-    print(f"F1 Score: {f1:.3f}")
+    accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col, pred_col_det)
+    print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
     print("Confusion Matrix:")
     print(cm)
     print("\nDetailed Classification Report:")
     print(report)
     
     # Check  for correction 
-    y_true = df['HAS_INTRODUCED_ERRORS']
-    y_pred = df['HAS_CORRECTED_ERRORS']
-    
-    print(f"Accuracy: {accuracy:.3f}")
-    print(f"Precision: {precision:.3f}")
-    print(f"Recall: {recall:.3f}")
-    print(f"F1 Score: {f1:.3f}")
+    accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col, pred_col_corr)
+    print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
     print("Confusion Matrix:")
     print(cm)
     print("\nDetailed Classification Report:")
     print(report)
     
+    print("\n==================================== Level 1: Error Code level ====================================")    
+    # order the columns
+    df['INTRODUCED_ERRORS_SET_DETECT'] = df['INTRODUCED_ERRORS_SET_DETECT'].apply(lambda x: sorted(x))
+    df['INTRODUCED_ERRORS_SET_CORRECT'] = df['INTRODUCED_ERRORS_SET_CORRECT'].apply(lambda x: sorted(x))
+    df['ALL_DETECTED_ERRORS'] = df['ALL_DETECTED_ERRORS'].apply(lambda x: sorted(x))
+    df['ALL_CORRECTED_ERRORS'] = df['ALL_CORRECTED_ERRORS'].apply(lambda x: sorted(x))
     
-    print("\n==================================== Level 1: Error Code level ====================================")
-    # Detection evaluation
-    det_results = df.apply(lambda row: evaluate(row['INTRODUCED_ERRORS_SET_DETECT'], row['ALL_DETECTED_ERRORS']), axis=1)
-    det_df = pd.DataFrame(det_results.tolist(), columns=['TP', 'FP', 'FN'])
-
-    # Define a function to summarize precision, recall, and F1 score
-    det_precision, det_recall, det_f1 = summarize(det_df)
-
-    print("\n=== Detection Evaluation ===")
-    print(f"Precision: {det_precision:.3f}")
-    print(f"Recall:    {det_recall:.3f}")
-    print(f"F1 Score:  {det_f1:.3f}")
+    df['HAS_INTRODUCED_ERRORS_DETECT'] = df['INTRODUCED_ERRORS_SET_DETECT'].apply(lambda x: len(x) > 0)
+    df['HAS_INTRODUCED_ERRORS_CORRECT'] = df['INTRODUCED_ERRORS_SET_CORRECT'].apply(lambda x: len(x) > 0)
+    df['HAS_DETECTED_ERRORS'] = df.apply(
+        lambda row: False if (not row['ALL_DETECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET_DETECT'])
+        else row['ALL_DETECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET_DETECT'],
+        axis=1
+    )
+    df['HAS_CORRECTED_ERRORS'] = df.apply(
+        lambda row: False if (not row['ALL_CORRECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET_CORRECT'])
+        else row['ALL_CORRECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET_CORRECT'],
+        axis=1
+    )
     
-    # Correction evaluation
-    cor_results = df.apply(lambda row: evaluate(row['INTRODUCED_ERRORS_SET_CORRECT'], row['ALL_CORRECTED_ERRORS']), axis=1)
-    cor_df = pd.DataFrame(cor_results.tolist(), columns=['TP', 'FP', 'FN'])
-
-    cor_precision, cor_recall, cor_f1 = summarize(cor_df)
-
-    print("\n=== Correction Evaluation ===")
-    print(f"Precision: {cor_precision:.3f}")
-    print(f"Recall:    {cor_recall:.3f}")
-    print(f"F1 Score:  {cor_f1:.3f}")
+    true_col_det = df['HAS_INTRODUCED_ERRORS_DETECT']
+    true_col_corr = df['HAS_INTRODUCED_ERRORS_CORRECT']
+    pred_col_det = df['HAS_DETECTED_ERRORS']
+    pred_col_corr = df['HAS_CORRECTED_ERRORS']
+    
+    # Check for detection
+    accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col_det, pred_col_det)
+    print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
+    print("Confusion Matrix:")
+    print(cm)
+    print("\nDetailed Classification Report:")
+    print(report)
+    
+    # Check  for correction 
+    accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col_corr, pred_col_corr)
+    print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
+    print("Confusion Matrix:")
+    print(cm)
+    print("\nDetailed Classification Report:")
+    print(report)
     
     # -------------------------------------------------------------------------------------------------------------------
     # --- Counting Status ---
