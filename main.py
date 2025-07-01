@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import time
 from collections import Counter
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, classification_report
 from pipelines.master_pipeline import run_full_quality_pipeline
 from utils.customer_data_generator import generate_synthetic_customer_data
 from utils.chaos_engineering import apply_errors
@@ -15,7 +16,7 @@ seed = 7 #42
 cache_path = f"src/cache/final_customer_data_{dataset_size}_{seed}.parquet"
 time_measurement = False
 evaluate_model = True
-generate_report = False
+generate_report = True
 
 ###################################################### Main execution ######################################################
 
@@ -53,10 +54,7 @@ else:
 ############################################################################################################
 
 if evaluate_model:
-    # Load error configuration and data
     error_config = load_error_config()
-    data = df
-
     # -------------------------------------------------------------------------------------------------------------------
     # --- Helpers ---
     # -------------------------------------------------------------------------------------------------------------------
@@ -96,16 +94,42 @@ if evaluate_model:
         for col in columns:
             combined |= parse_errors(row[col])
         return combined
+    
+    def count_statuses(series):
+        return series.value_counts()
+    
+    def map_errors_to_dimensions(error_sets):
+        dq_counter = Counter()
+        for error_set in error_sets:
+            for code in error_set:
+                dq = dq_mapping.get(code)
+                if dq:
+                    dq_counter[dq] += 1
+        return dq_counter
+    
+    # Compute TP, FP, FN from actual set comparison
+    def evaluate(actual, predicted):
+        tp = len(actual & predicted)
+        fp = len(predicted - actual)
+        fn = len(actual - predicted)
+        return tp, fp, fn
+    
+    def summarize(df):
+        TP, FP, FN = df[['TP', 'FP', 'FN']].sum()
+        precision = TP / (TP + FP) if (TP + FP) else 0
+        recall = TP / (TP + FN) if (TP + FN) else 0
+        f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0
+        return precision, recall, f1
 
     # -------------------------------------------------------------------------------------------------------------------
     # --- Preprocessing ---
     # -------------------------------------------------------------------------------------------------------------------
     # Parse sets
-    data['INTRODUCED_ERRORS_SET'] = data['INTRODUCED_ERRORS'].apply(parse_errors)
+    df['INTRODUCED_ERRORS_SET'] = df['INTRODUCED_ERRORS'].apply(parse_errors)
 
     # Filter for only the errors that should be detected or corrected as per the config
-    data['INTRODUCED_ERRORS_SET_DETECT'] = data['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'detect'))
-    data['INTRODUCED_ERRORS_SET_CORRECT'] = data['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'correct'))
+    df['INTRODUCED_ERRORS_SET_DETECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'detect'))
+    df['INTRODUCED_ERRORS_SET_CORRECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'correct'))
 
     # Relevant columns
     detected_cols = [col for col in df.columns if col.endswith('_DETECTED_ERRORS')]
@@ -117,21 +141,20 @@ if evaluate_model:
     # -------------------------------------------------------------------------------------------------------------------
     # --- Counting Errors ---
     # -------------------------------------------------------------------------------------------------------------------
-    print("==================================== Errors Counts ====================================")
+    print("\n==================================== Errors Counts ====================================")
 
     # Count errors in the introduced set
-    data['ALL_DETECTED_ERRORS_COUNT'] = data['ALL_DETECTED_ERRORS'].apply(count_errors)
-    data['ALL_CORRECTED_ERRORS_COUNT'] = data['ALL_CORRECTED_ERRORS'].apply(count_errors)
-    data['INTRODUCED_ERRORS_COUNT'] = data['INTRODUCED_ERRORS_SET'].apply(count_errors)
+    df['ALL_DETECTED_ERRORS_COUNT'] = df['ALL_DETECTED_ERRORS'].apply(count_errors)
+    df['ALL_CORRECTED_ERRORS_COUNT'] = df['ALL_CORRECTED_ERRORS'].apply(count_errors)
+    df['INTRODUCED_ERRORS_COUNT'] = df['INTRODUCED_ERRORS_SET'].apply(count_errors)
 
     # Aggregate error counts
     detected_error_counts = Counter()
-    data['ALL_DETECTED_ERRORS_COUNT'].apply(detected_error_counts.update)
+    df['ALL_DETECTED_ERRORS_COUNT'].apply(detected_error_counts.update)
     corrected_error_counts = Counter()
-    data['ALL_CORRECTED_ERRORS_COUNT'].apply(corrected_error_counts.update)
+    df['ALL_CORRECTED_ERRORS_COUNT'].apply(corrected_error_counts.update)
     introduced_error_counts = Counter()
-    data['INTRODUCED_ERRORS_COUNT'].apply(introduced_error_counts.update)
-    
+    df['INTRODUCED_ERRORS_COUNT'].apply(introduced_error_counts.update)
 
     error_comparison = pd.DataFrame({
         "Introduced": pd.Series(introduced_error_counts),
@@ -146,38 +169,111 @@ if evaluate_model:
     print(error_comparison.to_string(index=True))
 
     # -------------------------------------------------------------------------------------------------------------------
+    # --- Confussion matrix & Precision, recall & F1 score ---
+    # -------------------------------------------------------------------------------------------------------------------
+    print("\n==================================== Level 1: Overall row status ====================================")
+    
+    # check column introduced_errors and if its not empty then assig true to column has_intro_errors    
+    df['HAS_INTRODUCED_ERRORS'] = df['INTRODUCED_ERRORS_SET'].apply(lambda x: len(x) > 0)
+    df['HAS_DETECTED_ERRORS'] = df['ALL_DETECTED_ERRORS'].apply(lambda x: len(x) > 0)
+    df['HAS_CORRECTED_ERRORS'] = df['ALL_CORRECTED_ERRORS'].apply(lambda x: len(x) > 0)
+    
+    def evaluate_performance(true_col, pred_col):
+        accuracy = accuracy_score(true_col, pred_col)
+        precision = precision_score(true_col, pred_col)
+        recall = recall_score(true_col, pred_col)
+        f1 = f1_score(true_col, pred_col)
+        cm = confusion_matrix(true_col, pred_col)
+        report = classification_report(true_col, pred_col, target_names=["No Error", "Error"])
+        
+        return accuracy, precision, recall, f1, cm, report
+    
+    # Check for detection
+    true_col = df['HAS_INTRODUCED_ERRORS']
+    pred_col = df['HAS_DETECTED_ERRORS']
+    
+    accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col, pred_col)
+    print(f"Accuracy: {accuracy:.3f}")
+    print(f"Precision: {precision:.3f}")
+    print(f"Recall: {recall:.3f}")
+    print(f"F1 Score: {f1:.3f}")
+    print("Confusion Matrix:")
+    print(cm)
+    print("\nDetailed Classification Report:")
+    print(report)
+    
+    # Check  for correction 
+    y_true = df['HAS_INTRODUCED_ERRORS']
+    y_pred = df['HAS_CORRECTED_ERRORS']
+    
+    print(f"Accuracy: {accuracy:.3f}")
+    print(f"Precision: {precision:.3f}")
+    print(f"Recall: {recall:.3f}")
+    print(f"F1 Score: {f1:.3f}")
+    print("Confusion Matrix:")
+    print(cm)
+    print("\nDetailed Classification Report:")
+    print(report)
+    
+    
+    print("\n==================================== Level 1: Error Code level ====================================")
+    # Detection evaluation
+    det_results = df.apply(lambda row: evaluate(row['INTRODUCED_ERRORS_SET_DETECT'], row['ALL_DETECTED_ERRORS']), axis=1)
+    det_df = pd.DataFrame(det_results.tolist(), columns=['TP', 'FP', 'FN'])
+
+    # Define a function to summarize precision, recall, and F1 score
+    det_precision, det_recall, det_f1 = summarize(det_df)
+
+    print("\n=== Detection Evaluation ===")
+    print(f"Precision: {det_precision:.3f}")
+    print(f"Recall:    {det_recall:.3f}")
+    print(f"F1 Score:  {det_f1:.3f}")
+    
+    # Correction evaluation
+    cor_results = df.apply(lambda row: evaluate(row['INTRODUCED_ERRORS_SET_CORRECT'], row['ALL_CORRECTED_ERRORS']), axis=1)
+    cor_df = pd.DataFrame(cor_results.tolist(), columns=['TP', 'FP', 'FN'])
+
+    cor_precision, cor_recall, cor_f1 = summarize(cor_df)
+
+    print("\n=== Correction Evaluation ===")
+    print(f"Precision: {cor_precision:.3f}")
+    print(f"Recall:    {cor_recall:.3f}")
+    print(f"F1 Score:  {cor_f1:.3f}")
+    
+    # -------------------------------------------------------------------------------------------------------------------
     # --- Counting Status ---
     # -------------------------------------------------------------------------------------------------------------------
-    print("==================================== Status Counts ====================================")
+    print("\n==================================== Status Counts ====================================")
     # Based on the final status of the row, provide counts of different statuses
-    def count_statuses(series):
-        return series.value_counts().to_dict()
-
-    # Overall status counts
-    overall_status_counts = count_statuses(data['OVERALL_STATUS'])
-
-    # Identify all *_STATUS columns except OVERALL_STATUS
-    status_columns = [col for col in data.columns if col.endswith('_STATUS') and col != 'OVERALL_STATUS']
+    status_summary = pd.DataFrame()
+    
+    # status columns
+    status_columns = [col for col in df.columns if col.endswith('_STATUS')]
+    
+    for col in status_columns:
+        counts = count_statuses(df[col])
+        counts.name = col
+        status_summary = pd.concat([status_summary, counts], axis=1)
 
     # Compute status counts for each *_STATUS column
     status_counts_by_column = {
-        col: count_statuses(data[col]) for col in status_columns
+        col: count_statuses(df[col]) for col in status_columns
     }
+    
+    # Fill NaNs with 0 and convert to int
+    status_summary = status_summary.fillna(0).astype(int)
 
-    print("=== Overall Status Counts ===")
-    for status, count in overall_status_counts.items():
-        print(f"{status}: {count}")
+    # Sort columns for clarity: OVERALL_STATUS first, then alphabetical
+    cols_sorted = ['OVERALL_STATUS'] + sorted([c for c in status_summary.columns if c != 'OVERALL_STATUS'])
+    status_summary = status_summary[cols_sorted] if 'OVERALL_STATUS' in status_summary.columns else status_summary
 
-    print("\n=== Per-Column Status Counts ===")
-    for col, status_dict in status_counts_by_column.items():
-        print(f"\n{col}:")
-        for status, count in status_dict.items():
-            print(f"  {status}: {count}")
-
+    # Display
+    print(status_summary)
+    
     # -------------------------------------------------------------------------------------------------------------------
     # --- DQ Dimension Improvements ---
     # -------------------------------------------------------------------------------------------------------------------
-    print("==================================== DQ Dimension Improvements ====================================")
+    print("\n==================================== DQ Dimension Improvements ====================================")
     # Convert error_config to DataFrame
     error_config_df = pd.DataFrame.from_dict(error_config, orient='index')
     error_config_df.index.name = 'error_code'
@@ -190,20 +286,11 @@ if evaluate_model:
         if pd.notna(row["dq_dimension"])
     }
 
-    def map_errors_to_dimensions(error_sets):
-        dq_counter = Counter()
-        for error_set in error_sets:
-            for code in error_set:
-                dq = dq_mapping.get(code)
-                if dq:
-                    dq_counter[dq] += 1
-        return dq_counter
-
     # Summarize introduced DQ problems (before cleaning)
-    introduced_dq_counts = map_errors_to_dimensions(data['INTRODUCED_ERRORS_SET'])
+    introduced_dq_counts = map_errors_to_dimensions(df['INTRODUCED_ERRORS_SET'])
 
     # Summarize corrected DQ problems (after cleaning)
-    corrected_dq_counts = map_errors_to_dimensions(data['ALL_CORRECTED_ERRORS'])
+    corrected_dq_counts = map_errors_to_dimensions(df['ALL_CORRECTED_ERRORS'])
 
     # Create summary DataFrame
     dq_summary = pd.DataFrame({
@@ -222,52 +309,9 @@ if evaluate_model:
 
     print(dq_summary.to_string(index=True))
 
-    # -------------------------------------------------------------------------------------------------------------------
-    # --- Confussion matrix ---
-    # -------------------------------------------------------------------------------------------------------------------
-    print("==================================== Confusion Matrix ====================================")
-    # Compute TP, FP, FN from actual set comparison
-    def evaluate(actual, predicted):
-        tp = len(actual & predicted)
-        fp = len(predicted - actual)
-        fn = len(actual - predicted)
-        return tp, fp, fn
-
-    # Detection evaluation
-    det_results = data.apply(lambda row: evaluate(row['INTRODUCED_ERRORS_SET_DETECT'], row['ALL_DETECTED_ERRORS']), axis=1)
-    det_df = pd.DataFrame(det_results.tolist(), columns=['TP', 'FP', 'FN'])
-
-    # Correction evaluation
-    cor_results = data.apply(lambda row: evaluate(row['INTRODUCED_ERRORS_SET_CORRECT'], row['ALL_CORRECTED_ERRORS']), axis=1)
-    cor_df = pd.DataFrame(cor_results.tolist(), columns=['TP', 'FP', 'FN'])
-
-    # -------------------------------------------------------------------------------------------------------------------
-    # --- Precision, recall & F1 score ---
-    # -------------------------------------------------------------------------------------------------------------------
-    print("==================================== Precision, Recall & F1 Score ====================================")
-    def summarize(df):
-        TP, FP, FN = df[['TP', 'FP', 'FN']].sum()
-        precision = TP / (TP + FP) if (TP + FP) else 0
-        recall = TP / (TP + FN) if (TP + FN) else 0
-        f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0
-        return precision, recall, f1
-
-    det_precision, det_recall, det_f1 = summarize(det_df)
-    cor_precision, cor_recall, cor_f1 = summarize(cor_df)
-
-    # Output results
-    print("=== Detection Evaluation ===")
-    print(f"Precision: {det_precision:.3f}")
-    print(f"Recall:    {det_recall:.3f}")
-    print(f"F1 Score:  {det_f1:.3f}")
-
-    print("\n=== Correction Evaluation ===")
-    print(f"Precision: {cor_precision:.3f}")
-    print(f"Recall:    {cor_recall:.3f}")
-    print(f"F1 Score:  {cor_f1:.3f}")
 
 if generate_report:
-        
+    
     def escape_excel_formulas(df):
         return df.apply(lambda col: col.map(lambda x: f"'{x}" if isinstance(x, str) and x.startswith("=") else x))
     
