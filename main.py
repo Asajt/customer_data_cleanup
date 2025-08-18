@@ -133,8 +133,8 @@ if evaluate_model:
     df['ALL_CORRECTED_ERRORS'] = df.apply(lambda row: combine_errors(row, corrected_cols), axis=1)
     
     # Filter for only the errors that should be detected or corrected as per the config
-    df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'detect'))
-    df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'correct'))
+    # df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'detect'))
+    # df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'correct'))
 
     # -------------------------------------------------------------------------------------------------------------------
     # --- Dataset stats ---
@@ -289,22 +289,22 @@ if evaluate_model:
     
     print("\n======================================================= Level 2: Error code =======================================================")
     # order the columns
-    df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'].apply(lambda x: sorted(x))
-    df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'].apply(lambda x: sorted(x))
+    df['INTRODUCED_ERRORS_SET'] = df['INTRODUCED_ERRORS_SET'].apply(lambda x: sorted(x))
+    df['INTRODUCED_ERRORS_SET'] = df['INTRODUCED_ERRORS_SET'].apply(lambda x: sorted(x))
     df['ALL_DETECTED_ERRORS'] = df['ALL_DETECTED_ERRORS'].apply(lambda x: sorted(x))
     df['ALL_CORRECTED_ERRORS'] = df['ALL_CORRECTED_ERRORS'].apply(lambda x: sorted(x))
     
-    df['HAS_INTRODUCED_ERRORS_DETECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'].apply(lambda x: len(x) > 0)
-    df['HAS_INTRODUCED_ERRORS_CORRECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'].apply(lambda x: len(x) > 0)
+    df['HAS_INTRODUCED_ERRORS_DETECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda x: len(x) > 0)
+    df['HAS_INTRODUCED_ERRORS_CORRECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda x: len(x) > 0)
     
     df['HAS_DETECTED_ERRORS'] = df.apply(
-        lambda row: False if (not row['ALL_DETECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET_CONFIG_DETECT'])
-        else row['ALL_DETECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET_CONFIG_DETECT'],
+        lambda row: False if (not row['ALL_DETECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET'])
+        else row['ALL_DETECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET'],
         axis=1
     )
     df['HAS_CORRECTED_ERRORS'] = df.apply(
-        lambda row: False if (not row['ALL_CORRECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'])
-        else row['ALL_CORRECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'],
+        lambda row: False if (not row['ALL_CORRECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET'])
+        else row['ALL_CORRECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET'],
         axis=1
     )
     
@@ -377,22 +377,22 @@ if evaluate_model:
     for attr in ATTRIBUTES:
         print(f"\n---------- {attr} ----------")
 
-        df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'].apply(lambda x: sorted(x))
-        df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'].apply(lambda x: sorted(x))
+        df['INTRODUCED_ERRORS_SET'] = df['INTRODUCED_ERRORS_SET'].apply(lambda x: sorted(x))
+        df['INTRODUCED_ERRORS_SET'] = df['INTRODUCED_ERRORS_SET'].apply(lambda x: sorted(x))
         df[f'{attr}_DETECTED_ERRORS'] = df[f'{attr}_DETECTED_ERRORS'].apply(lambda x: sorted(x))
         df[f'{attr}_CORRECTED_ERRORS'] = df[f'{attr}_CORRECTED_ERRORS'].apply(lambda x: sorted(x))
         
-        df['HAS_INTRODUCED_ERRORS_DETECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'].apply(lambda x: len(x) > 0)
-        df['HAS_INTRODUCED_ERRORS_CORRECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'].apply(lambda x: len(x) > 0)
+        df['HAS_INTRODUCED_ERRORS_DETECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda x: len(x) > 0)
+        df['HAS_INTRODUCED_ERRORS_CORRECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda x: len(x) > 0)
         
         df['HAS_DETECTED_ERRORS'] = df.apply(
-            lambda row: False if (not row[f'{attr}_DETECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET_CONFIG_DETECT'])
-            else row[f'{attr}_DETECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET_CONFIG_DETECT'],
+            lambda row: False if (not row[f'{attr}_DETECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET'])
+            else row[f'{attr}_DETECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET'],
             axis=1
         )
         df['HAS_CORRECTED_ERRORS'] = df.apply(
-            lambda row: False if (not row[f'{attr}_CORRECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'])
-            else row[f'{attr}_CORRECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'],
+            lambda row: False if (not row[f'{attr}_CORRECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET'])
+            else row[f'{attr}_CORRECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET'],
             axis=1
         )
 
