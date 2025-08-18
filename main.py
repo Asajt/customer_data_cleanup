@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import time
 from collections import Counter
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, classification_report
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, classification_report, precision_recall_fscore_support
 from pipelines.master_pipeline import run_full_quality_pipeline
 from utils.customer_data_generator import generate_synthetic_customer_data
 from utils.chaos_engineering import apply_errors
@@ -15,15 +15,16 @@ dataset_size = 10000
 seed = 7 #42
 cache_path = f"src/cache/final_customer_data_{dataset_size}_{seed}.parquet"
 
-time_measurement = True
+time_measurement = False
+use_cache_result = True
 cache_result = False
-evaluate_model = False
+evaluate_model = True
 generate_report = False
 
 ###################################################### Main execution ######################################################
 
 
-if os.path.exists(cache_path):
+if use_cache_result and os.path.exists(cache_path):
     print(f"Loading cached DataFrame from {cache_path}")
     df = pd.read_parquet(cache_path)
 else:
@@ -118,7 +119,6 @@ if evaluate_model:
         f1 = f1_score(true_col, pred_col)
         cm = confusion_matrix(true_col, pred_col)
         report = classification_report(true_col, pred_col, target_names=["No Error", "Error"])
-        
         return accuracy, precision, recall, f1, cm, report
 
     # -------------------------------------------------------------------------------------------------------------------
@@ -133,14 +133,30 @@ if evaluate_model:
     df['ALL_CORRECTED_ERRORS'] = df.apply(lambda row: combine_errors(row, corrected_cols), axis=1)
     
     # Filter for only the errors that should be detected or corrected as per the config
-    df['INTRODUCED_ERRORS_SET_DETECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'detect'))
-    df['INTRODUCED_ERRORS_SET_CORRECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'correct'))
+    df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'detect'))
+    df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'] = df['INTRODUCED_ERRORS_SET'].apply(lambda s: filter_errors(s, 'correct'))
 
+    # -------------------------------------------------------------------------------------------------------------------
+    # --- Dataset stats ---
+    # -------------------------------------------------------------------------------------------------------------------
+    print("\n======================================================= Dataset stats =======================================================")
+    # Dataset size and columns
+    print(f"Dataset size: {len(df)} rows, {len(df.columns)} columns")
+    print(f"Columns: {', '.join(df.columns)}")
+    # Count all rows with introduced errors
+    df['HAS_INTRODUCED_ERRORS'] = df['INTRODUCED_ERRORS_SET'].apply(lambda x: len(x) > 0)
+    num_rows_with_errors = df['HAS_INTRODUCED_ERRORS'].sum()
+    print(f"Number of rows with introduced errors: {num_rows_with_errors} ({num_rows_with_errors / len(df) * 100:.2f}%)")
+    # per filed count of rows with introduced errors
+    for field in ["FIRST_NAME", "LAST_NAME", "STREET", "HOUSE_NUMBER",
+                  "POSTAL_CODE", "POSTAL_CITY", "EMAIL", "PHONE_NUMBER"]:
+        col_name = f"{field}_INTRO_ERRORS"
+        num_rows_with_field_errors = df[col_name].apply(lambda x: len(parse_errors(x)) > 0).sum()
+        print(f"Number of rows with introduced errors in {field}: {num_rows_with_field_errors} ({num_rows_with_field_errors / len(df) * 100:.2f}%)")
+    
     # -------------------------------------------------------------------------------------------------------------------
     # --- Counting Errors ---
     # -------------------------------------------------------------------------------------------------------------------
-    print("\n==================================== Errors Counts ====================================")
-
     # Count errors in the introduced set
     df['ALL_DETECTED_ERRORS_COUNT'] = df['ALL_DETECTED_ERRORS'].apply(count_errors)
     df['ALL_CORRECTED_ERRORS_COUNT'] = df['ALL_CORRECTED_ERRORS'].apply(count_errors)
@@ -163,24 +179,92 @@ if evaluate_model:
     error_comparison["Detection Rate (%)"] = (error_comparison["Detected"] / error_comparison["Introduced"]) * 100
     error_comparison["Correction Rate (%)"] = (error_comparison["Corrected"] / error_comparison["Introduced"]) * 100
     error_comparison = error_comparison.round(2)
-
+    
+    print("\n======================================================= Errors Counts =======================================================")
     print(error_comparison.to_string(index=True))
+    # save the table to file
+    # error_comparison.to_csv('src/processed_data/error_comparison.csv', index=True)
+
+    # ==================================================================================================
+    # --- Error counts and row impact by FIELD (Introduced / Detected / Corrected) ----------------------
+    # ==================================================================================================
+
+    FIELDS = [
+        "FIRST_NAME", "LAST_NAME", "STREET", "HOUSE_NUMBER",
+        "POSTAL_CODE", "POSTAL_CITY", "EMAIL", "PHONE_NUMBER"
+    ]
+
+    results = []
+
+    for field in FIELDS:
+        intro_col     = f"{field}_INTRO_ERRORS"
+        detect_col    = f"{field}_DETECTED_ERRORS"
+        correct_col   = f"{field}_CORRECTED_ERRORS"
+
+        # Parse all into sets
+        intro_errors    = df[intro_col].apply(parse_errors)
+        detected_errors = df[detect_col].apply(parse_errors)
+        corrected_errors = df[correct_col].apply(parse_errors)
+
+        # Count instances of error codes
+        intro_count    = sum(len(x) for x in intro_errors)
+        detected_count = sum(len(x) for x in detected_errors)
+        corrected_count = sum(len(x) for x in corrected_errors)
+
+        # Count rows affected
+        intro_rows    = sum(len(x) > 0 for x in intro_errors)
+        detected_rows = sum(len(x) > 0 for x in detected_errors)
+        corrected_rows = sum(len(x) > 0 for x in corrected_errors)
+
+        # Compute rates
+        detection_rate = (detected_count / intro_count * 100) if intro_count else 0
+        correction_rate = (corrected_count / intro_count * 100) if intro_count else 0
+
+        results.append({
+            "Field": field,
+            "Introduced Errors": intro_count,
+            "Detected Errors": detected_count,
+            "Corrected Errors": corrected_count,
+            "Detection Rate (%)": round(detection_rate, 2),
+            "Correction Rate (%)": round(correction_rate, 2),
+            "Rows with Introduced Errors": intro_rows,
+            "Rows with Detected Errors": detected_rows,
+            "Rows with Corrected Errors": corrected_rows
+        })
+
+    # Create DataFrame
+    field_error_summary = pd.DataFrame(results)
+    field_error_summary = field_error_summary.set_index("Field")
+
+    # Display
+    print("\n======================================================= ERROR COUNTS BY FIELD (TOTAL + ROW-LEVEL) =======================================================")
+    print(field_error_summary.to_string())
+
+    # Save to file
+    # field_error_summary.to_csv("src/processed_data/field_error_summary.csv")
 
     # -------------------------------------------------------------------------------------------------------------------
     # --- Confussion matrix & Precision, recall & F1 score ---
     # -------------------------------------------------------------------------------------------------------------------
-    print("\n==================================== Level 1: Overall row status ====================================")
     
+    print("\n======================================================= RECORD LEVEL =======================================================")
+    
+    print("\n======================================================= Level 1: Overall =======================================================")
     # check column introduced_errors and if its not empty then assig true to column has_intro_errors    
     df['HAS_INTRODUCED'] = df['INTRODUCED_ERRORS_SET'].apply(lambda x: len(x) > 0)
     df['HAS_DETECTED'] = df['ALL_DETECTED_ERRORS'].apply(lambda x: len(x) > 0)
-    df['HAS_CORRECTED'] = df['ALL_CORRECTED_ERRORS'].apply(lambda x: len(x) > 0)
+    # df['HAS_CORRECTED'] = df['ALL_CORRECTED_ERRORS'].apply(lambda x: len(x) > 0)
+    df['HAS_CORRECTED'] = df.apply(
+        lambda row: row['ALL_CORRECTED_ERRORS'] == row['ALL_DETECTED_ERRORS'] and len(row['ALL_CORRECTED_ERRORS']) > 0,
+        axis=1
+    )
     
     true_col = df['HAS_INTRODUCED']
     pred_col_det = df['HAS_DETECTED']
     pred_col_corr = df['HAS_CORRECTED']
     
     # Check for detection
+    print("\n==================================== DETECTION ====================================")
     accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col, pred_col_det)
     print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
     print("Confusion Matrix:")
@@ -189,6 +273,7 @@ if evaluate_model:
     print(report)
     
     # Check  for correction 
+    print("\n==================================== CORRECTION ====================================")
     accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col, pred_col_corr)
     print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
     print("Confusion Matrix:")
@@ -196,32 +281,41 @@ if evaluate_model:
     print("\nDetailed Classification Report:")
     print(report)
     
-    print("\n==================================== Level 1: Error Code level ====================================")    
+    # False-positive correction number and rate
+    false_positive_corr = df[(df['HAS_INTRODUCED'] == False) & (df['HAS_CORRECTED'] == True)]
+    false_positive_corr_count = len(false_positive_corr)
+    false_positive_corr_rate = (false_positive_corr_count / len(df)) * 100 if len(df) > 0 else 0
+    print(f"False Positive Corrections: {false_positive_corr_count} ({false_positive_corr_rate:.2f}%)")
+    
+    print("\n======================================================= Level 2: Error code =======================================================")
     # order the columns
-    df['INTRODUCED_ERRORS_SET_DETECT'] = df['INTRODUCED_ERRORS_SET_DETECT'].apply(lambda x: sorted(x))
-    df['INTRODUCED_ERRORS_SET_CORRECT'] = df['INTRODUCED_ERRORS_SET_CORRECT'].apply(lambda x: sorted(x))
+    df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'].apply(lambda x: sorted(x))
+    df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'].apply(lambda x: sorted(x))
     df['ALL_DETECTED_ERRORS'] = df['ALL_DETECTED_ERRORS'].apply(lambda x: sorted(x))
     df['ALL_CORRECTED_ERRORS'] = df['ALL_CORRECTED_ERRORS'].apply(lambda x: sorted(x))
     
-    df['HAS_INTRODUCED_ERRORS_DETECT'] = df['INTRODUCED_ERRORS_SET_DETECT'].apply(lambda x: len(x) > 0)
-    df['HAS_INTRODUCED_ERRORS_CORRECT'] = df['INTRODUCED_ERRORS_SET_CORRECT'].apply(lambda x: len(x) > 0)
+    df['HAS_INTRODUCED_ERRORS_DETECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'].apply(lambda x: len(x) > 0)
+    df['HAS_INTRODUCED_ERRORS_CORRECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'].apply(lambda x: len(x) > 0)
+    
     df['HAS_DETECTED_ERRORS'] = df.apply(
-        lambda row: False if (not row['ALL_DETECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET_DETECT'])
-        else row['ALL_DETECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET_DETECT'],
+        lambda row: False if (not row['ALL_DETECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET_CONFIG_DETECT'])
+        else row['ALL_DETECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET_CONFIG_DETECT'],
         axis=1
     )
     df['HAS_CORRECTED_ERRORS'] = df.apply(
-        lambda row: False if (not row['ALL_CORRECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET_CORRECT'])
-        else row['ALL_CORRECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET_CORRECT'],
+        lambda row: False if (not row['ALL_CORRECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'])
+        else row['ALL_CORRECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'],
         axis=1
     )
     
     true_col_det = df['HAS_INTRODUCED_ERRORS_DETECT']
     true_col_corr = df['HAS_INTRODUCED_ERRORS_CORRECT']
+    
     pred_col_det = df['HAS_DETECTED_ERRORS']
     pred_col_corr = df['HAS_CORRECTED_ERRORS']
     
     # Check for detection
+    print("\n==================================== DETECTION ====================================")
     accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col_det, pred_col_det)
     print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
     print("Confusion Matrix:")
@@ -230,17 +324,106 @@ if evaluate_model:
     print(report)
     
     # Check  for correction 
+    print("\n==================================== CORRECTION ====================================")
     accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col_corr, pred_col_corr)
     print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
     print("Confusion Matrix:")
     print(cm)
     print("\nDetailed Classification Report:")
-    print(report)
+    print(report)    
+
+    print("\n======================================================= ATTRIBUTE LEVEL =======================================================")
+
+    ATTRIBUTES = [
+        "FIRST_NAME", "LAST_NAME", "STREET", "HOUSE_NUMBER",
+        "POSTAL_CODE", "POSTAL_CITY", "EMAIL", "PHONE_NUMBER"
+    ]
+    
+    print("\n======================================================= Level 1: Overall =======================================================")
+    for attr in ATTRIBUTES:
+        print(f"\n---------- {attr} ----------")
+
+        # check column introduced_errors and if its not empty then assig true to column has_intro_errors    
+        df[f'{attr}_HAS_INTRODUCED'] = df[f'{attr}_INTRO_ERRORS'].apply(lambda x: len(x) > 0)
+        df[f'{attr}_HAS_DETECTED'] = df[f'{attr}_DETECTED_ERRORS'].apply(lambda x: len(x) > 0)
+        df[f'{attr}_HAS_CORRECTED'] = df.apply(
+            lambda row: set(row[f'{attr}_CORRECTED_ERRORS']) == set(row[f'{attr}_DETECTED_ERRORS']) and len(set(row[f'{attr}_CORRECTED_ERRORS'])) > 0,
+            axis=1
+        )
+        
+        true_col = df[f'{attr}_HAS_INTRODUCED']
+        pred_col_det = df[f'{attr}_HAS_DETECTED']
+        pred_col_corr = df[f'{attr}_HAS_CORRECTED']
+        
+        # Detection metrics
+        print("\n==================================== DETECTION ====================================")
+        accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col, pred_col_det)
+        print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
+        print("Confusion Matrix:")
+        print(cm)
+        print("\nDetailed Classification Report:")
+        print(report)
+        
+        # Check  for correction 
+        print("\n==================================== CORRECTION ====================================")
+        accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col, pred_col_corr)
+        print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
+        print("Confusion Matrix:")
+        print(cm)
+        print("\nDetailed Classification Report:")
+        print(report)
+        
+    print("\n======================================================= Level 2: Error code =======================================================")
+    for attr in ATTRIBUTES:
+        print(f"\n---------- {attr} ----------")
+
+        df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'].apply(lambda x: sorted(x))
+        df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'].apply(lambda x: sorted(x))
+        df[f'{attr}_DETECTED_ERRORS'] = df[f'{attr}_DETECTED_ERRORS'].apply(lambda x: sorted(x))
+        df[f'{attr}_CORRECTED_ERRORS'] = df[f'{attr}_CORRECTED_ERRORS'].apply(lambda x: sorted(x))
+        
+        df['HAS_INTRODUCED_ERRORS_DETECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_DETECT'].apply(lambda x: len(x) > 0)
+        df['HAS_INTRODUCED_ERRORS_CORRECT'] = df['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'].apply(lambda x: len(x) > 0)
+        
+        df['HAS_DETECTED_ERRORS'] = df.apply(
+            lambda row: False if (not row[f'{attr}_DETECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET_CONFIG_DETECT'])
+            else row[f'{attr}_DETECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET_CONFIG_DETECT'],
+            axis=1
+        )
+        df['HAS_CORRECTED_ERRORS'] = df.apply(
+            lambda row: False if (not row[f'{attr}_CORRECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'])
+            else row[f'{attr}_CORRECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET_CONFIG_CORRECT'],
+            axis=1
+        )
+
+        # Detection metrics
+        true_col_det = df['HAS_INTRODUCED_ERRORS_DETECT']
+        pred_col_det = df['HAS_DETECTED_ERRORS']
+
+        print("\n[Detection]")
+        accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col_corr, pred_col_corr)
+        print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
+        print("Confusion Matrix:")
+        print(cm)
+        print("\nDetailed Classification Report:")
+        print(report)   
+        
+        # Correction metrics
+        true_col_corr = df['HAS_INTRODUCED_ERRORS_CORRECT']
+        pred_col_corr = df['HAS_CORRECTED_ERRORS']
+        
+        print("\n[Correction]")
+        accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col_corr, pred_col_corr)
+        print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
+        print("Confusion Matrix:")
+        print(cm)
+        print("\nDetailed Classification Report:")
+        print(report)   
     
     # -------------------------------------------------------------------------------------------------------------------
     # --- Counting Status ---
     # -------------------------------------------------------------------------------------------------------------------
-    print("\n==================================== Status Counts ====================================")
+    print("\n======================================================= Status Counts =======================================================")
     # Based on the final status of the row, provide counts of different statuses
     status_summary = pd.DataFrame()
     
@@ -253,9 +436,7 @@ if evaluate_model:
         status_summary = pd.concat([status_summary, counts], axis=1)
 
     # Compute status counts for each *_STATUS column
-    status_counts_by_column = {
-        col: count_statuses(df[col]) for col in status_columns
-    }
+    status_counts_by_column = {col: count_statuses(df[col]) for col in status_columns}
     
     # Fill NaNs with 0 and convert to int
     status_summary = status_summary.fillna(0).astype(int)
@@ -270,7 +451,7 @@ if evaluate_model:
     # -------------------------------------------------------------------------------------------------------------------
     # --- DQ Dimension Improvements ---
     # -------------------------------------------------------------------------------------------------------------------
-    print("\n==================================== DQ Dimension Improvements ====================================")
+    print("\n======================================================= DQ Dimension Improvements =======================================================")
     # Convert error_config to DataFrame
     error_config_df = pd.DataFrame.from_dict(error_config, orient='index')
     error_config_df.index.name = 'error_code'
@@ -303,7 +484,6 @@ if evaluate_model:
 
     # Sort by correction rate or total introduced
     dq_summary = dq_summary.sort_values(by="Correction Rate (%)", ascending=False)
-
     print(dq_summary.to_string(index=True))
 
 
@@ -354,20 +534,6 @@ if generate_report:
     postal_city_df = escape_excel_formulas(postal_city_df)
     email_df    = escape_excel_formulas(email_df)
     phone_df    = escape_excel_formulas(phone_df)
-
-    # create a excel writer object
-    with pd.ExcelWriter('src/processed_data/final_customer_data2.xlsx') as writer:
-        overview_df.to_excel(writer, sheet_name="Overview", index=False)
-        names_df.to_excel(  writer, sheet_name="Names", index=False)
-        first_name_df.to_excel(writer, sheet_name="First Name", index=False)
-        last_name_df.to_excel( writer, sheet_name="Last Name", index=False)
-        address_df.to_excel(writer, sheet_name="Address", index=False)
-        street_df.to_excel( writer, sheet_name="Street", index=False)
-        house_number_df.to_excel(writer, sheet_name="House Number", index=False)
-        postal_code_df.to_excel(writer, sheet_name="Postal Code", index=False)
-        postal_city_df.to_excel(writer, sheet_name="Postal City", index=False)
-        email_df.to_excel(  writer, sheet_name="Email", index=False)
-        phone_df.to_excel(  writer, sheet_name="Phone", index=False)
 
     df.to_excel('src/processed_data/final_customer_data.xlsx', index=False)
 
