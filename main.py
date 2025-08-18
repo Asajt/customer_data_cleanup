@@ -269,8 +269,7 @@ if evaluate_model:
     print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
     print("Confusion Matrix:")
     print(cm)
-    print("\nDetailed Classification Report:")
-    print(report)
+    
     
     # Check  for correction 
     print("\n==================================== CORRECTION ====================================")
@@ -278,8 +277,7 @@ if evaluate_model:
     print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
     print("Confusion Matrix:")
     print(cm)
-    print("\nDetailed Classification Report:")
-    print(report)
+    
     
     # False-positive correction number and rate
     false_positive_corr = df[(df['HAS_INTRODUCED'] == False) & (df['HAS_CORRECTED'] == True)]
@@ -297,23 +295,13 @@ if evaluate_model:
     
     df['HAS_DETECTED_ERRORS'] = df.apply(
         lambda row: False if (not row['ALL_DETECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET'])
-        else row['ALL_DETECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET'],
+        else set(row['INTRODUCED_ERRORS_SET']).issubset(set(row['ALL_CORRECTED_ERRORS'])),
         axis=1
     )
+        
     df['HAS_CORRECTED_ERRORS'] = df.apply(
         lambda row: False if (not row['ALL_CORRECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET'])
-        else row['ALL_CORRECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET'],
-        axis=1
-    )
-    
-    # check for false positives
-    df['FP_DETECTED'] = df.apply(
-        lambda row: len(row['ALL_DETECTED_ERRORS']) > 0 and len(row['INTRODUCED_ERRORS_SET']) == 0,
-        axis=1
-    )
-
-    df['FP_CORRECTED'] = df.apply(
-        lambda row: len(row['ALL_CORRECTED_ERRORS']) > 0 and len(row['INTRODUCED_ERRORS_SET']) == 0,
+        else set(row['INTRODUCED_ERRORS_SET']).issubset(set(row['ALL_CORRECTED_ERRORS'])),
         axis=1
     )
     
@@ -327,12 +315,6 @@ if evaluate_model:
     print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
     print("Confusion Matrix:")
     print(cm)
-    print("\nDetailed Classification Report:")
-    print(report)
-    # Report FP
-    fp_detected_count = df['FP_DETECTED'].sum()
-    print(f"False Positive Detections: {fp_detected_count} ({fp_detected_count/len(df)*100:.2f}%)")
-
     
     # Check  for correction 
     print("\n==================================== CORRECTION ====================================")
@@ -340,12 +322,7 @@ if evaluate_model:
     print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
     print("Confusion Matrix:")
     print(cm)
-    print("\nDetailed Classification Report:")
-    print(report)    
-    # Report FP
-    fp_corrected_count = df['FP_CORRECTED'].sum()
-    print(f"False Positive Corrections: {fp_corrected_count} ({fp_corrected_count/len(df)*100:.2f}%)")
-
+        
     print("\n======================================================= ATTRIBUTE LEVEL =======================================================")
 
     ATTRIBUTES = [
@@ -386,7 +363,8 @@ if evaluate_model:
         print(cm)
         print("\nDetailed Classification Report:")
         print(report)
-        
+    
+    '''
     print("\n======================================================= Level 2: Error code =======================================================")
     for attr in ATTRIBUTES:
         print(f"\n---------- {attr} ----------")
@@ -405,19 +383,16 @@ if evaluate_model:
         df['HAS_CORRECTED_ERRORS'] = df.apply(
             lambda row: False if (not row[f'{attr}_CORRECTED_ERRORS'] and not row[f'{attr}_INTRO_ERRORS'])
             else row[f'{attr}_CORRECTED_ERRORS'] == row[f'{attr}_INTRO_ERRORS'],
-            axis=1
-        )
+            axis=1)
 
         # check for false positives
         df[f'{attr}_FP_DETECTED'] = df.apply(
             lambda row: len(row[f'{attr}_DETECTED_ERRORS']) > 0 and len(row[f'{attr}_INTRO_ERRORS']) == 0,
-            axis=1
-        )
+            axis=1)
 
         df[f'{attr}_FP_CORRECTED'] = df.apply(
             lambda row: len(row[f'{attr}_CORRECTED_ERRORS']) > 0 and len(row[f'{attr}_INTRO_ERRORS']) == 0,
-            axis=1
-        )
+            axis=1)
 
         true_col = df['HAS_INTRODUCED_ERRORS']
         
@@ -442,7 +417,7 @@ if evaluate_model:
         print(cm)
         print("\nDetailed Classification Report:")
         print(report)   
-    
+    '''
     # -------------------------------------------------------------------------------------------------------------------
     # --- Counting Status ---
     # -------------------------------------------------------------------------------------------------------------------
