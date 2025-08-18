@@ -306,20 +306,33 @@ if evaluate_model:
         axis=1
     )
     
-    true_col_det = df['HAS_INTRODUCED_ERRORS_DETECT']
-    true_col_corr = df['HAS_INTRODUCED_ERRORS_CORRECT']
+    # check for false positives
+    df['FP_DETECTED'] = df.apply(
+        lambda row: len(row['ALL_DETECTED_ERRORS']) > 0 and len(row['INTRODUCED_ERRORS_SET']) == 0,
+        axis=1
+    )
+
+    df['FP_CORRECTED'] = df.apply(
+        lambda row: len(row['ALL_CORRECTED_ERRORS']) > 0 and len(row['INTRODUCED_ERRORS_SET']) == 0,
+        axis=1
+    )
     
+    true_col = df['HAS_INTRODUCED_ERRORS']    
     pred_col_det = df['HAS_DETECTED_ERRORS']
     pred_col_corr = df['HAS_CORRECTED_ERRORS']
     
     # Check for detection
     print("\n==================================== DETECTION ====================================")
-    accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col_det, pred_col_det)
+    accuracy, precision, recall, f1, cm, report = evaluate_performance(true_col, pred_col_det)
     print(f"Accuracy: {accuracy:.3f}; Precision: {precision:.3f}, Recall: {recall:.3f}, F1 Score: {f1:.3f}")
     print("Confusion Matrix:")
     print(cm)
     print("\nDetailed Classification Report:")
     print(report)
+    # Report FP
+    fp_detected_count = df['FP_DETECTED'].sum()
+    print(f"False Positive Detections: {fp_detected_count} ({fp_detected_count/len(df)*100:.2f}%)")
+
     
     # Check  for correction 
     print("\n==================================== CORRECTION ====================================")
@@ -329,6 +342,9 @@ if evaluate_model:
     print(cm)
     print("\nDetailed Classification Report:")
     print(report)    
+    # Report FP
+    fp_corrected_count = df['FP_CORRECTED'].sum()
+    print(f"False Positive Corrections: {fp_corrected_count} ({fp_corrected_count/len(df)*100:.2f}%)")
 
     print("\n======================================================= ATTRIBUTE LEVEL =======================================================")
 
@@ -387,11 +403,24 @@ if evaluate_model:
             axis=1
         )
         df['HAS_CORRECTED_ERRORS'] = df.apply(
-            lambda row: False if (not row[f'{attr}_CORRECTED_ERRORS'] and not row['INTRODUCED_ERRORS_SET'])
-            else row[f'{attr}_CORRECTED_ERRORS'] == row['INTRODUCED_ERRORS_SET'],
+            lambda row: False if (not row[f'{attr}_CORRECTED_ERRORS'] and not row[f'{attr}_INTRO_ERRORS'])
+            else row[f'{attr}_CORRECTED_ERRORS'] == row[f'{attr}_INTRO_ERRORS'],
             axis=1
         )
 
+        # check for false positives
+        df[f'{attr}_FP_DETECTED'] = df.apply(
+            lambda row: len(row[f'{attr}_DETECTED_ERRORS']) > 0 and len(row[f'{attr}_INTRO_ERRORS']) == 0,
+            axis=1
+        )
+
+        df[f'{attr}_FP_CORRECTED'] = df.apply(
+            lambda row: len(row[f'{attr}_CORRECTED_ERRORS']) > 0 and len(row[f'{attr}_INTRO_ERRORS']) == 0,
+            axis=1
+        )
+
+        true_col = df['HAS_INTRODUCED_ERRORS']
+        
         # Detection metrics
         pred_col_det = df['HAS_DETECTED_ERRORS']
 
