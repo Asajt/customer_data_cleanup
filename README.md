@@ -1,5 +1,3 @@
-in progress...
-
 # Customer Data Cleanup Repository
 
 ## Overview
@@ -12,41 +10,6 @@ This repository contains various scripts and modules for detecting and correctin
 - **Error Injection**: Introduces common errors found in real-world datasets for testing purposes.
 - **Error Detection**: Identifies and categorizes issues in customer data fields.
 - **Error Correction**: Fixes detected issues using predefined rules.
-
----
-
-## Project Structure
-
-```
-customer_data_cleanup/
-│── .venv/                     # Virtual environment
-│── correction/                # Modules for correcting detected errors
-│   ├── __init__.py
-│   ├── correct_address.py
-│   ├── correct_email.py
-│   ├── correct_names.py
-│   ├── correct_phone.py
-│── detection/                 # Modules for detecting errors in customer data
-│   ├── __init__.py
-│   ├── detect_address.py
-│   ├── detect_email.py
-│   ├── detect_names.py
-│   ├── detect_phone.py
-│── src/                       # Source data
-│   ├── processed_data/        # Processed datasets with detected and corrected errors
-│   ├── raw_data/              # Original data sources
-│── tests/                     # Unit tests for various functions
-│── utils/                     # Helper utilities
-│   ├── __init__.py
-│   ├── chaos_engineering.py   # Introduces errors for robustness testing
-│   ├── customer_data_generator.py # Generates synthetic customer data
-│── main.py                    # Main script for executing detection and correction
-│── .gitignore                 # Files to ignore in version control
-│── README.md                  # Project documentation
-│── requirements.txt            # Dependencies
-```
-
----
 
 ## Installation
 
